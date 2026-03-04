@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+
+# remotion build
+.remotion/
+
+# database
+prisma/*.db
+prisma/*.db-journal
+
+# env
+.env
+.env.local
+.env.production
+
+# uploads & temp
+uploads/*
+!uploads/.gitkeep
+tmp/*
+!tmp/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
