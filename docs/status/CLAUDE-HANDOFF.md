@@ -1,6 +1,6 @@
 # Claude Handoff
 
-Last Updated: 2026-03-05 (KST, AI-002 Imagen complete)
+Last Updated: 2026-03-05 (KST, VID-002 browser preview complete)
 Branch: `main`
 Baseline commit: `8df5a22`
 
@@ -10,7 +10,8 @@ Baseline commit: `8df5a22`
   - Assets: image upload with BYOI validation, BGM upload with analysis
   - Image generation: async Imagen pipeline with polling
   - Cuts: handoff with preserveOriginal lock
-  - Remotion: preview, render, status (stubs)
+  - Remotion: preview (complete), render, status (stubs)
+- **Browser preview page**: `/projects/:id/preview` with @remotion/player + ratio toggle.
 - Services: byoi-validator, bgm-analyzer, brief-parser, **gemini-generator**, **imagen-generator**
 - **Generate route uses Gemini AI** (`@google/genai`, gemini-2.5-flash) with brief-parser fallback.
 - **Image generation uses Imagen** (`imagen-4.0-generate-001`) with async job + polling pattern.
@@ -65,12 +66,18 @@ Baseline commit: `8df5a22`
 - Fire-and-forget background processing with GenerationJob status tracking.
 - Skill created: `.claude/skills/takdi-guide/generation/async-job-pattern/SKILL.md`.
 
-7. Implement UI screens
+7. ~~Browser preview (VID-002)~~ — Done
+- `src/components/remotion-preview.tsx`: Client component wrapping @remotion/player.
+- `src/app/projects/[id]/preview/page.tsx`: Server component with DB fetch + status guard.
+- Preview API route updated with complete RemotionInputProps.
+- Ratio toggle (9:16 / 1:1 / 16:9) with live composition switching.
+
+8. Implement UI screens
 - `/` home: start CTA, BYOI CTA, recent projects.
 - `/projects/:id/editor`: node canvas shell and stage actions.
 - `/projects/:id/result`: artifact outputs and usage summary.
 
-8. Align docs after each milestone
+9. Align docs after each milestone
 - Update together:
   - `PROJECT-STATUS.md`
   - `FEATURE-MATRIX.md`

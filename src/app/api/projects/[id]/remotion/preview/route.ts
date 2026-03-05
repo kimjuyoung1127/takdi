@@ -33,13 +33,28 @@ export async function POST(
 
     const compositionId = TEMPLATE_TO_COMPOSITION[templateKey];
 
-    // Stub: return composition mapping without actual Remotion bundle
+    // Build complete RemotionInputProps
+    let sections = [];
+    try {
+      const content = JSON.parse(project.content ?? "{}");
+      sections = content.sections ?? [];
+    } catch {
+      // Invalid content — empty sections
+    }
+
+    const assets = await prisma.asset.findMany({
+      where: { projectId: id, sourceType: "generated" },
+      select: { filePath: true },
+    });
+
     return jsonOk({
       compositionId,
       templateKey,
       inputProps: {
         title: project.name,
-        content: project.content,
+        sections,
+        selectedImages: assets.map((a: { filePath: string }) => a.filePath),
+        bgmMetadata: { src: "" },
         templateKey,
       },
       previewReady: true,

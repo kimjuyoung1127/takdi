@@ -1,6 +1,6 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-05 (KST, AI-002 Imagen complete)
+Last Updated: 2026-03-05 (KST, VID-002 browser preview complete)
 
 ## Current Phase
 - Runtime bootstrap completed.
@@ -9,6 +9,7 @@ Last Updated: 2026-03-05 (KST, AI-002 Imagen complete)
 - Remotion composition baseline implemented (VID-001): 3 ratios (9:16, 1:1, 16:9).
 - Gemini AI generation implemented (AI-001): `@google/genai` + structured output + fallback.
 - Imagen image generation implemented (AI-002): async job + polling + file save + Asset record.
+- Browser preview implemented (VID-002): @remotion/player + preview page + ratio toggle.
 - Next target: UI screens (blocked on design reference from designer).
 
 ## Gate
@@ -40,7 +41,8 @@ Last Updated: 2026-03-05 (KST, AI-002 Imagen complete)
 6. ~~Implement Remotion composition baseline (VID-001)~~ — Done (3 compositions + entry + config).
 7. ~~Implement Gemini AI generation (AI-001)~~ — Done (gemini-generator service + generate route + fallback).
 8. ~~Implement Imagen image generation (AI-002)~~ — Done (imagen-generator + async job + polling + save-generated-image).
-9. Keep docs synchronized using `docs/status/CLAUDE-HANDOFF.md` checklist.
+9. ~~Implement browser preview (VID-002)~~ — Done (@remotion/player + preview page + ratio toggle).
+10. Keep docs synchronized using `docs/status/CLAUDE-HANDOFF.md` checklist.
 
 ## Risks
 - Scope creep into billing/team features before validation gate.

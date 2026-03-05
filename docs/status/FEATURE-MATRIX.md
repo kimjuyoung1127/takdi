@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-05 (KST, AI-002 Imagen complete)
+Last Updated: 2026-03-05 (KST, VID-002 browser preview complete)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -16,7 +16,7 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | IMG-004 | BYOI validation and original lock | Done | claude | byoi-validator + preserveOriginal + cuts/handoff |
 | AUD-001 | BGM analysis gate | Done | claude | POST /api/projects/:id/bgm + bgm-analyzer (duration gate) |
 | VID-001 | Remotion composition baseline | Done | claude | 3 compositions (916/1x1/169) + Root + entry + config |
-| VID-002 | Browser preview integration | Not Started | unassigned | @remotion/player |
+| VID-002 | Browser preview integration | Done | claude | @remotion/player + preview page + ratio toggle |
 | VID-003 | Remotion preview + render pipeline | Done | claude | preview/render/status API stubs with UsageLedger |
 | OUT-001 | Export artifact generation | Done | claude | POST /api/projects/:id/export (stub) |
 | OPS-001 | Usage ledger monthly aggregation | Done | claude | GET /api/usage/me with summary |
