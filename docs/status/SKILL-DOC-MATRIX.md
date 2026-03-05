@@ -1,6 +1,6 @@
 # Skill Doc Matrix
 
-Last Updated: 2026-03-05 (KST, VID-002 complete)
+Last Updated: 2026-03-05 (KST, UI-001 complete)
 
 ## Phase 1 Active Skills
 | skill | tier | required_docs | target_area | acceptance |
@@ -22,6 +22,7 @@ Last Updated: 2026-03-05 (KST, VID-002 complete)
 |---|---|---|---|---|
 | `gemini-api-call` | implementation | `SCHEMA-INDEX`, `gemini-generator.ts` | AI generation | structured output + retry + client key |
 | `async-job-pattern` | implementation | `SCHEMA-INDEX`, `GenerationJob model` | async pipeline | fire-and-forget + polling + job status |
+| `code-conventions` | required | folder `CLAUDE.md`, file headers | all source | API↔FE 1:1 mapping, folder CLAUDE.md, JSDoc headers |
 
 ## Integrity Gates
 - Gate 1: `FEATURE-MATRIX` == `PROJECT-STATUS` == `SKILL-DOC-MATRIX`

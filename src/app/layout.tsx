@@ -1,4 +1,6 @@
+/** Takdi Studio 루트 레이아웃 — globals.css + 기본 body 스타일 적용 */
 import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Takdi Studio",
@@ -12,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body className="min-h-screen bg-gray-50 antialiased">{children}</body>
     </html>
   );
 }
