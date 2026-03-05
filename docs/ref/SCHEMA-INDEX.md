@@ -10,10 +10,18 @@ Last Updated: 2026-03-05 (KST)
 - `POST /api/projects/:id/export`
 - `GET /api/usage/me`
 
+## API Contract (Planned: Node Editor + BYOI)
+- `POST /api/projects/:id/cuts/handoff`
+- `POST /api/projects/:id/remotion/preview`
+- `POST /api/projects/:id/remotion/render`
+- `GET /api/projects/:id/remotion/status`
+
 ## Type Contract
 - `ProjectStatus = draft | generating | generated | failed | exported`
 - `PlanTier = solo_free` (future: `starter | pro | agency`)
 - `GenerationResult = { sections: Array<{ headline: string; body: string; imageSlot: string; styleKey: string }> }`
+- `Asset.sourceType = uploaded | generated | byoi_edited`
+- `CutHandoffPayload = { projectId: string; selectedImageId: string; preserveOriginal: boolean }`
 
 ## Prisma Domain Entities
 - `User`

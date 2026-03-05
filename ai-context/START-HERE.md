@@ -9,9 +9,14 @@ Last Updated: 2026-03-05 (KST)
 ## Read First
 1. `ai-context/master-plan.md`
 2. `ai-context/project-context.md`
-3. `docs/status/PROJECT-STATUS.md`
-4. `docs/ref/PRD.md`
-5. `docs/ref/SCHEMA-INDEX.md`
+3. `docs/status/CLAUDE-HANDOFF.md`
+4. `docs/status/PROJECT-STATUS.md`
+5. `docs/ref/PRD.md`
+6. `docs/ref/SCHEMA-INDEX.md`
+
+## Handoff Rule
+- If a new agent (Claude/Codex) continues implementation, read
+  `docs/status/CLAUDE-HANDOFF.md` first and follow the "Immediate Build Queue".
 
 ## Working Defaults
 - Tenant mode: single workspace, single user.

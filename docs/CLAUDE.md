@@ -10,11 +10,12 @@ Takdi documentation index.
 
 ## Read Order
 1. `docs/status/PROJECT-STATUS.md`
-2. `docs/status/FEATURE-MATRIX.md`
-3. `docs/status/SKILL-DOC-MATRIX.md`
-4. `docs/ref/PRD.md`
-5. `docs/ref/ARCHITECTURE.md`
-6. `docs/ref/SCHEMA-INDEX.md`
+2. `docs/status/CLAUDE-HANDOFF.md`
+3. `docs/status/FEATURE-MATRIX.md`
+4. `docs/status/SKILL-DOC-MATRIX.md`
+5. `docs/ref/PRD.md`
+6. `docs/ref/ARCHITECTURE.md`
+7. `docs/ref/SCHEMA-INDEX.md`
 
 ## Rules
 - Keep status filenames stable.

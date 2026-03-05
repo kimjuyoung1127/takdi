@@ -8,14 +8,15 @@ Automation-first documentation index for Takdi.
 ## Context Loading Order
 1. `CLAUDE.md` (this file)
 2. `ai-context/START-HERE.md`
-3. `ai-context/master-plan.md`
-4. `docs/status/PROJECT-STATUS.md`
-5. `docs/status/FEATURE-MATRIX.md`
-6. `docs/status/SKILL-DOC-MATRIX.md`
-7. `docs/ref/PRD.md`
-8. `docs/ref/ARCHITECTURE.md`
-9. `docs/ref/SCHEMA-INDEX.md`
-10. `docs/ref/REMOTION-SPEC.md`
+3. `docs/status/CLAUDE-HANDOFF.md`
+4. `ai-context/master-plan.md`
+5. `docs/status/PROJECT-STATUS.md`
+6. `docs/status/FEATURE-MATRIX.md`
+7. `docs/status/SKILL-DOC-MATRIX.md`
+8. `docs/ref/PRD.md`
+9. `docs/ref/ARCHITECTURE.md`
+10. `docs/ref/SCHEMA-INDEX.md`
+11. `docs/ref/REMOTION-SPEC.md`
 
 ## Execution Rules (MUST)
 1. Keep status file names stable for automation.
@@ -31,7 +32,9 @@ Automation-first documentation index for Takdi.
 - Data/API/type contract: `docs/ref/SCHEMA-INDEX.md`
 - Remotion spec: `docs/ref/REMOTION-SPEC.md`
 - User flow: `docs/ref/USER-FLOW.md`
+- Wireframe spec: `docs/ref/WIREFRAME-NODE-BYOI.md`
 - Runtime status: `docs/status/PROJECT-STATUS.md`
+- Implementation handoff: `docs/status/CLAUDE-HANDOFF.md`
 
 ## Completion Format
 - Scope / Files / Validation / Risks / Next Actions

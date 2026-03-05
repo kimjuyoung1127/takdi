@@ -4,6 +4,7 @@ Operational status documents for Takdi.
 
 ## Stable Files
 - `PROJECT-STATUS.md`
+- `CLAUDE-HANDOFF.md`
 - `FEATURE-MATRIX.md`
 - `SKILL-DOC-MATRIX.md`
 - `INTEGRITY-REPORT.md`

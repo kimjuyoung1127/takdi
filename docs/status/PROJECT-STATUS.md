@@ -1,10 +1,11 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-05 (KST)
+Last Updated: 2026-03-05 (KST, handoff synchronized)
 
 ## Current Phase
 - Documentation migration baseline completed.
 - Next target: Phase 1 foundation (workspace-scoped CRUD and upload).
+- Handoff package for Claude implementation is ready.
 
 ## Gate
 - Validation gate: 20 real outputs completed.
@@ -27,10 +28,11 @@ Last Updated: 2026-03-05 (KST)
   - `GET /api/usage/me`
 
 ## Next Actions
-1. Implement workspace-scoped project CRUD.
-2. Implement generation job lifecycle transitions.
-3. Implement export pipeline and usage ledger.
-4. Keep status docs synchronized with implementation state.
+1. Implement DB schema for `User/Workspace/Membership/Project/Asset/GenerationJob/ExportArtifact/UsageLedger/PlanCatalog`.
+2. Implement project APIs (`create/get/patch/generate/export`) with workspace scope guard.
+3. Implement node editor shell (`/projects/:id/editor`) and BYOI entry path.
+4. Implement `cuts/handoff`, `remotion/preview`, `remotion/render`, `remotion/status` endpoints.
+5. Keep docs synchronized using `docs/status/CLAUDE-HANDOFF.md` checklist.
 
 ## Risks
 - Scope creep into billing/team features before validation gate.
