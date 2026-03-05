@@ -1,11 +1,11 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-05 (KST, bootstrap complete)
+Last Updated: 2026-03-05 (KST, MVP API routes complete)
 
 ## Current Phase
-- Runtime bootstrap completed (Next.js + Prisma + SQLite + seed).
-- 9 domain tables created and seeded (default user/workspace/plan).
-- Next target: Phase 1 foundation (workspace-scoped project CRUD and API routes).
+- Runtime bootstrap completed.
+- MVP API routes implemented and verified (6 endpoints, all passing).
+- Next target: Node editor UI shell and BYOI entry path.
 
 ## Gate
 - Validation gate: 20 real outputs completed.
@@ -29,7 +29,7 @@ Last Updated: 2026-03-05 (KST, bootstrap complete)
 
 ## Next Actions
 1. ~~Implement DB schema~~ — Done (prisma/schema.prisma, 9 models, seed complete).
-2. Implement project APIs (`create/get/patch/generate/export`) with workspace scope guard.
+2. ~~Implement project APIs~~ — Done (6 MVP routes with workspace scope guard, status transitions, usage ledger).
 3. Implement node editor shell (`/projects/:id/editor`) and BYOI entry path.
 4. Implement `cuts/handoff`, `remotion/preview`, `remotion/render`, `remotion/status` endpoints.
 5. Keep docs synchronized using `docs/status/CLAUDE-HANDOFF.md` checklist.

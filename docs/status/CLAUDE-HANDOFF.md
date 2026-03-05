@@ -2,15 +2,17 @@
 
 Last Updated: 2026-03-05 (KST)
 Branch: `main`
-Baseline commit: `3c18763`
+Baseline commit: `fd815ed`
 
 ## Current Snapshot
-- Runtime bootstrap is complete:
-  - Next.js 15 + TypeScript + Prisma 6 + SQLite running locally.
-  - 9 domain models created (schema.prisma).
-  - Default user/workspace/plan seeded.
-  - Shared types and workspace-guard helper in place.
-  - `next build` and `tsc --noEmit` pass cleanly.
+- Runtime bootstrap is complete.
+- MVP API routes implemented (6 endpoints):
+  - POST /api/projects, GET /api/projects/:id, PATCH /api/projects/:id/content
+  - POST /api/projects/:id/generate (stub), POST /api/projects/:id/export (stub)
+  - GET /api/usage/me (with summary aggregation)
+- Status transitions verified: draft → generating → generated → exported.
+- UsageLedger records created on generate and export.
+- `next build` and `tsc --noEmit` pass cleanly.
 - Product flow and wireframe are fixed for:
   - node main editor
   - BYOI path
@@ -29,20 +31,11 @@ Baseline commit: `3c18763`
 - Next.js + TypeScript + Prisma + SQLite running locally.
 - Single-workspace guard implemented (`src/lib/workspace-guard.ts`).
 
-2. Implement data model
-- Add entities from `SCHEMA-INDEX.md`.
-- Include:
-  - `Asset.sourceType = uploaded | generated | byoi_edited`
-  - `CutHandoffPayload.preserveOriginal` usage path
+2. ~~Implement data model~~ — Done
+- 9 Prisma models with `Asset.sourceType` and `preserveOriginal` fields.
 
-3. Implement API layer
-- MVP fixed:
-  - `POST /api/projects`
-  - `POST /api/projects/:id/generate`
-  - `GET /api/projects/:id`
-  - `PATCH /api/projects/:id/content`
-  - `POST /api/projects/:id/export`
-  - `GET /api/usage/me`
+3. ~~Implement API layer (MVP)~~ — Done
+- 6 routes implemented with workspace scope guard, status transitions, usage ledger.
 - Planned for node+BYOI:
   - `POST /api/projects/:id/cuts/handoff`
   - `POST /api/projects/:id/remotion/preview`
