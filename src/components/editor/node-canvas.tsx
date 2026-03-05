@@ -14,6 +14,7 @@ import {
   type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { MousePointerClick } from "lucide-react";
 import { TakdiNode } from "./takdi-node";
 
 const nodeTypes = { takdi: TakdiNode };
@@ -148,7 +149,7 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
     }, [onNodeSelect]);
 
     return (
-      <div ref={reactFlowWrapper} className="h-full w-full">
+      <div ref={reactFlowWrapper} className="relative h-full w-full">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -167,6 +168,17 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
           <Background gap={20} size={1} color="#e5e7eb" />
           <Controls className="rounded-xl bg-white shadow-sm" />
         </ReactFlow>
+
+        {/* Empty canvas onboarding overlay */}
+        {nodes.length === 0 && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3 rounded-2xl bg-white/80 px-8 py-6 shadow-sm backdrop-blur">
+              <MousePointerClick className="h-8 w-8 text-indigo-400" />
+              <p className="text-sm font-medium text-gray-600">캔버스가 비어있습니다</p>
+              <p className="text-xs text-gray-400">좌측 패널에서 노드를 드래그하여 추가하세요</p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
