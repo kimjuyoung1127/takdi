@@ -1,11 +1,11 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-05 (KST, MVP API routes complete)
+Last Updated: 2026-03-05 (KST, backend APIs complete)
 
 ## Current Phase
 - Runtime bootstrap completed.
-- MVP API routes implemented and verified (6 endpoints, all passing).
-- Next target: Node editor UI shell and BYOI entry path.
+- All backend API routes implemented (12 endpoints, all passing).
+- Next target: UI screens (blocked on design reference from designer).
 
 ## Gate
 - Validation gate: 20 real outputs completed.
@@ -30,8 +30,8 @@ Last Updated: 2026-03-05 (KST, MVP API routes complete)
 ## Next Actions
 1. ~~Implement DB schema~~ — Done (prisma/schema.prisma, 9 models, seed complete).
 2. ~~Implement project APIs~~ — Done (6 MVP routes with workspace scope guard, status transitions, usage ledger).
-3. Implement node editor shell (`/projects/:id/editor`) and BYOI entry path.
-4. Implement `cuts/handoff`, `remotion/preview`, `remotion/render`, `remotion/status` endpoints.
+3. Implement node editor shell (`/projects/:id/editor`) and BYOI entry path. **(Blocked: UI design pending)**
+4. ~~Implement cuts/handoff, remotion/preview, remotion/render, remotion/status~~ — Done (stubs with DB records).
 5. Keep docs synchronized using `docs/status/CLAUDE-HANDOFF.md` checklist.
 
 ## Risks

@@ -2,17 +2,19 @@
 
 Last Updated: 2026-03-05 (KST)
 Branch: `main`
-Baseline commit: `fd815ed`
+Baseline commit: `4c976d6`
 
 ## Current Snapshot
-- Runtime bootstrap is complete.
-- MVP API routes implemented (6 endpoints):
-  - POST /api/projects, GET /api/projects/:id, PATCH /api/projects/:id/content
-  - POST /api/projects/:id/generate (stub), POST /api/projects/:id/export (stub)
-  - GET /api/usage/me (with summary aggregation)
+- All backend API routes implemented (12 endpoints):
+  - MVP: projects CRUD, generate, export, usage
+  - Assets: image upload with BYOI validation, BGM upload with analysis
+  - Cuts: handoff with preserveOriginal lock
+  - Remotion: preview, render, status (stubs)
+- Services: byoi-validator (format/size/dimensions), bgm-analyzer (duration gate)
 - Status transitions verified: draft → generating → generated → exported.
-- UsageLedger records created on generate and export.
+- UsageLedger records on generate, export, render.
 - `next build` and `tsc --noEmit` pass cleanly.
+- **UI screens blocked on designer reference.**
 - Product flow and wireframe are fixed for:
   - node main editor
   - BYOI path
@@ -34,13 +36,9 @@ Baseline commit: `fd815ed`
 2. ~~Implement data model~~ — Done
 - 9 Prisma models with `Asset.sourceType` and `preserveOriginal` fields.
 
-3. ~~Implement API layer (MVP)~~ — Done
-- 6 routes implemented with workspace scope guard, status transitions, usage ledger.
-- Planned for node+BYOI:
-  - `POST /api/projects/:id/cuts/handoff`
-  - `POST /api/projects/:id/remotion/preview`
-  - `POST /api/projects/:id/remotion/render`
-  - `GET /api/projects/:id/remotion/status`
+3. ~~Implement API layer~~ — Done
+- 12 routes total: 6 MVP + assets + bgm + cuts/handoff + remotion preview/render/status.
+- All workspace-scoped with status guards and usage ledger.
 
 4. Implement UI screens
 - `/` home: start CTA, BYOI CTA, recent projects.
