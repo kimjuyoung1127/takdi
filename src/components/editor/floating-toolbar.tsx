@@ -20,6 +20,7 @@ interface FloatingToolbarProps {
   onExport?: () => void;
   runningState?: RunningState;
   pipelineStep?: PipelineStep;
+  lastSaved?: string | null;
 }
 
 const STEP_LABELS: Record<PipelineStep, string> = {
@@ -50,7 +51,7 @@ function Tooltip({ text, children }: { text: string; children: React.ReactNode }
   );
 }
 
-export function FloatingToolbar({ onRunAll, onStop, onSave, onPreview, onExport, runningState, pipelineStep = "idle" }: FloatingToolbarProps) {
+export function FloatingToolbar({ onRunAll, onStop, onSave, onPreview, onExport, runningState, pipelineStep = "idle", lastSaved }: FloatingToolbarProps) {
   const { isRunning, isSaving, isExporting } = runningState ?? {};
   const stepLabel = STEP_LABELS[pipelineStep];
 
@@ -133,6 +134,13 @@ export function FloatingToolbar({ onRunAll, onStop, onSave, onPreview, onExport,
           </Button>
         </Tooltip>
       </div>
+
+      {/* Last saved indicator */}
+      {lastSaved && (
+        <span className="text-[10px] text-gray-400">
+          마지막 저장: {lastSaved}
+        </span>
+      )}
     </div>
   );
 }

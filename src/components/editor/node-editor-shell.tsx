@@ -44,10 +44,25 @@ export function NodeEditorShell({
   const canvasStateRef = useRef<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const abortRef = useRef(false);
   const stepRef = useRef<PipelineStep>("idle");
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [lastSaved, setLastSaved] = useState<string | null>(null);
 
   const handleStateChange = useCallback((nodes: Node[], edges: Edge[]) => {
     canvasStateRef.current = { nodes, edges };
-  }, []);
+
+    // Auto-save after 30s of inactivity
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(async () => {
+      try {
+        await updateContent(projectId, {
+          content: JSON.stringify({ nodes, edges }),
+        });
+        setLastSaved(new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }));
+      } catch {
+        // silent — auto-save is best-effort
+      }
+    }, 30_000);
+  }, [projectId]);
 
   const handleNodeSelect = useCallback((nodeId: string | null, nodeData?: NodeData) => {
     setSelectedNodeId(nodeId);
@@ -156,6 +171,7 @@ export function NodeEditorShell({
       });
       addLog("프로젝트가 저장되었습니다", "info");
       toast.success("저장 완료");
+      setLastSaved(new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }));
     } catch (err) {
       const msg = err instanceof Error ? err.message : "저장 실패";
       addLog(`저장 오류: ${msg}`, "error");
@@ -208,6 +224,13 @@ export function NodeEditorShell({
 
   const isRunning = pipelineStep === "generating" || pipelineStep === "imaging";
 
+  // Cleanup auto-save timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    };
+  }, []);
+
   // --- Keyboard shortcuts ---
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -247,6 +270,7 @@ export function NodeEditorShell({
             isExporting: exporting,
           }}
           pipelineStep={pipelineStep}
+          lastSaved={lastSaved}
         />
         <NodeCanvas
           ref={canvasRef}
@@ -261,6 +285,8 @@ export function NodeEditorShell({
         selectedNodeData={selectedNodeData}
         onNodeDataChange={handleNodeDataChange}
         projectId={projectId}
+        projectName={projectName}
+        nodeCount={canvasStateRef.current.nodes.length}
         logs={logs}
       />
     </div>

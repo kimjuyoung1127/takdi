@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Settings, ImageIcon, Clock, DollarSign, Music } from "lucide-react";
+import { Settings, ImageIcon, Clock, DollarSign, Music, LayoutGrid } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AssetUpload } from "./asset-upload";
 import { fetchUsage, type UsageSummary } from "@/lib/api-client";
@@ -22,10 +22,12 @@ interface PropertiesPanelProps {
   selectedNodeData?: NodeData | null;
   onNodeDataChange?: (nodeId: string, patch: Partial<NodeData>) => void;
   projectId?: string;
+  projectName?: string;
+  nodeCount?: number;
   logs?: LogEntry[];
 }
 
-export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataChange, projectId, logs = [] }: PropertiesPanelProps) {
+export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataChange, projectId, projectName, nodeCount, logs = [] }: PropertiesPanelProps) {
   const [assets, setAssets] = useState<UploadedAsset[]>([]);
   const [usage, setUsage] = useState<UsageSummary | null>(null);
   const [usageLoading, setUsageLoading] = useState(false);
@@ -50,14 +52,44 @@ export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataCh
 
   if (!selectedNodeId) {
     return (
-      <aside className="flex w-80 flex-col items-center justify-center border-l border-gray-100 bg-white">
-        <div className="text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-50 text-gray-300">
-            <Settings className="h-6 w-6" />
+      <aside className="flex w-80 flex-col border-l border-gray-100 bg-white">
+        <div className="flex flex-col items-center justify-center gap-4 px-5 py-8">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-400">
+            <LayoutGrid className="h-6 w-6" />
           </div>
-          <p className="text-sm text-gray-400">노드를 선택하세요</p>
-          <p className="mt-1 text-xs text-gray-300">
-            캔버스에서 노드를 클릭하면<br />속성을 편집할 수 있습니다
+          <div className="text-center">
+            <p className="text-sm font-semibold text-gray-900">{projectName ?? "프로젝트"}</p>
+            <p className="mt-1 text-xs text-gray-400">
+              캔버스 노드 {nodeCount ?? 0}개
+            </p>
+          </div>
+        </div>
+
+        <div className="mx-5 border-t border-gray-100 pt-4">
+          <p className="mb-3 text-xs font-medium text-gray-500">단축키</p>
+          <div className="space-y-2 text-xs text-gray-400">
+            <div className="flex justify-between">
+              <span>전체 실행</span>
+              <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Ctrl+Enter</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>저장</span>
+              <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Ctrl+S</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>중지</span>
+              <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Esc</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>노드 삭제</span>
+              <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Delete</kbd>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-5 mt-4 border-t border-gray-100 pt-4">
+          <p className="text-xs text-gray-300">
+            노드를 클릭하면 속성을 편집할 수 있습니다
           </p>
         </div>
       </aside>
