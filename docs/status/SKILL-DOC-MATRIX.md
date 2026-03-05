@@ -1,6 +1,6 @@
 # Skill Doc Matrix
 
-Last Updated: 2026-03-05 (KST)
+Last Updated: 2026-03-05 (KST, VID-002 complete)
 
 ## Phase 1 Active Skills
 | skill | tier | required_docs | target_area | acceptance |
@@ -16,6 +16,12 @@ Last Updated: 2026-03-05 (KST)
 | `project-crud-add` | expansion | `PRD`, `ARCHITECTURE`, `SCHEMA-INDEX` | project domain | workspace scope preserved |
 | `generation-pipeline-update` | expansion | `PRD`, `USER-FLOW` | generation domain | state lifecycle is valid |
 | `remotion-render-sync` | expansion | `REMOTION-SPEC`, `ARCHITECTURE` | render domain | composition contract preserved |
+
+## Phase 3 Implementation Skills
+| skill | tier | required_docs | target_area | acceptance |
+|---|---|---|---|---|
+| `gemini-api-call` | implementation | `SCHEMA-INDEX`, `gemini-generator.ts` | AI generation | structured output + retry + client key |
+| `async-job-pattern` | implementation | `SCHEMA-INDEX`, `GenerationJob model` | async pipeline | fire-and-forget + polling + job status |
 
 ## Integrity Gates
 - Gate 1: `FEATURE-MATRIX` == `PROJECT-STATUS` == `SKILL-DOC-MATRIX`

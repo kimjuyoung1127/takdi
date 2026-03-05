@@ -1,17 +1,18 @@
 # Takdi Architecture
 
-Last Updated: 2026-03-05 (KST)
+Last Updated: 2026-03-05 (KST, VID-002 complete)
 
 ## Core Principle
 - UX is single-user simple.
 - Data and authorization are workspace-scoped for future multi-tenant expansion.
 
 ## High-Level Components
-- Frontend: Next.js App Router
-- API Layer: Next.js route handlers
-- Data Layer: Prisma + SQLite
-- Generation Layer: Ollama-driven content generation jobs
-- Render Layer: Remotion preview and render pipeline
+- Frontend: Next.js 15 App Router + React 19
+- API Layer: Next.js route handlers (13 endpoints)
+- Data Layer: Prisma 6 + SQLite
+- Text Generation: Gemini 2.5 Flash (`@google/genai`, structured output) + brief-parser fallback
+- Image Generation: Imagen 4.0 (`@google/genai`, async job + polling)
+- Render Layer: Remotion 4 compositions + @remotion/player browser preview
 
 ## Domain Model Spine
 - `User -> Membership -> Workspace`
