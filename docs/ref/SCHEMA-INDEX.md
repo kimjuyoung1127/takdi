@@ -1,6 +1,6 @@
 # Takdi Schema and API Index
 
-Last Updated: 2026-03-05 (KST)
+Last Updated: 2026-03-05 (KST, AI-002 Imagen complete)
 
 ## API Contract (Fixed for MVP)
 - `POST /api/projects`
@@ -10,7 +10,11 @@ Last Updated: 2026-03-05 (KST)
 - `POST /api/projects/:id/export`
 - `GET /api/usage/me`
 
-## API Contract (Planned: Node Editor + BYOI)
+## API Contract (Image Generation)
+- `POST /api/projects/:id/generate-images` — Start async image generation (returns 202 + jobId)
+- `GET /api/projects/:id/generate-images?jobId=xxx` — Poll image generation job status
+
+## API Contract (Node Editor + BYOI)
 - `POST /api/projects/:id/cuts/handoff`
 - `POST /api/projects/:id/remotion/preview`
 - `POST /api/projects/:id/remotion/render`
