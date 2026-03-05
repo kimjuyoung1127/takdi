@@ -9,6 +9,7 @@
 - `takdi-node.tsx` — 커스텀 React Flow 노드 (아이콘 + 라벨 + StatusBadge + Handle)
 - `properties-panel.tsx` — 우측 속성 패널 (Settings/Assets/History/Cost 탭)
 - `bottom-logger.tsx` — 하단 접힘/펼침 로그 패널
+- `asset-upload.tsx` — BYOI 이미지/BGM 파일 업로드 컴포넌트
 
 ## Convention
 - 모든 파일 `"use client"` (React Flow + 인터랙션)

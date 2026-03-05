@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-05 (KST, UI-001 Home + Node Editor)
+Last Updated: 2026-03-06 (KST, UI-002 UI-API Integration)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -13,6 +13,7 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | AI-002 | Image-slot mapping | Done | claude | Imagen 4.0 + async job + polling + save-generated-image |
 | AI-003 | Manual edit save loop | Done | claude | PATCH /api/projects/:id/content |
 | UI-001 | Node main editor canvas | Done | claude | Home + Editor screens: Tailwind v4, shadcn/ui, React Flow, 20+ components |
+| UI-002 | UI-API integration | Done | claude | api-client layer, editor wiring (Run/Save/Preview/Export), properties panel, file restructure |
 | IMG-004 | BYOI validation and original lock | Done | claude | byoi-validator + preserveOriginal + cuts/handoff |
 | AUD-001 | BGM analysis gate | Done | claude | POST /api/projects/:id/bgm + bgm-analyzer (duration gate) |
 | VID-001 | Remotion composition baseline | Done | claude | 3 compositions (916/1x1/169) + Root + entry + config |

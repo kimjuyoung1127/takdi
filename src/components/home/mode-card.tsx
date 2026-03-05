@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createProject } from "@/lib/api-client";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   "model-shot": UserRound,
@@ -37,14 +38,11 @@ export function ModeCard({
   const router = useRouter();
 
   async function handleClick() {
-    const res = await fetch("/api/projects", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: `${label} Project`, mode, briefText: "" }),
-    });
-    if (res.ok) {
-      const project = await res.json();
+    try {
+      const project = await createProject({ name: `${label} 프로젝트`, mode, briefText: "" });
       router.push(`/projects/${project.id}/editor`);
+    } catch {
+      // TODO: surface error to user
     }
   }
 

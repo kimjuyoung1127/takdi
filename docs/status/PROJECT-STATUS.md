@@ -1,6 +1,6 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-05 (KST, UI-001 Home + Node Editor)
+Last Updated: 2026-03-06 (KST, UI-002 UI-API Integration)
 
 ## Current Phase
 - Runtime bootstrap completed.
@@ -16,7 +16,8 @@ Last Updated: 2026-03-05 (KST, UI-001 Home + Node Editor)
   - Editor: 3-panel layout (palette + canvas + properties), floating toolbar, bottom logger.
   - Preview: Tailwind migration from inline styles.
   - 8 folder CLAUDE.md files, code-conventions skill.
-- Next target: real data integration (editor ↔ API 연결), E2E 테스트.
+- UI-API integration completed (UI-002): api-client layer, editor wiring (Run/Save/Preview/Export), properties panel (Assets/History/Cost), file restructure.
+- Next target: E2E 테스트, result 페이지 구현.
 
 ## Gate
 - Validation gate: 20 real outputs completed.

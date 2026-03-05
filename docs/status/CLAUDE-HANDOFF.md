@@ -67,7 +67,7 @@ Baseline commit: `8df5a22`
 - Skill created: `.claude/skills/takdi-guide/generation/async-job-pattern/SKILL.md`.
 
 7. ~~Browser preview (VID-002)~~ — Done
-- `src/components/remotion-preview.tsx`: Client component wrapping @remotion/player.
+- `src/components/preview/remotion-preview.tsx`: Client component wrapping @remotion/player.
 - `src/app/projects/[id]/preview/page.tsx`: Server component with DB fetch + status guard.
 - Preview API route updated with complete RemotionInputProps.
 - Ratio toggle (9:16 / 1:1 / 16:9) with live composition switching.
@@ -78,10 +78,17 @@ Baseline commit: `8df5a22`
 - `export`: POST 202 + GET polling + `processExport()` background function.
 - All verified with dev server curl tests: 202 → polling → done.
 
-9. Implement UI screens
-- `/` home: start CTA, BYOI CTA, recent projects.
-- `/projects/:id/editor`: node canvas shell and stage actions.
-- `/projects/:id/result`: artifact outputs and usage summary.
+9. ~~Implement UI screens (UI-001)~~ — Done
+- Home: mode cards, BYOI CTA, recent projects.
+- Editor: 3-panel layout, floating toolbar, bottom logger, React Flow canvas.
+- Preview: Remotion player with ratio toggle.
+
+10. ~~UI-API integration (UI-002)~~ — Done
+- `src/lib/api-client.ts`: typed fetch wrappers for all 15 API endpoints.
+- `src/hooks/use-async-job.ts` + `use-logger.ts`: polling and log management hooks.
+- Editor wiring: Run All (generate→images pipeline), Save, Preview, Export, Stop.
+- Properties panel: Assets upload (image/BGM), History (live logs), Cost (usage API).
+- File move: `remotion-preview.tsx` → `src/components/preview/`.
 
 10. Align docs after each milestone
 - Update together:

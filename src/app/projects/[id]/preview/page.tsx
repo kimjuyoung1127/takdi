@@ -1,7 +1,7 @@
 /** 프로젝트 프리뷰 페이지 — Remotion Player로 영상 미리보기 */
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { RemotionPreview } from "@/components/remotion-preview";
+import { RemotionPreview } from "@/components/preview/remotion-preview";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { GenerationResultSection, CompositionId } from "@/types";

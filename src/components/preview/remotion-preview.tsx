@@ -1,3 +1,4 @@
+/** Remotion Player 래퍼 — 브라우저 프리뷰 컴포넌트 */
 "use client";
 
 import { useState } from "react";

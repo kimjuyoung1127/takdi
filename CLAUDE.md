@@ -25,6 +25,9 @@ Automation-first documentation index for Takdi.
 4. Run docs automation in `DRY_RUN=true` before real runs.
 5. Do not auto-unlock stuck lock files.
 6. Keep root documents slim; long-lived specs live in `docs/ref`.
+7. New `.ts`/`.tsx` files: add `/** brief description */` JSDoc at top.
+8. New folders: create a `CLAUDE.md` describing folder structure, files, and conventions.
+9. When adding/moving files: update the relevant folder's `CLAUDE.md`.
 
 ## Source of Truth
 - Product scope: `docs/ref/PRD.md`
