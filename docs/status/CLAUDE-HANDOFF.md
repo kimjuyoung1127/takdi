@@ -2,16 +2,20 @@
 
 Last Updated: 2026-03-05 (KST)
 Branch: `main`
-Baseline commit: `8828d88`
+Baseline commit: `3c18763`
 
 ## Current Snapshot
-- Documentation framework migration is complete.
+- Runtime bootstrap is complete:
+  - Next.js 15 + TypeScript + Prisma 6 + SQLite running locally.
+  - 9 domain models created (schema.prisma).
+  - Default user/workspace/plan seeded.
+  - Shared types and workspace-guard helper in place.
+  - `next build` and `tsc --noEmit` pass cleanly.
 - Product flow and wireframe are fixed for:
   - node main editor
   - BYOI path
   - BGM analysis gate
   - Remotion preview/render
-- No core runtime/API implementation is done yet.
 
 ## Canonical Docs (Read in Order)
 1. `docs/ref/WIREFRAME-NODE-BYOI.md`
@@ -21,9 +25,9 @@ Baseline commit: `8828d88`
 5. `docs/status/PROJECT-STATUS.md`
 
 ## Immediate Build Queue
-1. Bootstrap runtime
-- Ensure Next.js + TypeScript + Prisma + SQLite run locally.
-- Keep single-workspace guard as default runtime policy.
+1. ~~Bootstrap runtime~~ — Done
+- Next.js + TypeScript + Prisma + SQLite running locally.
+- Single-workspace guard implemented (`src/lib/workspace-guard.ts`).
 
 2. Implement data model
 - Add entities from `SCHEMA-INDEX.md`.

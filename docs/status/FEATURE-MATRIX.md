@@ -1,10 +1,11 @@
 # Feature Matrix
 
-Last Updated: 2026-03-05 (KST)
+Last Updated: 2026-03-05 (KST, bootstrap complete)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
 |---|---|---|---|---|
+| BOOT-001 | Runtime bootstrap (Next.js + Prisma + SQLite + seed) | Done | claude | 9 models, types, workspace guard |
 | CORE-001 | Workspace-scoped project CRUD | Not Started | unassigned | single workspace guard |
 | CORE-002 | Text brief input and parse entry | Not Started | unassigned | TXT/paste |
 | CORE-003 | Multi-image asset upload | Not Started | unassigned | JPG/PNG/WebP |

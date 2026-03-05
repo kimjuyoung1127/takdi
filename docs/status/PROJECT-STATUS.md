@@ -1,11 +1,11 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-05 (KST, handoff synchronized)
+Last Updated: 2026-03-05 (KST, bootstrap complete)
 
 ## Current Phase
-- Documentation migration baseline completed.
-- Next target: Phase 1 foundation (workspace-scoped CRUD and upload).
-- Handoff package for Claude implementation is ready.
+- Runtime bootstrap completed (Next.js + Prisma + SQLite + seed).
+- 9 domain tables created and seeded (default user/workspace/plan).
+- Next target: Phase 1 foundation (workspace-scoped project CRUD and API routes).
 
 ## Gate
 - Validation gate: 20 real outputs completed.
@@ -28,7 +28,7 @@ Last Updated: 2026-03-05 (KST, handoff synchronized)
   - `GET /api/usage/me`
 
 ## Next Actions
-1. Implement DB schema for `User/Workspace/Membership/Project/Asset/GenerationJob/ExportArtifact/UsageLedger/PlanCatalog`.
+1. ~~Implement DB schema~~ — Done (prisma/schema.prisma, 9 models, seed complete).
 2. Implement project APIs (`create/get/patch/generate/export`) with workspace scope guard.
 3. Implement node editor shell (`/projects/:id/editor`) and BYOI entry path.
 4. Implement `cuts/handoff`, `remotion/preview`, `remotion/render`, `remotion/status` endpoints.
