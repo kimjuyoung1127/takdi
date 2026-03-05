@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { toast } from "sonner";
 import type { Node, Edge } from "@xyflow/react";
 import { NodePalette } from "./node-palette";
 import { NodeCanvas, type NodeCanvasHandle, type NodeData } from "./node-canvas";
@@ -120,6 +121,7 @@ export function NodeEditorShell({
 
       setPipelineStep("done");
       addLog("모든 생성이 완료되었습니다! 미리보기로 확인하세요.", "info");
+      toast.success("생성 완료! 미리보기 버튼으로 결과를 확인하세요.");
     } catch (err) {
       if (!abortRef.current) {
         // Mark current step's node as failed
@@ -128,6 +130,7 @@ export function NodeEditorShell({
         const msg = err instanceof ApiError ? err.message : err instanceof Error ? err.message : "알 수 없는 오류";
         addLog(`오류: ${msg}`, "error");
         setPipelineStep("error");
+        toast.error(`생성 실패: ${msg}`);
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -152,9 +155,11 @@ export function NodeEditorShell({
         content: JSON.stringify({ nodes, edges }),
       });
       addLog("프로젝트가 저장되었습니다", "info");
+      toast.success("저장 완료");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "저장 실패";
       addLog(`저장 오류: ${msg}`, "error");
+      toast.error(`저장 실패: ${msg}`);
     } finally {
       setSaving(false);
     }
@@ -190,6 +195,7 @@ export function NodeEditorShell({
       );
       canvasRef.current?.updateNodesByType("export", { status: "exported" });
       addLog("내보내기가 완료되었습니다!", "info");
+      toast.success("내보내기 완료!");
     } catch (err) {
       canvasRef.current?.updateNodesByType("export", { status: "failed" });
       const msg = err instanceof Error ? err.message : "내보내기 실패";
