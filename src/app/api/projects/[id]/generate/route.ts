@@ -9,9 +9,11 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+  const body = await request.json().catch(() => ({}));
+  let jobId: string | null = null;
+
   try {
-    const { id } = await params;
-    const body = await request.json().catch(() => ({}));
     const workspaceId = getWorkspaceId();
 
     const project = await prisma.project.findUnique({ where: { id } });
@@ -57,6 +59,7 @@ export async function POST(
 
       return newJob;
     });
+    jobId = job.id;
 
     // Step 2: Mark job as running
     await prisma.generationJob.update({
@@ -111,6 +114,23 @@ export async function POST(
     return jsonOk({ project: updatedProject, job: updatedJob }, 201);
   } catch (error) {
     console.error("POST /api/projects/[id]/generate error:", error);
+
+    // Mark project/job as failed
+    try {
+      await prisma.project.update({
+        where: { id },
+        data: { status: "failed" },
+      });
+      if (jobId) {
+        await prisma.generationJob.update({
+          where: { id: jobId },
+          data: { status: "failed", error: String(error), doneAt: new Date() },
+        });
+      }
+    } catch {
+      // Best-effort cleanup
+    }
+
     return jsonError("Internal server error", 500);
   }
 }
