@@ -1,75 +1,19 @@
-# 탁디장 스튜디오 — 코드-문서 정합성 리포트
+# Code-Doc Integrity Report
 
-> 리포트 날짜: 2026-03-05
-> 전체 정합성 점수: **N/A** (코드 미구현)
+Last Run: 2026-03-05 14:30 KST (bootstrap)
+Result: pass (baseline initialized)
 
----
+## Validation Summary
+- status docs present: yes
+- ref docs present: yes
+- ai-context docs present: yes
+- automation prompts present: yes
+- active skills present: yes
 
-## 문서 목록 및 코드 매핑
+## Drift
+- status-model drift: 0
+- api-contract drift: 0
+- route drift: not enabled (board placeholder mode)
 
-| 문서 경로 | 최종 수정일 | 연관 코드 경로 | 정합성 |
-|-----------|-------------|----------------|--------|
-| CLAUDE.md | 2026-03-05 | - (운영 지침) | - |
-| AGENTS.md | 2026-03-05 | - (시스템 스펙) | - |
-| PLAN.md | 2026-03-05 | 전체 프로젝트 | - |
-| docs/ref/PRD.md | 미생성 | src/ 전체 | - |
-| docs/ref/ARCHITECTURE.md | 미생성 | src/ 전체 | - |
-| docs/ref/REMOTION-SPEC.md | 미생성 | src/services/video/, src/remotion/ | - |
-| docs/ref/SCHEMA-INDEX.md | 미생성 | prisma/schema.prisma | - |
-| docs/status/PROJECT-STATUS.md | 2026-03-05 | - (현황 추적) | - |
-| docs/status/FEATURE-MATRIX.md | 2026-03-05 | src/ 전체 | - |
-| docs/status/AUTOMATION-HEALTH.md | 2026-03-05 | - (자동화 추적) | - |
-| docs/status/INTEGRITY-REPORT.md | 2026-03-05 | - (이 파일) | - |
-| docs/status/NIGHTLY-RUN-LOG.md | 2026-03-05 | - (실행 로그) | - |
-
----
-
-## 검사 결과
-
-### 깨진 링크
-
-- 개수: **0**
-- 상세: 없음
-
-### 오래된 문서 경고
-
-- 개수: **0**
-- 상세: 없음
-
-### 코드 변경 미반영 문서
-
-- 개수: **0** (코드 미구현 상태이므로 해당 없음)
-
----
-
-## 정합성 점수 산출 기준
-
-| 항목 | 배점 | 설명 |
-|------|------|------|
-| 문서 존재 | 30% | PLAN.md에 정의된 문서가 실제 존재하는지 |
-| 최신성 | 30% | 연관 코드 최종 수정일 대비 문서 수정일 차이 (7일 이내 = 만점) |
-| 링크 유효성 | 20% | 문서 내 내부 링크가 유효한지 |
-| 내용 일치 | 20% | 코드 구조/API와 문서 내용이 일치하는지 (수동 검증 항목) |
-
-**점수 등급:**
-- 90~100: 우수
-- 70~89: 양호
-- 50~69: 주의 — 문서 갱신 필요
-- 50 미만: 경고 — 즉시 문서 갱신 필요
-
----
-
-## 자동 갱신 형식
-
-이 문서는 `integrity-report` 자동화 프로세스가 아래 형식으로 갱신한다.
-
-```
-## 문서 목록 및 코드 매핑
-
-| 문서 경로 | 최종 수정일 | 연관 코드 경로 | 정합성 |
-|-----------|-------------|----------------|--------|
-| {path} | {YYYY-MM-DD} | {code_paths} | {OK/WARN/FAIL} |
-```
-
-- 정합성 열: `OK` (7일 이내), `WARN` (7~30일), `FAIL` (30일 초과 또는 문서 미존재)
-- 리포트 날짜와 전체 정합성 점수는 문서 상단에 자동 갱신
+## Errors
+- none

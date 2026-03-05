@@ -1,74 +1,12 @@
-# 탁디장 스튜디오 — 자동화 프로세스 상태
+# Automation Health
 
-> 최종 갱신일: 2026-03-05
+Checked At: not yet executed
 
----
+| automation | schedule | status | lock | latest_artifact | note |
+|---|---|---|---|---|---|
+| docs-nightly-organizer | daily 22:00 KST | MISSING | LOCK_CLEAR | - | waiting first run |
+| code-doc-align | daily 21:30 KST | MISSING | LOCK_CLEAR | - | waiting first run |
+| architecture-diagrams-sync | daily 04:00 KST | MISSING | LOCK_CLEAR | - | waiting first run |
+| automation-health-monitor | daily 09:30 KST | MISSING | LOCK_CLEAR | - | waiting first run |
 
-## 등록된 자동화 프로세스
-
-| 프로세스 ID | 이름 | 설명 | 스케줄 | 상태 | 최근 실행일 |
-|-------------|------|------|--------|------|-------------|
-| docs-nightly-organizer | 야간 문서 정리 | 문서 구조 검증, 누락 문서 감지, 인덱스 갱신 | 매일 02:00 | 미설정 | - |
-| code-doc-align | 코드-문서 정합성 검사 | 코드 변경과 문서 내용 비교, 불일치 감지 | 매일 03:00 | 미설정 | - |
-| integrity-report | 정합성 리포트 생성 | INTEGRITY-REPORT.md 자동 갱신 | 매일 04:00 | 미설정 | - |
-
----
-
-## 프로세스 상태 정의
-
-| 상태 | 의미 |
-|------|------|
-| 미설정 | 아직 외부 자동화 프로그램에서 등록되지 않음 |
-| 활성 | 정상 스케줄 실행 중 |
-| 일시중지 | 수동으로 일시 중지됨 |
-| 오류 | 최근 실행 실패 — 확인 필요 |
-| 비활성 | 사용 중지됨 |
-
----
-
-## 현재 상태
-
-모든 자동화 프로세스는 **미설정** 상태이다. 외부 자동화 프로그램(Claude Code 등)에서 스케줄을 설정하면 이 문서가 갱신된다.
-
----
-
-## 프로세스 상세
-
-### docs-nightly-organizer
-
-- **목적:** docs/ 디렉토리의 문서 구조가 PLAN.md 정의와 일치하는지 검증
-- **작업 내용:**
-  - 문서 파일 존재 여부 확인
-  - 빈 문서 감지
-  - 문서 내 깨진 내부 링크 검사
-  - 결과를 NIGHTLY-RUN-LOG.md에 기록
-- **출력:** NIGHTLY-RUN-LOG.md 로그 항목
-
-### code-doc-align
-
-- **목적:** 코드 변경 사항이 관련 문서에 반영되었는지 확인
-- **작업 내용:**
-  - 최근 커밋에서 변경된 파일 목록 추출
-  - 변경된 코드 파일과 연관된 문서 파일 매핑
-  - 문서 최종 수정일이 코드 변경일보다 오래된 경우 경고
-  - 결과를 INTEGRITY-REPORT.md에 반영
-- **출력:** INTEGRITY-REPORT.md 갱신
-
-### integrity-report
-
-- **목적:** 전체 프로젝트의 코드-문서 정합성 리포트 생성
-- **작업 내용:**
-  - 전체 문서 목록 스캔
-  - 각 문서의 최종 수정일 확인
-  - 연관 코드 경로와 비교
-  - 정합성 점수 계산
-  - INTEGRITY-REPORT.md 전면 갱신
-- **출력:** INTEGRITY-REPORT.md 전면 갱신
-
----
-
-## 갱신 규칙
-
-- 자동화 프로세스가 설정/변경되면 이 문서를 즉시 갱신한다
-- 프로세스 오류 발생 시 상태를 `오류`로 변경하고 최근 실행일을 기록한다
-- 이 문서는 자동화 프로그램이 직접 갱신할 수 있다
+State enum: `HEALTHY`, `RUNNING`, `STALE`, `MISSING`, `STUCK`, `FILE_MISSING`

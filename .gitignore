@@ -23,6 +23,9 @@ uploads/*
 tmp/*
 !tmp/.gitkeep
 
+# build cache
+tsconfig.tsbuildinfo
+
 # OS
 .DS_Store
 Thumbs.db

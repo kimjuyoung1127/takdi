@@ -1,62 +1,65 @@
-# 탁디장 스튜디오 — 프로젝트 현황 대시보드
+# Takdi Project Status
 
-> 최종 갱신일: 2026-03-05
+Last Updated: 2026-03-05 (KST, UI-001 Home + Node Editor)
 
----
+## Current Phase
+- Runtime bootstrap completed.
+- All backend API routes implemented (17 endpoints, all async where applicable).
+- Brief text parser implemented (CORE-002): headings/paragraphs → structured sections.
+- Remotion composition baseline implemented (VID-001): 3 ratios (9:16, 1:1, 16:9).
+- Gemini AI generation implemented (AI-001): `@google/genai` + structured output + fallback.
+- Imagen image generation implemented (AI-002): async job + polling + file save + Asset record.
+- Browser preview implemented (VID-002): @remotion/player + preview page + ratio toggle.
+- Async conversion completed (ASYNC-001): generate, render, export routes → fire-and-forget + polling.
+- UI screens implemented (UI-001): Tailwind v4 + shadcn/ui + React Flow.
+  - Home: mode cards, BYOI CTA, recent projects list.
+  - Editor: 3-panel layout (palette + canvas + properties), floating toolbar, bottom logger.
+  - Preview: Tailwind migration from inline styles.
+  - 8 folder CLAUDE.md files, code-conventions skill.
+- Next target: real data integration (editor ↔ API 연결), E2E 테스트.
 
-## 전체 진행률
+## Gate
+- Validation gate: 20 real outputs completed.
+- Subscription expansion remains `Deferred` until gate pass.
 
-**Phase 0 진행중** (문서 작성 단계)
+## Current Strategy
+- Single-user UX first.
+- Multi-tenant-ready internal model.
+- Billing integration deferred.
 
----
+## Contract Snapshot
+- `ProjectStatus`: `draft | generating | generated | failed | exported`
+- `PlanTier`: `solo_free`
+- Core APIs (async endpoints return 202 + jobId):
+  - `POST /api/projects`
+  - `POST /api/projects/:id/generate` → 202
+  - `GET /api/projects/:id/generate?jobId=xxx` (poll)
+  - `GET /api/projects/:id`
+  - `PATCH /api/projects/:id/content`
+  - `POST /api/projects/:id/export` → 202
+  - `GET /api/projects/:id/export?jobId=xxx` (poll)
+  - `POST /api/projects/:id/remotion/render` → 202
+  - `GET /api/projects/:id/remotion/status` (poll)
+  - `GET /api/usage/me`
 
-## Phase별 상태
+## Next Actions
+1. ~~Implement DB schema~~ — Done (prisma/schema.prisma, 9 models, seed complete).
+2. ~~Implement project APIs~~ — Done (6 MVP routes with workspace scope guard, status transitions, usage ledger).
+3. ~~Implement node editor shell (`/projects/:id/editor`) and BYOI entry path~~ — Done (UI-001: Home + Editor + Preview Tailwind migration).
+4. ~~Implement cuts/handoff, remotion/preview, remotion/render, remotion/status~~ — Done (stubs with DB records).
+5. ~~Implement brief text parser (CORE-002)~~ — Done (src/services/brief-parser.ts, generate route integrated).
+6. ~~Implement Remotion composition baseline (VID-001)~~ — Done (3 compositions + entry + config).
+7. ~~Implement Gemini AI generation (AI-001)~~ — Done (gemini-generator service + generate route + fallback).
+8. ~~Implement Imagen image generation (AI-002)~~ — Done (imagen-generator + async job + polling + save-generated-image).
+9. ~~Implement browser preview (VID-002)~~ — Done (@remotion/player + preview page + ratio toggle).
+10. ~~Convert sync routes to async (ASYNC-001)~~ — Done (generate, render, export → 202 + fire-and-forget + polling).
+11. ~~Implement UI screens (UI-001)~~ — Done (Home + Editor + Preview, 20+ components, Tailwind v4 + shadcn/ui + React Flow).
+12. Keep docs synchronized using `docs/status/CLAUDE-HANDOFF.md` checklist.
 
-| Phase | 이름 | 상태 | 진행률 | 블로커 |
-|-------|------|------|--------|--------|
-| 0 | 프로젝트 부트스트랩 | In Progress | 30% | 없음 |
-| 1 | 타입 & 데이터 레이어 | Not Started | 0% | Phase 0 완료 대기 |
-| 2 | 웹 대시보드 | Not Started | 0% | Phase 1 완료 대기 |
-| 3 | 이미지 처리 | Not Started | 0% | Phase 1 완료 대기 |
-| 4 | Remotion 영상 렌더링 | Not Started | 0% | Phase 1 완료 대기 |
-| 5 | LLM (문서 분석 + 스크립트) | Not Started | 0% | Phase 1 완료 대기 |
-| 6 | 산출물 통합 | Not Started | 0% | Phase 2~5 완료 대기 |
-| 7 | 테스트 | Not Started | 0% | Phase 6 완료 대기 |
-| 8 | 배포 | Not Started | 0% | Phase 7 완료 대기 |
+## Risks
+- Scope creep into billing/team features before validation gate.
+- Drift between planning docs and API/type implementation.
 
----
-
-## 현재 블로커
-
-없음
-
----
-
-## 기술 지표
-
-| 지표 | 값 |
-|------|-----|
-| 프론트엔드 테스트 | 0 |
-| 백엔드 테스트 | 0 |
-| 컴포넌트 수 | 0 |
-| 라우트 수 | 0 |
-| Prisma 모델 | 0 (미생성) |
-| Lint 에러 | N/A |
-| 타입 에러 | N/A |
-| 테스트 커버리지 | N/A |
-
----
-
-## 다음 스텝
-
-1. Phase 0 완료 — 디렉토리 생성, 패키지 설정, 빌드 도구 구성, 문서 구조 완성
-2. Phase 0 AC 달성: `npm install && npm run dev && npm run lint && tsc --noEmit` 성공
-3. Phase 1 진행 — 타입 정의, Prisma 스키마, DB 클라이언트, 시드 데이터
-
----
-
-## 갱신 규칙
-
-- Phase 상태 변경 시 이 문서를 즉시 갱신한다
-- 블로커 발생 시 블로커 섹션에 기재하고 해당 Phase 상태를 `Blocked`로 변경한다
-- 기술 지표는 코드 구현이 시작되면 주기적으로 갱신한다
+## Drift
+- status-model drift: 0
+- api-contract drift: 0 (doc baseline)
