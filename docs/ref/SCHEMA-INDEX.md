@@ -1,6 +1,6 @@
 # Takdi Schema and API Index
 
-Last Updated: 2026-03-05 (KST, ASYNC-001 sync→async conversion)
+Last Updated: 2026-03-06 (KST, UX-005 + API contract sync)
 
 ## API Contract (Fixed for MVP)
 - `POST /api/projects`
@@ -16,8 +16,12 @@ Last Updated: 2026-03-05 (KST, ASYNC-001 sync→async conversion)
 - `POST /api/projects/:id/generate-images` — Async: returns 202 + jobId
 - `GET /api/projects/:id/generate-images?jobId=xxx` — Poll image generation job status
 
-## API Contract (Node Editor + BYOI)
+## API Contract (Assets + BYOI)
+- `POST /api/projects/:id/assets` — Image upload (FormData)
+- `POST /api/projects/:id/bgm` — BGM upload (FormData)
 - `POST /api/projects/:id/cuts/handoff`
+
+## API Contract (Remotion)
 - `POST /api/projects/:id/remotion/preview`
 - `POST /api/projects/:id/remotion/render` — Async: returns 202 + jobId
 - `GET /api/projects/:id/remotion/status` — Poll render job status

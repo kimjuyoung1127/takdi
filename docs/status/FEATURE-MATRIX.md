@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-06 (KST, UI-002 UI-API Integration)
+Last Updated: 2026-03-06 (KST, UX-005 Auto-save + Project Summary)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -21,5 +21,10 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | VID-003 | Remotion preview + render pipeline | Done | claude | preview/render/status API + async 202 render |
 | OUT-001 | Export artifact generation | Done | claude | POST /api/projects/:id/export + async 202 + polling |
 | OPS-001 | Usage ledger monthly aggregation | Done | claude | GET /api/usage/me with summary |
+| UX-001 | Korean localization + keyboard shortcuts | Done | claude | 전체 한글화, Ctrl+S/Enter/Esc, Delete 키 노드 삭제 |
+| UX-002 | Empty canvas onboarding | Done | claude | 노드 0개 시 안내 오버레이 |
+| UX-003 | Real-time node status badges | Done | claude | 파이프라인 중 노드 StatusBadge 실시간 변경 |
+| UX-004 | Toast notifications | Done | claude | sonner 토스트: 저장/생성/내보내기 성공·실패 |
+| UX-005 | Project summary + auto-save | Done | claude | 비선택 시 프로젝트 요약 + 단축키 가이드, 30초 자동 저장 |
 | BILL-001 | Billing integration | Deferred | unassigned | after gate pass |
 | TEAM-001 | Team roles and invites | Deferred | unassigned | after gate pass |

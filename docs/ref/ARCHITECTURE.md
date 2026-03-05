@@ -1,6 +1,6 @@
 # Takdi Architecture
 
-Last Updated: 2026-03-05 (KST, ASYNC-001 complete)
+Last Updated: 2026-03-06 (KST, UX-005 complete)
 
 ## Core Principle
 - UX is single-user simple.

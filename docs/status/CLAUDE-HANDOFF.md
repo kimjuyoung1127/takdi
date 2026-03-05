@@ -1,8 +1,8 @@
 # Claude Handoff
 
-Last Updated: 2026-03-05 (KST, ASYNC-001 sync→async conversion complete)
+Last Updated: 2026-03-06 (KST, UX-005 auto-save + project summary)
 Branch: `main`
-Baseline commit: `8df5a22`
+Baseline commit: `4ebedd6`
 
 ## Current Snapshot
 - All backend API routes implemented (17 endpoints, async where applicable):
@@ -21,7 +21,7 @@ Baseline commit: `8df5a22`
 - Status transitions verified: draft → generating → generated → exported.
 - UsageLedger records on generate, image_generation_start, export, render.
 - `next build` and `tsc --noEmit` pass cleanly.
-- **UI screens blocked on designer reference.**
+- **UI screens complete** with Korean localization and UX improvements (UX-001~005).
 - Product flow and wireframe are fixed for:
   - node main editor
   - BYOI path
@@ -90,7 +90,15 @@ Baseline commit: `8df5a22`
 - Properties panel: Assets upload (image/BGM), History (live logs), Cost (usage API).
 - File move: `remotion-preview.tsx` → `src/components/preview/`.
 
-10. Align docs after each milestone
+11. ~~UX improvements (UX-001~005)~~ — Done
+- UX-001: 전체 한글화 (12개 컴포넌트) + 키보드 단축키 (Ctrl+S/Enter/Esc) + Delete/Backspace 노드 삭제.
+- UX-002: 빈 캔버스 온보딩 오버레이 (노드 0개 시 안내).
+- UX-003: 파이프라인 중 노드 StatusBadge 실시간 변경 (`updateNodesByType`).
+- UX-004: sonner 토스트 알림 (저장/생성/내보내기 성공·실패).
+- UX-005: Properties 비선택 시 프로젝트 요약 + 단축키 가이드, 30초 자동 저장 + 마지막 저장 시각.
+- `src/components/ui/sonner.tsx` 추가 (shadcn sonner).
+
+12. Align docs after each milestone
 - Update together:
   - `PROJECT-STATUS.md`
   - `FEATURE-MATRIX.md`

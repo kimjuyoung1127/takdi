@@ -1,6 +1,6 @@
 # Takdi Remotion Spec
 
-Last Updated: 2026-03-05 (KST, VID-002 complete)
+Last Updated: 2026-03-06 (KST, file path fix)
 
 ## Purpose
 - Provide browser preview and server-side render for generated detail video assets.
@@ -13,7 +13,7 @@ Last Updated: 2026-03-05 (KST, VID-002 complete)
 
 ## Browser Preview (VID-002)
 - Page: `/projects/:id/preview?templateKey=9:16`
-- Component: `src/components/remotion-preview.tsx` (client, @remotion/player)
+- Component: `src/components/preview/remotion-preview.tsx` (client, @remotion/player)
 - Server page: `src/app/projects/[id]/preview/page.tsx` (DB fetch + status guard)
 - Ratio toggle: live switching between 9:16 / 1:1 / 16:9
 - Status guard: `generated` or `exported` only

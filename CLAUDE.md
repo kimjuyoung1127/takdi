@@ -3,7 +3,7 @@
 Automation-first documentation index for Takdi.
 
 ## Repo Boundary
-- Write repo: `C:\Users\ezen601\Desktop\Jason\takdi`
+- Write repo: `C:\Users\gmdqn\takdi`
 
 ## Context Loading Order
 1. `CLAUDE.md` (this file)

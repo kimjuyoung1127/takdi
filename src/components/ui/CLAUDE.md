@@ -8,7 +8,8 @@ shadcn/ui 기반 공통 UI 프리미티브.
 - `tabs.tsx` — shadcn Tabs (variant: default/line)
 - `scroll-area.tsx` — shadcn ScrollArea
 - `separator.tsx` — shadcn Separator
-- `status-badge.tsx` — 커스텀 프로젝트 상태 배지 (draft/generating/generated/exported/failed)
+- `sonner.tsx` — shadcn Sonner 토스트 알림 (sonner 래퍼)
+- `status-badge.tsx` — 커스텀 프로젝트 상태 배지 (초안/생성 중/생성 완료/내보내기 완료/실패)
 
 ## Convention
 - shadcn 컴포넌트는 `npx shadcn@latest add <name>`으로 설치

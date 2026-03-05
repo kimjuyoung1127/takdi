@@ -1,6 +1,6 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-06 (KST, UI-002 UI-API Integration)
+Last Updated: 2026-03-06 (KST, UX-005 Auto-save + Project Summary)
 
 ## Current Phase
 - Runtime bootstrap completed.
@@ -17,6 +17,12 @@ Last Updated: 2026-03-06 (KST, UI-002 UI-API Integration)
   - Preview: Tailwind migration from inline styles.
   - 8 folder CLAUDE.md files, code-conventions skill.
 - UI-API integration completed (UI-002): api-client layer, editor wiring (Run/Save/Preview/Export), properties panel (Assets/History/Cost), file restructure.
+- UX improvements completed (UX-001~005):
+  - UX-001: 전체 한글화 + 키보드 단축키 (Ctrl+S/Enter/Esc) + Delete 키 노드 삭제
+  - UX-002: 빈 캔버스 온보딩 오버레이
+  - UX-003: 파이프라인 중 노드 상태 실시간 반영 (StatusBadge 연동)
+  - UX-004: 토스트 알림 (sonner) — 저장/생성/내보내기 성공·실패
+  - UX-005: Properties 프로젝트 요약 + 단축키 가이드 + 30초 자동 저장 + 마지막 저장 시각 표시
 - Next target: E2E 테스트, result 페이지 구현.
 
 ## Gate
