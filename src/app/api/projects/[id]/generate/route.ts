@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getWorkspaceId, ensureWorkspaceScope } from "@/lib/workspace-guard";
 import { jsonOk, jsonError, jsonNotFound } from "@/lib/api-response";
 import type { GenerationResult } from "@/types";
+import { parseBrief } from "@/services/brief-parser";
 
 export async function POST(
   request: Request,
@@ -56,37 +57,32 @@ export async function POST(
       return newJob;
     });
 
-    // Step 2: Stub — simulate immediate completion
-    const stubOutput: GenerationResult = {
-      sections: [
-        {
-          headline: "Sample Headline",
-          body: "Generated content placeholder.",
-          imageSlot: "slot-1",
-          styleKey: "default",
-        },
-        {
-          headline: "Feature Highlight",
-          body: "Another placeholder section.",
-          imageSlot: "slot-2",
-          styleKey: "default",
-        },
-      ],
-    };
+    // Step 2: Parse brief text into structured sections
+    const parsedOutput = parseBrief(project.briefText ?? "");
+    const generationOutput: GenerationResult = parsedOutput.sections.length > 0
+      ? parsedOutput
+      : {
+          sections: [{
+            headline: "Untitled",
+            body: project.briefText ?? "",
+            imageSlot: "slot-1",
+            styleKey: "default",
+          }],
+        };
 
     const [updatedProject, updatedJob] = await prisma.$transaction([
       prisma.project.update({
         where: { id },
         data: {
           status: "generated",
-          content: JSON.stringify(stubOutput),
+          content: JSON.stringify(generationOutput),
         },
       }),
       prisma.generationJob.update({
         where: { id: job.id },
         data: {
           status: "done",
-          output: JSON.stringify(stubOutput),
+          output: JSON.stringify(generationOutput),
           startedAt: new Date(),
           doneAt: new Date(),
         },

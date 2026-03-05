@@ -1,8 +1,8 @@
 # Claude Handoff
 
-Last Updated: 2026-03-05 (KST)
+Last Updated: 2026-03-05 (KST, CORE-002 + VID-001 complete)
 Branch: `main`
-Baseline commit: `4c976d6`
+Baseline commit: `6602384`
 
 ## Current Snapshot
 - All backend API routes implemented (12 endpoints):
@@ -10,7 +10,9 @@ Baseline commit: `4c976d6`
   - Assets: image upload with BYOI validation, BGM upload with analysis
   - Cuts: handoff with preserveOriginal lock
   - Remotion: preview, render, status (stubs)
-- Services: byoi-validator (format/size/dimensions), bgm-analyzer (duration gate)
+- Services: byoi-validator, bgm-analyzer, **brief-parser** (headings/paragraphs → sections)
+- **Generate route now uses real brief parser** (replaces stub output).
+- **Remotion compositions created**: TakdiVideo_916/1x1/169 with entry point + config.
 - Status transitions verified: draft → generating → generated → exported.
 - UsageLedger records on generate, export, render.
 - `next build` and `tsc --noEmit` pass cleanly.
@@ -40,12 +42,18 @@ Baseline commit: `4c976d6`
 - 12 routes total: 6 MVP + assets + bgm + cuts/handoff + remotion preview/render/status.
 - All workspace-scoped with status guards and usage ledger.
 
-4. Implement UI screens
+4. ~~Brief parser + Remotion compositions~~ — Done
+- `src/services/brief-parser.ts`: 3-pass parser (split → extract → assign slots).
+- Generate route integrated: stub replaced with parseBrief().
+- `src/remotion/`: entry + Root + 3 composition components (916/1x1/169).
+- `remotion.config.ts` + package.json scripts added.
+
+5. Implement UI screens
 - `/` home: start CTA, BYOI CTA, recent projects.
 - `/projects/:id/editor`: node canvas shell and stage actions.
 - `/projects/:id/result`: artifact outputs and usage summary.
 
-5. Align docs after each milestone
+6. Align docs after each milestone
 - Update together:
   - `PROJECT-STATUS.md`
   - `FEATURE-MATRIX.md`
