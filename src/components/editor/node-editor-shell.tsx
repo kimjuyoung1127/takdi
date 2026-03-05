@@ -42,6 +42,7 @@ export function NodeEditorShell({
 
   const canvasStateRef = useRef<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const abortRef = useRef(false);
+  const stepRef = useRef<PipelineStep>("idle");
 
   const handleStateChange = useCallback((nodes: Node[], edges: Edge[]) => {
     canvasStateRef.current = { nodes, edges };
@@ -84,11 +85,13 @@ export function NodeEditorShell({
   const handleRunAll = useCallback(async () => {
     if (pipelineStep === "generating" || pipelineStep === "imaging") return;
     abortRef.current = false;
+    stepRef.current = "generating";
     setPipelineStep("generating");
     clearLogs();
 
     try {
       // Step 1: Text Generation
+      canvasRef.current?.updateNodesByType("generate", { status: "generating" });
       addLog("텍스트 생성을 시작합니다...", "info");
       const genJob = await startGenerate(projectId);
       addLog(`텍스트 생성 작업 시작됨 (${genJob.jobId.slice(0, 8)}...)`, "info");
@@ -97,11 +100,14 @@ export function NodeEditorShell({
         () => pollGenerate(projectId, genJob.jobId),
         "텍스트 생성",
       );
+      canvasRef.current?.updateNodesByType("generate", { status: "generated" });
 
       if (abortRef.current) return;
 
       // Step 2: Image Generation
+      stepRef.current = "imaging";
       setPipelineStep("imaging");
+      canvasRef.current?.updateNodesByType("generate-images", { status: "generating" });
       addLog("이미지 생성을 시작합니다...", "info");
       const imgJob = await startGenerateImages(projectId);
       addLog(`이미지 생성 작업 시작됨 (${imgJob.jobId.slice(0, 8)}...)`, "info");
@@ -110,11 +116,15 @@ export function NodeEditorShell({
         () => pollGenerateImages(projectId, imgJob.jobId),
         "이미지 생성",
       );
+      canvasRef.current?.updateNodesByType("generate-images", { status: "generated" });
 
       setPipelineStep("done");
       addLog("모든 생성이 완료되었습니다! 미리보기로 확인하세요.", "info");
     } catch (err) {
       if (!abortRef.current) {
+        // Mark current step's node as failed
+        if (stepRef.current === "generating") canvasRef.current?.updateNodesByType("generate", { status: "failed" });
+        if (stepRef.current === "imaging") canvasRef.current?.updateNodesByType("generate-images", { status: "failed" });
         const msg = err instanceof ApiError ? err.message : err instanceof Error ? err.message : "알 수 없는 오류";
         addLog(`오류: ${msg}`, "error");
         setPipelineStep("error");
@@ -170,6 +180,7 @@ export function NodeEditorShell({
     addLog("내보내기를 시작합니다...", "info");
 
     try {
+      canvasRef.current?.updateNodesByType("export", { status: "generating" });
       const job = await startExport(projectId);
       addLog(`내보내기 작업 시작됨 (${job.jobId.slice(0, 8)}...)`, "info");
 
@@ -177,8 +188,10 @@ export function NodeEditorShell({
         () => pollExport(projectId, job.jobId),
         "내보내기",
       );
+      canvasRef.current?.updateNodesByType("export", { status: "exported" });
       addLog("내보내기가 완료되었습니다!", "info");
     } catch (err) {
+      canvasRef.current?.updateNodesByType("export", { status: "failed" });
       const msg = err instanceof Error ? err.message : "내보내기 실패";
       addLog(`내보내기 오류: ${msg}`, "error");
     } finally {

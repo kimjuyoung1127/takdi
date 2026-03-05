@@ -30,6 +30,7 @@ export interface NodeData {
 
 export interface NodeCanvasHandle {
   updateNodeData: (nodeId: string, patch: Partial<NodeData>) => void;
+  updateNodesByType: (nodeType: string, patch: Partial<NodeData>) => void;
   deleteSelectedNodes: () => void;
   getNodeCount: () => number;
 }
@@ -80,6 +81,15 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
         setNodes((nds) =>
           nds.map((n) =>
             n.id === nodeId ? { ...n, data: { ...n.data, ...patch } } : n,
+          ),
+        );
+      },
+      updateNodesByType(nodeType: string, patch: Partial<NodeData>) {
+        setNodes((nds) =>
+          nds.map((n) =>
+            (n.data as NodeData).nodeType === nodeType
+              ? { ...n, data: { ...n.data, ...patch } }
+              : n,
           ),
         );
       },
