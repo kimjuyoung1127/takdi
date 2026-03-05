@@ -1,12 +1,13 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-05 (KST, CORE-002 + VID-001 complete)
+Last Updated: 2026-03-05 (KST, AI-001 Gemini complete)
 
 ## Current Phase
 - Runtime bootstrap completed.
 - All backend API routes implemented (12 endpoints, all passing).
 - Brief text parser implemented (CORE-002): headings/paragraphs → structured sections.
 - Remotion composition baseline implemented (VID-001): 3 ratios (9:16, 1:1, 16:9).
+- Gemini AI generation implemented (AI-001): `@google/genai` + structured output + fallback.
 - Next target: UI screens (blocked on design reference from designer).
 
 ## Gate
@@ -36,7 +37,8 @@ Last Updated: 2026-03-05 (KST, CORE-002 + VID-001 complete)
 4. ~~Implement cuts/handoff, remotion/preview, remotion/render, remotion/status~~ — Done (stubs with DB records).
 5. ~~Implement brief text parser (CORE-002)~~ — Done (src/services/brief-parser.ts, generate route integrated).
 6. ~~Implement Remotion composition baseline (VID-001)~~ — Done (3 compositions + entry + config).
-7. Keep docs synchronized using `docs/status/CLAUDE-HANDOFF.md` checklist.
+7. ~~Implement Gemini AI generation (AI-001)~~ — Done (gemini-generator service + generate route + fallback).
+8. Keep docs synchronized using `docs/status/CLAUDE-HANDOFF.md` checklist.
 
 ## Risks
 - Scope creep into billing/team features before validation gate.

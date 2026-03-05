@@ -1,8 +1,8 @@
 # Claude Handoff
 
-Last Updated: 2026-03-05 (KST, CORE-002 + VID-001 complete)
+Last Updated: 2026-03-05 (KST, AI-001 Gemini complete)
 Branch: `main`
-Baseline commit: `6602384`
+Baseline commit: `8df5a22`
 
 ## Current Snapshot
 - All backend API routes implemented (12 endpoints):
@@ -10,8 +10,9 @@ Baseline commit: `6602384`
   - Assets: image upload with BYOI validation, BGM upload with analysis
   - Cuts: handoff with preserveOriginal lock
   - Remotion: preview, render, status (stubs)
-- Services: byoi-validator, bgm-analyzer, **brief-parser** (headings/paragraphs → sections)
-- **Generate route now uses real brief parser** (replaces stub output).
+- Services: byoi-validator, bgm-analyzer, brief-parser, **gemini-generator**
+- **Generate route uses Gemini AI** (`@google/genai`, gemini-2.5-flash) with brief-parser fallback.
+- Client-provided API key supported (`body.apiKey` → future B2B key rotation).
 - **Remotion compositions created**: TakdiVideo_916/1x1/169 with entry point + config.
 - Status transitions verified: draft → generating → generated → exported.
 - UsageLedger records on generate, export, render.
@@ -48,12 +49,18 @@ Baseline commit: `6602384`
 - `src/remotion/`: entry + Root + 3 composition components (916/1x1/169).
 - `remotion.config.ts` + package.json scripts added.
 
-5. Implement UI screens
+5. ~~Gemini AI generation (AI-001)~~ — Done
+- `src/services/gemini-generator.ts`: @google/genai SDK, gemini-2.5-flash, structured output.
+- Generate route: Gemini → brief-parser fallback. Client apiKey supported.
+- Job status transitions: queued → running → done/failed.
+- Skill created: `.claude/skills/takdi-guide/generation/gemini-api-call/SKILL.md`.
+
+6. Implement UI screens
 - `/` home: start CTA, BYOI CTA, recent projects.
 - `/projects/:id/editor`: node canvas shell and stage actions.
 - `/projects/:id/result`: artifact outputs and usage summary.
 
-6. Align docs after each milestone
+7. Align docs after each milestone
 - Update together:
   - `PROJECT-STATUS.md`
   - `FEATURE-MATRIX.md`

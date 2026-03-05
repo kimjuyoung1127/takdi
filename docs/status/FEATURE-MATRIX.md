@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-05 (KST, CORE-002 + VID-001 complete)
+Last Updated: 2026-03-05 (KST, AI-001 Gemini complete)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -9,7 +9,7 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | CORE-001 | Workspace-scoped project CRUD | Done | claude | 6 MVP API routes, workspace guard enforced |
 | CORE-002 | Text brief input and parse entry | Done | claude | brief-parser service + generate route integration |
 | CORE-003 | Multi-image asset upload | Done | claude | POST /api/projects/:id/assets + BYOI validator |
-| AI-001 | Brief-to-sections generation | Not Started | unassigned | Ollama pipeline |
+| AI-001 | Brief-to-sections generation | Done | claude | Gemini 2.5 Flash + structured output + brief-parser fallback |
 | AI-002 | Image-slot mapping | Not Started | unassigned | per section |
 | AI-003 | Manual edit save loop | Done | claude | PATCH /api/projects/:id/content |
 | UI-001 | Node main editor canvas | Not Started | unassigned | left palette + center canvas + right panel |
