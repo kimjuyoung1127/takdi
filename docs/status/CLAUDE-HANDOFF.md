@@ -1,16 +1,16 @@
 # Claude Handoff
 
-Last Updated: 2026-03-05 (KST, VID-002 browser preview complete)
+Last Updated: 2026-03-05 (KST, ASYNC-001 sync→async conversion complete)
 Branch: `main`
 Baseline commit: `8df5a22`
 
 ## Current Snapshot
-- All backend API routes implemented (13 endpoints):
-  - MVP: projects CRUD, generate, export, usage
+- All backend API routes implemented (17 endpoints, async where applicable):
+  - MVP: projects CRUD, generate (async 202), export (async 202), usage
   - Assets: image upload with BYOI validation, BGM upload with analysis
   - Image generation: async Imagen pipeline with polling
   - Cuts: handoff with preserveOriginal lock
-  - Remotion: preview (complete), render, status (stubs)
+  - Remotion: preview (complete), render (async 202), status (poll)
 - **Browser preview page**: `/projects/:id/preview` with @remotion/player + ratio toggle.
 - Services: byoi-validator, bgm-analyzer, brief-parser, **gemini-generator**, **imagen-generator**
 - **Generate route uses Gemini AI** (`@google/genai`, gemini-2.5-flash) with brief-parser fallback.
@@ -72,12 +72,18 @@ Baseline commit: `8df5a22`
 - Preview API route updated with complete RemotionInputProps.
 - Ratio toggle (9:16 / 1:1 / 16:9) with live composition switching.
 
-8. Implement UI screens
+8. ~~Sync → Async conversion (ASYNC-001)~~ — Done
+- `generate`: POST 202 + GET polling + `processGeneration()` background function.
+- `remotion/render`: POST 202 + `processRender()` background (poll via existing `/remotion/status`).
+- `export`: POST 202 + GET polling + `processExport()` background function.
+- All verified with dev server curl tests: 202 → polling → done.
+
+9. Implement UI screens
 - `/` home: start CTA, BYOI CTA, recent projects.
 - `/projects/:id/editor`: node canvas shell and stage actions.
 - `/projects/:id/result`: artifact outputs and usage summary.
 
-9. Align docs after each milestone
+10. Align docs after each milestone
 - Update together:
   - `PROJECT-STATUS.md`
   - `FEATURE-MATRIX.md`

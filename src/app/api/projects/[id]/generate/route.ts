@@ -5,13 +5,16 @@ import type { GenerationResult } from "@/types";
 import { generateWithGemini } from "@/services/gemini-generator";
 import { parseBrief } from "@/services/brief-parser";
 
+/**
+ * POST /api/projects/:id/generate
+ * Start async text generation. Returns 202 with jobId; client polls GET for status.
+ */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
-  let jobId: string | null = null;
 
   try {
     const workspaceId = getWorkspaceId();
@@ -30,7 +33,7 @@ export async function POST(
       return jsonError("Project status must be 'draft' or 'failed' to generate", 409);
     }
 
-    // Step 1: Create job + transition to generating
+    // Create job + transition to generating
     const job = await prisma.$transaction(async (tx) => {
       await tx.project.update({
         where: { id },
@@ -59,50 +62,127 @@ export async function POST(
 
       return newJob;
     });
-    jobId = job.id;
 
-    // Step 2: Mark job as running
+    // Fire-and-forget: start background processing
+    processGeneration(job.id, id, project.briefText ?? "", {
+      apiKey: body.apiKey,
+      mode: project.mode ?? "freeform",
+    }).catch((err) => {
+      console.error("Background generation error:", err);
+    });
+
+    return jsonOk({ jobId: job.id, status: "queued" }, 202);
+  } catch (error) {
+    console.error("POST /api/projects/[id]/generate error:", error);
+    return jsonError("Internal server error", 500);
+  }
+}
+
+/**
+ * GET /api/projects/:id/generate?jobId=xxx
+ * Poll text generation job status.
+ */
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const { searchParams } = new URL(request.url);
+  const jobId = searchParams.get("jobId");
+
+  if (!jobId) {
+    return jsonError("Missing jobId query parameter", 400);
+  }
+
+  try {
+    const project = await prisma.project.findUnique({ where: { id } });
+    if (!project) return jsonNotFound("Project");
+
+    try {
+      ensureWorkspaceScope(project.workspaceId);
+    } catch {
+      return jsonError("Forbidden: workspace scope violation", 403);
+    }
+
+    const job = await prisma.generationJob.findUnique({
+      where: { id: jobId },
+    });
+
+    if (!job || job.projectId !== id) {
+      return jsonNotFound("GenerationJob");
+    }
+
+    return jsonOk({
+      job: {
+        id: job.id,
+        status: job.status,
+        provider: job.provider,
+        error: job.error,
+        startedAt: job.startedAt,
+        doneAt: job.doneAt,
+      },
+      ...(job.status === "done"
+        ? { project: { status: project.status, content: project.content } }
+        : {}),
+    });
+  } catch (error) {
+    console.error("GET /api/projects/[id]/generate error:", error);
+    return jsonError("Internal server error", 500);
+  }
+}
+
+/**
+ * Background processing: generate text sections via Gemini with brief-parser fallback.
+ */
+async function processGeneration(
+  jobId: string,
+  projectId: string,
+  briefText: string,
+  options: { apiKey?: string; mode: string }
+) {
+  try {
+    // job → running
     await prisma.generationJob.update({
-      where: { id: job.id },
+      where: { id: jobId },
       data: { status: "running", startedAt: new Date() },
     });
 
-    // Step 3: Try Gemini, fallback to brief-parser
+    // Gemini call with brief-parser fallback
     let generationOutput: GenerationResult;
     try {
-      generationOutput = await generateWithGemini(
-        project.briefText ?? "",
-        {
-          apiKey: body.apiKey,
-          mode: project.mode ?? "freeform",
-        }
-      );
+      generationOutput = await generateWithGemini(briefText, {
+        apiKey: options.apiKey,
+        mode: options.mode,
+      });
     } catch (geminiError) {
       console.warn("Gemini failed, falling back to brief-parser:", geminiError);
-      const parsed = parseBrief(project.briefText ?? "");
-      generationOutput = parsed.sections.length > 0
-        ? parsed
-        : {
-            sections: [{
-              headline: "Untitled",
-              body: project.briefText ?? "",
-              imageSlot: "slot-1",
-              styleKey: "default",
-            }],
-          };
+      const parsed = parseBrief(briefText);
+      generationOutput =
+        parsed.sections.length > 0
+          ? parsed
+          : {
+              sections: [
+                {
+                  headline: "Untitled",
+                  body: briefText,
+                  imageSlot: "slot-1",
+                  styleKey: "default",
+                },
+              ],
+            };
     }
 
-    // Step 4: Complete — save result
-    const [updatedProject, updatedJob] = await prisma.$transaction([
+    // project content save + job done
+    await prisma.$transaction([
       prisma.project.update({
-        where: { id },
+        where: { id: projectId },
         data: {
           status: "generated",
           content: JSON.stringify(generationOutput),
         },
       }),
       prisma.generationJob.update({
-        where: { id: job.id },
+        where: { id: jobId },
         data: {
           status: "done",
           output: JSON.stringify(generationOutput),
@@ -110,27 +190,14 @@ export async function POST(
         },
       }),
     ]);
-
-    return jsonOk({ project: updatedProject, job: updatedJob }, 201);
   } catch (error) {
-    console.error("POST /api/projects/[id]/generate error:", error);
-
-    // Mark project/job as failed
-    try {
-      await prisma.project.update({
-        where: { id },
-        data: { status: "failed" },
-      });
-      if (jobId) {
-        await prisma.generationJob.update({
-          where: { id: jobId },
-          data: { status: "failed", error: String(error), doneAt: new Date() },
-        });
-      }
-    } catch {
-      // Best-effort cleanup
-    }
-
-    return jsonError("Internal server error", 500);
+    // job + project failed
+    await prisma.generationJob.update({
+      where: { id: jobId },
+      data: { status: "failed", error: String(error), doneAt: new Date() },
+    });
+    await prisma.project
+      .update({ where: { id: projectId }, data: { status: "failed" } })
+      .catch(() => {});
   }
 }

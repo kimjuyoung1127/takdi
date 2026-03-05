@@ -1,6 +1,6 @@
 # Takdi Architecture
 
-Last Updated: 2026-03-05 (KST, VID-002 complete)
+Last Updated: 2026-03-05 (KST, ASYNC-001 complete)
 
 ## Core Principle
 - UX is single-user simple.
@@ -8,11 +8,12 @@ Last Updated: 2026-03-05 (KST, VID-002 complete)
 
 ## High-Level Components
 - Frontend: Next.js 15 App Router + React 19
-- API Layer: Next.js route handlers (13 endpoints)
+- API Layer: Next.js route handlers (17 endpoints, async fire-and-forget + polling)
 - Data Layer: Prisma 6 + SQLite
 - Text Generation: Gemini 2.5 Flash (`@google/genai`, structured output) + brief-parser fallback
 - Image Generation: Imagen 4.0 (`@google/genai`, async job + polling)
 - Render Layer: Remotion 4 compositions + @remotion/player browser preview
+- Async Pattern: POST → 202 + jobId, background processing, GET polling (generate, generate-images, render, export)
 
 ## Domain Model Spine
 - `User -> Membership -> Workspace`
