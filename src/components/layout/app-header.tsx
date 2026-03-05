@@ -9,7 +9,7 @@ export function AppHeader() {
       {/* Search */}
       <div className="flex items-center gap-2 rounded-xl bg-gray-50 px-4 py-2 text-sm text-gray-400">
         <Search className="h-4 w-4" />
-        <span>Search something...</span>
+        <span>검색...</span>
       </div>
 
       {/* Right */}
@@ -24,7 +24,7 @@ export function AppHeader() {
 
         <Link href="/?action=new">
           <Button className="rounded-xl bg-orange-500 px-5 text-white hover:bg-orange-600">
-            Start New Project
+            새 프로젝트
           </Button>
         </Link>
       </div>

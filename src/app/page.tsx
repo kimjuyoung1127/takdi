@@ -7,11 +7,11 @@ import { Upload } from "lucide-react";
 import Link from "next/link";
 
 const MODES = [
-  { mode: "model-shot", label: "Model Shot", description: "AI 모델 촬영" },
-  { mode: "cutout", label: "Cutout", description: "배경 제거 컷아웃" },
-  { mode: "brand-image", label: "Brand Image", description: "브랜드 이미지 생성" },
-  { mode: "gif-source", label: "GIF Source", description: "움직이는 GIF" },
-  { mode: "freeform", label: "Freeform", description: "자유 형식 생성" },
+  { mode: "model-shot", label: "모델 촬영", description: "AI 모델 촬영" },
+  { mode: "cutout", label: "컷아웃", description: "배경 제거 컷아웃" },
+  { mode: "brand-image", label: "브랜드 이미지", description: "브랜드 이미지 생성" },
+  { mode: "gif-source", label: "GIF 소스", description: "움직이는 GIF" },
+  { mode: "freeform", label: "자유 형식", description: "자유 형식 생성" },
 ];
 
 export default async function HomePage() {
@@ -33,7 +33,7 @@ export default async function HomePage() {
       {/* Hero: Mode Selection */}
       <section>
         <h1 className="mb-2 text-2xl font-bold text-gray-900">
-          Start a New Project
+          새 프로젝트 시작하기
         </h1>
         <p className="mb-6 text-sm text-gray-400">
           모드를 선택하여 상세페이지를 생성하세요
@@ -63,7 +63,7 @@ export default async function HomePage() {
       {/* Recent Projects */}
       <section className="mt-10">
         <h2 className="mb-4 text-lg font-semibold text-gray-900">
-          Recent Projects
+          최근 프로젝트
         </h2>
         <RecentProjects projects={projects} />
       </section>

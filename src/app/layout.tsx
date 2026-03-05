@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Takdi Studio",
-  description: "AI-powered e-commerce detail page generator",
+  description: "AI 기반 이커머스 상세페이지 영상 생성 도구",
 };
 
 export default function RootLayout({

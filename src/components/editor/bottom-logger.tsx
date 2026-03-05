@@ -35,7 +35,7 @@ export function BottomLogger({ logs = [] }: BottomLoggerProps) {
       <div className="flex h-10 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <Terminal className="h-3.5 w-3.5 text-gray-400" />
-          <span className="text-xs font-medium text-gray-500">Log</span>
+          <span className="text-xs font-medium text-gray-500">로그</span>
           {logs.length > 0 && (
             <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500">
               {logs.length}

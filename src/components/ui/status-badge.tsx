@@ -10,11 +10,11 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  generating: "Generating...",
-  generated: "Generated",
-  exported: "Exported",
-  failed: "Failed",
+  draft: "초안",
+  generating: "생성 중...",
+  generated: "생성 완료",
+  exported: "내보내기 완료",
+  failed: "실패",
 };
 
 interface StatusBadgeProps {

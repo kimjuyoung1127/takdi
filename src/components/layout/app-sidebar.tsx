@@ -7,9 +7,9 @@ import { Home, FolderOpen, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/", icon: Home, label: "Home" },
-  { href: "/projects", icon: FolderOpen, label: "Projects" },
-  { href: "/settings", icon: Settings, label: "Settings" },
+  { href: "/", icon: Home, label: "홈" },
+  { href: "/projects", icon: FolderOpen, label: "프로젝트" },
+  { href: "/settings", icon: Settings, label: "설정" },
 ];
 
 export function AppSidebar() {

@@ -60,7 +60,7 @@ export function RecentProjects({ projects }: RecentProjectsProps) {
                   size="sm"
                   className="rounded-xl text-xs text-gray-500 hover:text-gray-900"
                 >
-                  Resume
+                  이어서 작업
                 </Button>
               </Link>
             </div>
