@@ -83,6 +83,21 @@ export const PRODUCT_CATEGORIES: Array<{ value: string; label: string }> = [
   { value: "home", label: "홈/리빙" },
 ];
 
+/** 플랫폼 프리셋 (E1: 추가 플랫폼) */
+export const PLATFORM_PRESETS: Array<{ value: string; label: string; width: number }> = [
+  { value: "coupang", label: "쿠팡", width: 780 },
+  { value: "naver", label: "네이버", width: 860 },
+  { value: "11st", label: "11번가", width: 800 },
+  { value: "gmarket", label: "G마켓", width: 860 },
+  { value: "ssg", label: "SSG", width: 750 },
+  { value: "own", label: "자사몰 (커스텀)", width: 900 },
+];
+
+/** 플랫폼 이름 → 너비 매핑 */
+export const PLATFORM_WIDTHS: Record<string, number> = Object.fromEntries(
+  PLATFORM_PRESETS.map((p) => [p.value, p.width]),
+);
+
 /** 블록 타입 → 한글 라벨 */
 export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   hero: "메인 배너",

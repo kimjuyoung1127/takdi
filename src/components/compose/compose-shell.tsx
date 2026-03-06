@@ -5,17 +5,13 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import type { Block, BlockDocument } from "@/types/blocks";
 import { saveBlocks } from "@/lib/api-client";
+import { PLATFORM_WIDTHS } from "@/lib/constants";
 import { BlockPalette } from "./block-palette";
 import { BlockCanvas } from "./block-canvas";
 import { BlockPropertiesPanel } from "./block-properties-panel";
 import { ComposeToolbar } from "./compose-toolbar";
 import { ComposeProvider } from "./compose-context";
 import { ExportDialog } from "./export-dialog";
-
-const PLATFORM_WIDTHS: Record<string, number> = {
-  coupang: 780,
-  naver: 860,
-};
 
 interface ComposeShellProps {
   projectId: string;

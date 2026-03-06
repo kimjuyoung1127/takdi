@@ -3,6 +3,7 @@
 
 import { Save, Eye, Download, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PLATFORM_PRESETS } from "@/lib/constants";
 import Link from "next/link";
 
 interface ComposeToolbarProps {
@@ -50,8 +51,9 @@ export function ComposeToolbar({
           onChange={(e) => onPlatformChange(e.target.value)}
           className="rounded border border-gray-200 px-2 py-1 text-xs"
         >
-          <option value="coupang">쿠팡 (780px)</option>
-          <option value="naver">네이버 (860px)</option>
+          {PLATFORM_PRESETS.map((p) => (
+            <option key={p.value} value={p.value}>{p.label} ({p.width}px)</option>
+          ))}
         </select>
       </div>
 

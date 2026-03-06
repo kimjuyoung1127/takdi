@@ -127,6 +127,10 @@ Last Updated: 2026-03-06 (KST, GAP-1)
   - generate API에 `category` 파라미터 전달
   - 프롬프트 노드 속성 패널에 카테고리 드롭다운 추가
   - PipelineContext에 `category` 추가, 파이프라인 실행 시 자동 전달
+- Additional platform presets implemented (E1):
+  - 6종: 쿠팡(780), 네이버(860), 11번가(800), G마켓(860), SSG(750), 자사몰(900)
+  - `PLATFORM_PRESETS` / `PLATFORM_WIDTHS` 공유 상수 (constants.ts)
+  - compose-shell + compose-toolbar 공유 상수 참조로 전환
 - Next target: 브라우저 통합 테스트, E2E 테스트, Railway 배포.
 
 ## Gate
