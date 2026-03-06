@@ -2,7 +2,7 @@
 "use client";
 
 import type { ImageFullBlock } from "@/types/blocks";
-import { ImageUploadZone, EditableText } from "../shared";
+import { ImageUploadZone, EditableText, buildFilterStyle } from "../shared";
 
 interface Props {
   block: ImageFullBlock;
@@ -20,7 +20,7 @@ export function ImageFullBlockRenderer({ block, selected, onSelect, onUpdate, re
     >
       {readOnly ? (
         block.imageUrl ? (
-          <img src={block.imageUrl} alt="" className="w-full rounded object-cover" />
+          <img src={block.imageUrl} alt="" className="w-full rounded object-cover" style={buildFilterStyle(block.imageFilters) ? { filter: buildFilterStyle(block.imageFilters) } : undefined} />
         ) : (
           <div className="flex h-48 items-center justify-center bg-gray-50 text-gray-400">
             <p className="text-sm">전체 이미지</p>
@@ -32,6 +32,7 @@ export function ImageFullBlockRenderer({ block, selected, onSelect, onUpdate, re
           onImageChange={(url) => onUpdate({ imageUrl: url })}
           className="min-h-[192px]"
           placeholderText="전체 이미지를 업로드하세요"
+          imageFilter={buildFilterStyle(block.imageFilters)}
         />
       )}
 

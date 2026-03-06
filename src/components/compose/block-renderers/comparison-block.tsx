@@ -2,7 +2,7 @@
 "use client";
 
 import type { ComparisonBlock } from "@/types/blocks";
-import { ImageUploadZone, EditableText } from "../shared";
+import { ImageUploadZone, EditableText, buildFilterStyle } from "../shared";
 
 interface Props {
   block: ComparisonBlock;
@@ -31,7 +31,7 @@ export function ComparisonBlockRenderer({ block, selected, onSelect, onUpdate, r
           <div className="mb-2 aspect-square overflow-hidden rounded">
             {readOnly ? (
               block.before.imageUrl ? (
-                <img src={block.before.imageUrl} alt="" className="h-full w-full object-cover" />
+                <img src={block.before.imageUrl} alt="" className="h-full w-full object-cover" style={buildFilterStyle(block.imageFilters) ? { filter: buildFilterStyle(block.imageFilters) } : undefined} />
               ) : (
                 <div className="flex h-full items-center justify-center bg-gray-50 text-gray-300">
                   <p className="text-xs">Before</p>
@@ -43,6 +43,7 @@ export function ComparisonBlockRenderer({ block, selected, onSelect, onUpdate, r
                 onImageChange={(url) => onUpdate({ before: { ...block.before, imageUrl: url } })}
                 className="h-full"
                 placeholderText="Before 이미지"
+                imageFilter={buildFilterStyle(block.imageFilters)}
               />
             )}
           </div>
@@ -59,7 +60,7 @@ export function ComparisonBlockRenderer({ block, selected, onSelect, onUpdate, r
           <div className="mb-2 aspect-square overflow-hidden rounded">
             {readOnly ? (
               block.after.imageUrl ? (
-                <img src={block.after.imageUrl} alt="" className="h-full w-full object-cover" />
+                <img src={block.after.imageUrl} alt="" className="h-full w-full object-cover" style={buildFilterStyle(block.imageFilters) ? { filter: buildFilterStyle(block.imageFilters) } : undefined} />
               ) : (
                 <div className="flex h-full items-center justify-center bg-gray-50 text-gray-300">
                   <p className="text-xs">After</p>
@@ -71,6 +72,7 @@ export function ComparisonBlockRenderer({ block, selected, onSelect, onUpdate, r
                 onImageChange={(url) => onUpdate({ after: { ...block.after, imageUrl: url } })}
                 className="h-full"
                 placeholderText="After 이미지"
+                imageFilter={buildFilterStyle(block.imageFilters)}
               />
             )}
           </div>

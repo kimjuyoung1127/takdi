@@ -5,7 +5,7 @@ import type { Block } from "@/types/blocks";
 import { BLOCK_TYPE_LABELS } from "@/lib/constants";
 import { useCompose } from "./compose-context";
 import { ImagePicker } from "./image-picker";
-import { ColorStylePicker } from "./shared";
+import { ColorStylePicker, ImageFilterControls } from "./shared";
 
 interface BlockPropertiesPanelProps {
   block: Block | null;
@@ -73,6 +73,10 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
                 onImageChange={(url) => onUpdate(block.id, { imageUrl: url })}
               />
             </Field>
+            <ImageFilterControls
+              filters={block.imageFilters}
+              onChange={(f) => onUpdate(block.id, { imageFilters: f })}
+            />
           </div>
         )}
 
@@ -125,32 +129,48 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
                 onImageChange={(url) => onUpdate(block.id, { imageUrl: url })}
               />
             </Field>
+            <ImageFilterControls
+              filters={block.imageFilters}
+              onChange={(f) => onUpdate(block.id, { imageFilters: f })}
+            />
           </div>
         )}
 
         {/* image-full */}
         {block.type === "image-full" && (
-          <Field label="이미지">
-            <ImagePicker
-              projectId={projectId}
-              currentUrl={block.imageUrl}
-              onImageChange={(url) => onUpdate(block.id, { imageUrl: url })}
+          <div className="space-y-3">
+            <Field label="이미지">
+              <ImagePicker
+                projectId={projectId}
+                currentUrl={block.imageUrl}
+                onImageChange={(url) => onUpdate(block.id, { imageUrl: url })}
+              />
+            </Field>
+            <ImageFilterControls
+              filters={block.imageFilters}
+              onChange={(f) => onUpdate(block.id, { imageFilters: f })}
             />
-          </Field>
+          </div>
         )}
 
         {/* image-grid */}
         {block.type === "image-grid" && (
-          <Field label="열 수">
-            <select
-              value={block.columns}
-              onChange={(e) => onUpdate(block.id, { columns: Number(e.target.value) as 2 | 3 })}
-              className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm"
-            >
-              <option value={2}>2열</option>
-              <option value={3}>3열</option>
-            </select>
-          </Field>
+          <div className="space-y-3">
+            <Field label="열 수">
+              <select
+                value={block.columns}
+                onChange={(e) => onUpdate(block.id, { columns: Number(e.target.value) as 2 | 3 })}
+                className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm"
+              >
+                <option value={2}>2열</option>
+                <option value={3}>3열</option>
+              </select>
+            </Field>
+            <ImageFilterControls
+              filters={block.imageFilters}
+              onChange={(f) => onUpdate(block.id, { imageFilters: f })}
+            />
+          </div>
         )}
 
         {/* divider */}
@@ -213,6 +233,10 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
                 onImageChange={(url) => onUpdate(block.id, { after: { ...block.after, imageUrl: url } })}
               />
             </Field>
+            <ImageFilterControls
+              filters={block.imageFilters}
+              onChange={(f) => onUpdate(block.id, { imageFilters: f })}
+            />
           </div>
         )}
 

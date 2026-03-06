@@ -107,6 +107,12 @@ Last Updated: 2026-03-06 (KST, GAP-1)
   - `AssetGrid` 공용 컴포넌트 (썸네일 그리드, sourceType 라벨)
   - ImagePicker: "프로젝트 파일" 탭 추가 (cutout/model-shot 결과 즉시 사용)
   - ImageUploadZone: "프로젝트 파일에서 선택" 버튼 추가
+- Image quality adjustment implemented (GAP-2):
+  - `ImageFilters` type (brightness/contrast/saturate, 0–200)
+  - `ImageFilterControls` 공용 컴포넌트 (슬라이더 + 초기화)
+  - `buildFilterStyle()` CSS filter 문자열 빌더
+  - 5종 이미지 블록 적용: hero, image-full, image-text, image-grid, comparison
+  - 속성 패널에 보정 슬라이더 추가
 - Next target: 브라우저 통합 테스트, E2E 테스트, Railway 배포.
 
 ## Gate

@@ -2,7 +2,7 @@
 "use client";
 
 import type { HeroBlock as HeroBlockType } from "@/types/blocks";
-import { ImageUploadZone, EditableText } from "../shared";
+import { ImageUploadZone, EditableText, buildFilterStyle } from "../shared";
 
 interface Props {
   block: HeroBlockType;
@@ -21,7 +21,7 @@ export function HeroBlockRenderer({ block, selected, onSelect, onUpdate, readOnl
     >
       {readOnly ? (
         block.imageUrl ? (
-          <img src={block.imageUrl} alt="Hero" className="h-full w-full object-cover" style={{ minHeight: 300 }} />
+          <img src={block.imageUrl} alt="Hero" className="h-full w-full object-cover" style={{ minHeight: 300, filter: buildFilterStyle(block.imageFilters) }} />
         ) : (
           <div className="flex h-full min-h-[300px] items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100 text-gray-400">
             <p className="text-sm">히어로 이미지</p>
@@ -33,6 +33,7 @@ export function HeroBlockRenderer({ block, selected, onSelect, onUpdate, readOnl
           onImageChange={(url) => onUpdate({ imageUrl: url })}
           className="min-h-[300px]"
           placeholderText="히어로 이미지를 업로드하세요"
+          imageFilter={buildFilterStyle(block.imageFilters)}
         />
       )}
 

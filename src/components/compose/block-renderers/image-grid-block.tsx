@@ -3,7 +3,7 @@
 
 import type { ImageGridBlock } from "@/types/blocks";
 import { X, Plus } from "lucide-react";
-import { ImageUploadZone, EditableText } from "../shared";
+import { ImageUploadZone, EditableText, buildFilterStyle } from "../shared";
 
 interface Props {
   block: ImageGridBlock;
@@ -50,7 +50,7 @@ export function ImageGridBlockRenderer({ block, selected, onSelect, onUpdate, re
             <div className="aspect-square overflow-hidden rounded">
               {readOnly ? (
                 img.url ? (
-                  <img src={img.url} alt={img.caption} className="h-full w-full object-cover" />
+                  <img src={img.url} alt={img.caption} className="h-full w-full object-cover" style={buildFilterStyle(block.imageFilters) ? { filter: buildFilterStyle(block.imageFilters) } : undefined} />
                 ) : (
                   <div className="flex h-full items-center justify-center bg-gray-100 text-gray-300">
                     <p className="text-xs">이미지</p>
@@ -62,6 +62,7 @@ export function ImageGridBlockRenderer({ block, selected, onSelect, onUpdate, re
                   onImageChange={(url) => updateImage(i, { url })}
                   className="h-full"
                   placeholderText="이미지"
+                  imageFilter={buildFilterStyle(block.imageFilters)}
                 />
               )}
             </div>

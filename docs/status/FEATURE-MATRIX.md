@@ -50,7 +50,7 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | CUTOUT-FIX | Cutout + model-shot pipeline redesign | Done | claude | cutout: upload→remove-bg→export, model-shot: upload→prompt→model-compose→export, 새 노드 3종+API 2종+서비스 1종, 39 tests |
 | COMP-001 | Competitive analysis & improvement roadmap | Done | claude | 4 refs + PicCordial analysis, GAP-1/GAP-2 identified, 8 priority features, docs/ref/COMPETITIVE-ANALYSIS.md |
 | GAP-1 | Cross-mode asset sharing (cutout->compose) | Done | claude | GET /assets API + AssetGrid + ImagePicker 에셋탭 + ImageUploadZone 에셋선택 |
-| GAP-2 | Image quality adjustment/upscale | Not Started | unassigned | Priority 2: High impact, Low~Medium effort |
+| GAP-2 | Image quality adjustment (CSS filters) | Done | claude | ImageFilters type + 밝기/대비/채도 슬라이더 + 5종 이미지 블록 적용 |
 | C1 | AI background/scene compositing | Not Started | unassigned | Priority 3: Very High impact, Low effort (Kie.ai image_input exists) |
 | C2 | Background template library | Not Started | unassigned | Priority 4: High impact, Medium effort (synergy with C1) |
 | F1 | Category-aware prompts | Not Started | unassigned | Priority 5: High impact, Low effort (buildPrompt branching) |

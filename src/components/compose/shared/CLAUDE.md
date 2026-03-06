@@ -7,6 +7,7 @@
 - `video-upload-zone.tsx` — 영상/GIF 업로드 영역 (실패 시 toast 알림)
 - `color-style-picker.tsx` — 프리셋 색상/스타일 선택기
 - `asset-grid.tsx` — 프로젝트 에셋 썸네일 그리드 (getProjectAssets API 사용, sourceType 라벨 표시)
+- `image-filter-controls.tsx` — 밝기/대비/채도 CSS 필터 슬라이더 + buildFilterStyle() 헬퍼
 - `index.ts` — barrel export
 
 ## Convention

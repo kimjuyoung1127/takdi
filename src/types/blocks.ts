@@ -16,6 +16,14 @@ export type BlockType =
   | "video"
   | "cta";
 
+// ─── Image Filters ───
+
+export interface ImageFilters {
+  brightness: number; // 0–200 (default 100)
+  contrast: number;   // 0–200 (default 100)
+  saturate: number;   // 0–200 (default 100)
+}
+
 // ─── Text Overlay ───
 
 export interface TextOverlay {
@@ -43,6 +51,7 @@ export interface HeroBlock extends BaseBlock {
   type: "hero";
   imageUrl: string;
   overlays: TextOverlay[];
+  imageFilters?: ImageFilters;
 }
 
 export interface SellingPointBlock extends BaseBlock {
@@ -58,12 +67,14 @@ export interface ImageFullBlock extends BaseBlock {
   type: "image-full";
   imageUrl: string;
   overlays: TextOverlay[];
+  imageFilters?: ImageFilters;
 }
 
 export interface ImageGridBlock extends BaseBlock {
   type: "image-grid";
   images: Array<{ url: string; caption: string }>;
   columns: 2 | 3;
+  imageFilters?: ImageFilters;
 }
 
 export interface TextBlockBlock extends BaseBlock {
@@ -80,6 +91,7 @@ export interface ImageTextBlock extends BaseBlock {
   imagePosition: "left" | "right";
   heading: string;
   body: string;
+  imageFilters?: ImageFilters;
 }
 
 export interface SpecTableBlock extends BaseBlock {
@@ -93,6 +105,7 @@ export interface ComparisonBlock extends BaseBlock {
   title: string;
   before: { label: string; imageUrl: string };
   after: { label: string; imageUrl: string };
+  imageFilters?: ImageFilters;
 }
 
 export interface ReviewBlock extends BaseBlock {

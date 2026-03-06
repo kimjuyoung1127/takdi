@@ -2,7 +2,7 @@
 "use client";
 
 import type { ImageTextBlock as ImageTextBlockType } from "@/types/blocks";
-import { ImageUploadZone, EditableText } from "../shared";
+import { ImageUploadZone, EditableText, buildFilterStyle } from "../shared";
 
 interface Props {
   block: ImageTextBlockType;
@@ -16,7 +16,7 @@ export function ImageTextBlockRenderer({ block, selected, onSelect, onUpdate, re
   const imgSide = readOnly ? (
     <div className="flex aspect-square w-1/2 items-center justify-center overflow-hidden rounded-lg bg-gray-100">
       {block.imageUrl ? (
-        <img src={block.imageUrl} alt="" className="h-full w-full object-cover" />
+        <img src={block.imageUrl} alt="" className="h-full w-full object-cover" style={buildFilterStyle(block.imageFilters) ? { filter: buildFilterStyle(block.imageFilters) } : undefined} />
       ) : (
         <div className="text-center text-gray-400">
           <p className="text-xs">이미지</p>
@@ -30,6 +30,7 @@ export function ImageTextBlockRenderer({ block, selected, onSelect, onUpdate, re
         onImageChange={(url) => onUpdate({ imageUrl: url })}
         className="aspect-square"
         placeholderText="이미지 업로드"
+        imageFilter={buildFilterStyle(block.imageFilters)}
       />
     </div>
   );

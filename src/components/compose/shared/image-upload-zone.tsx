@@ -15,6 +15,7 @@ interface ImageUploadZoneProps {
   placeholderText?: string;
   aspectRatio?: string;
   objectFit?: "cover" | "contain";
+  imageFilter?: string;
 }
 
 export function ImageUploadZone({
@@ -24,6 +25,7 @@ export function ImageUploadZone({
   placeholderText = "클릭하여 이미지 업로드",
   aspectRatio,
   objectFit = "cover",
+  imageFilter,
 }: ImageUploadZoneProps) {
   const { projectId } = useCompose();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -120,6 +122,7 @@ export function ImageUploadZone({
             src={imageUrl}
             alt=""
             className={`h-full w-full ${objectFit === "contain" ? "object-contain" : "object-cover"}`}
+            style={imageFilter ? { filter: imageFilter } : undefined}
           />
           <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover/upload:opacity-100">
             <div className="flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium text-gray-700">
