@@ -25,6 +25,7 @@ interface ContextMenuState {
 }
 
 const nodeTypes = { takdi: TakdiNode };
+const MAX_HISTORY = 50;
 
 export interface NodeData {
   label: string;
@@ -86,12 +87,11 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
     const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
     // --- Undo/Redo history ---
-    const MAX_HISTORY = 50;
     const historyRef = useRef<{ nodes: Node[]; edges: Edge[] }[]>([
       { nodes: INITIAL_NODES, edges: INITIAL_EDGES },
     ]);
     const historyIndexRef = useRef(0);
-    const isUndoRedoRef = useRef(false);
+    const isUndoRedoRef = useRef(0);
 
     useImperativeHandle(ref, () => ({
       updateNodeData(nodeId: string, patch: Partial<NodeData>) {
@@ -131,8 +131,8 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
 
     // Record history snapshots (skip if caused by undo/redo)
     useEffect(() => {
-      if (isUndoRedoRef.current) {
-        isUndoRedoRef.current = false;
+      if (isUndoRedoRef.current > 0) {
+        isUndoRedoRef.current -= 1;
         return;
       }
       const snapshot = { nodes: nodes.map((n) => ({ ...n })), edges: edges.map((e) => ({ ...e })) };
@@ -156,7 +156,7 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
           const idx = historyIndexRef.current;
           if (idx > 0) {
             historyIndexRef.current = idx - 1;
-            isUndoRedoRef.current = true;
+            isUndoRedoRef.current = 2;
             const snap = historyRef.current[idx - 1];
             setNodes(snap.nodes);
             setEdges(snap.edges);
@@ -166,7 +166,7 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
           const idx = historyIndexRef.current;
           if (idx < historyRef.current.length - 1) {
             historyIndexRef.current = idx + 1;
-            isUndoRedoRef.current = true;
+            isUndoRedoRef.current = 2;
             const snap = historyRef.current[idx + 1];
             setNodes(snap.nodes);
             setEdges(snap.edges);
