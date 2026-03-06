@@ -53,7 +53,7 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | GAP-2 | Image quality adjustment (CSS filters) | Done | claude | ImageFilters type + 밝기/대비/채도 슬라이더 + 5종 이미지 블록 적용 |
 | C1 | AI background/scene compositing | Done | claude | scene-compose API + SceneComposeAction UI + 3종 이미지 블록 속성패널 적용 |
 | C2 | Background template library | Done | claude | 6카테고리 24종 장면 템플릿 + SceneComposeAction 템플릿 선택 UI |
-| F1 | Category-aware prompts | Not Started | unassigned | Priority 5: High impact, Low effort (buildPrompt branching) |
+| F1 | Category-aware prompts | Done | claude | 6종 카테고리 (패션/뷰티/식품/유아/전자/홈) + buildPrompt 분기 + 프롬프트 노드 카테고리 선택 UI |
 | E1 | Additional platform presets (11st/Gmarket/SSG) | Not Started | unassigned | Priority 6: Medium impact, Low effort |
 | A1 | Global color palette (BlockDocument.theme) | Not Started | unassigned | Priority 7: High impact, Medium effort |
 | B3 | Usage steps block (new block type) | Not Started | unassigned | Priority 8: High impact, Low effort |

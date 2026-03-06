@@ -70,6 +70,7 @@ export async function POST(
       apiKey: body.apiKey,
       mode: project.mode ?? "freeform",
       editorMode: project.editorMode ?? "flow",
+      category: body.category,
     }).catch((err) => {
       console.error("Background generation error:", err);
     });
@@ -141,7 +142,7 @@ async function processGeneration(
   jobId: string,
   projectId: string,
   briefText: string,
-  options: { apiKey?: string; mode: string; editorMode?: string }
+  options: { apiKey?: string; mode: string; editorMode?: string; category?: string }
 ) {
   try {
     // job → running
@@ -156,6 +157,7 @@ async function processGeneration(
       generationOutput = await generateWithGemini(briefText, {
         apiKey: options.apiKey,
         mode: options.mode,
+        category: options.category,
       });
     } catch (geminiError) {
       console.warn("Gemini failed, falling back to brief-parser:", geminiError);

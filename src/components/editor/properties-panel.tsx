@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AssetUpload } from "./asset-upload";
 import { STATUS_LABELS } from "@/components/ui/status-badge";
 import { fetchUsage, type UsageSummary } from "@/lib/api-client";
+import { PRODUCT_CATEGORIES } from "@/lib/constants";
 import type { LogEntry } from "@/hooks/use-logger";
 import type { NodeData } from "./node-canvas";
 
@@ -15,8 +16,6 @@ interface UploadedAsset {
   filePath: string;
   type: "image" | "bgm";
 }
-
-const RATIO_OPTIONS = ["9:16", "1:1", "16:9"];
 
 interface PropertiesPanelProps {
   selectedNodeId?: string | null;
@@ -173,26 +172,57 @@ export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataCh
               />
             </div>
 
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-500">비율</label>
-              <div className="flex gap-1.5">
-                {RATIO_OPTIONS.map((r) => (
-                  <button
-                    key={r}
-                    onClick={() =>
-                      selectedNodeId && onNodeDataChange?.(selectedNodeId, { ratio: r })
-                    }
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                      selectedNodeData?.ratio === r
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    {r}
-                  </button>
-                ))}
+            {selectedNodeData?.nodeType === "prompt" && (
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-500">상품 카테고리</label>
+                <select
+                  value={(selectedNodeData?.category as string) ?? ""}
+                  onChange={(e) =>
+                    selectedNodeId && onNodeDataChange?.(selectedNodeId, { category: e.target.value || undefined })
+                  }
+                  className="h-8 w-full rounded-md border border-gray-200 px-2 text-sm text-gray-900 focus:border-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                >
+                  <option value="">자동 (카테고리 미지정)</option>
+                  {PRODUCT_CATEGORIES.map((cat) => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[10px] text-gray-400">카테고리에 맞는 전문 카피가 생성됩니다</p>
               </div>
-            </div>
+            )}
+
+            {selectedNodeData?.nodeType === "upload-image" && projectId && (
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-500">상품 이미지</label>
+                {selectedNodeData?.uploadedAssetId ? (
+                  <div className="space-y-2">
+                    {typeof selectedNodeData?.uploadedFilePath === "string" && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={selectedNodeData.uploadedFilePath}
+                        alt="업로드된 이미지"
+                        className="h-24 w-24 rounded-lg border border-gray-200 object-cover"
+                      />
+                    )}
+                    <p className="text-[10px] text-gray-400">에셋 ID: {String(selectedNodeData.uploadedAssetId).slice(0, 8)}...</p>
+                  </div>
+                ) : (
+                  <AssetUpload
+                    projectId={projectId}
+                    onUploadComplete={(asset) => {
+                      if (selectedNodeId) {
+                        onNodeDataChange?.(selectedNodeId, {
+                          uploadedAssetId: asset.id,
+                          uploadedFilePath: asset.filePath,
+                          status: "generated",
+                          previewImages: [asset.filePath],
+                        });
+                      }
+                    }}
+                  />
+                )}
+              </div>
+            )}
 
             <div>
               <label className="text-xs font-medium text-gray-500">상태</label>

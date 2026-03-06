@@ -121,6 +121,12 @@ Last Updated: 2026-03-06 (KST, GAP-1)
 - Background template library implemented (C2):
   - `src/lib/scene-templates.ts` — 6카테고리 24종 장면 프롬프트 (스튜디오/라이프스타일/자연/시즌/미니멀/프리미엄)
   - SceneComposeAction에 카테고리 탭 + 템플릿 그리드 + 직접 입력 통합 UI
+- Category-aware prompts implemented (F1):
+  - 6종 카테고리: 패션/뷰티/식품/유아/전자/홈 (`PRODUCT_CATEGORIES`)
+  - `CATEGORY_INSTRUCTIONS` — 카테고리별 Gemini 프롬프트 가이드라인
+  - generate API에 `category` 파라미터 전달
+  - 프롬프트 노드 속성 패널에 카테고리 드롭다운 추가
+  - PipelineContext에 `category` 추가, 파이프라인 실행 시 자동 전달
 - Next target: 브라우저 통합 테스트, E2E 테스트, Railway 배포.
 
 ## Gate

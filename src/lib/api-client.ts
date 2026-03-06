@@ -94,7 +94,7 @@ export interface JobPollResponse {
   [key: string]: unknown;
 }
 
-export function startGenerate(projectId: string, opts?: { provider?: string; apiKey?: string }) {
+export function startGenerate(projectId: string, opts?: { provider?: string; apiKey?: string; category?: string }) {
   return post<AsyncJobResponse>(`/api/projects/${projectId}/generate`, opts);
 }
 

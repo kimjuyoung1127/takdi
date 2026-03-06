@@ -11,16 +11,14 @@ import { PropertiesPanel } from "./properties-panel";
 import { BottomLogger } from "./bottom-logger";
 import { useLogger } from "@/hooks/use-logger";
 import {
-  startGenerate,
-  pollGenerate,
-  startGenerateImages,
-  pollGenerateImages,
   updateContent,
   setupPreview,
   startExport,
   pollExport,
   ApiError,
+  type JobPollResponse,
 } from "@/lib/api-client";
+import { executePipeline } from "@/lib/pipeline-executor";
 import { MODE_NODE_CONFIG, DEFAULT_MODE_CONFIG } from "@/lib/constants";
 
 interface NodeEditorShellProps {
@@ -29,7 +27,7 @@ interface NodeEditorShellProps {
   mode: string;
 }
 
-type PipelineStep = "idle" | "generating" | "imaging" | "done" | "error";
+type PipelineStep = "idle" | "running" | "generating" | "imaging" | "done" | "error";
 
 export function NodeEditorShell({
   projectId,
@@ -42,13 +40,13 @@ export function NodeEditorShell({
   const [selectedNodeData, setSelectedNodeData] = useState<NodeData | null>(null);
   const canvasRef = useRef<NodeCanvasHandle>(null);
   const [pipelineStep, setPipelineStep] = useState<PipelineStep>("idle");
+  const [globalRatio, setGlobalRatio] = useState("9:16");
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   const { logs, addLog, clearLogs } = useLogger();
 
   const canvasStateRef = useRef<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const abortRef = useRef(false);
-  const stepRef = useRef<PipelineStep>("idle");
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
 
@@ -79,9 +77,9 @@ export function NodeEditorShell({
     setSelectedNodeData((prev) => prev ? { ...prev, ...patch } : null);
   }, []);
 
-  // --- Async poll helper ---
+  // --- Async poll helper (used by standalone export) ---
   async function pollUntilDone(
-    pollFn: () => Promise<{ job: { status: string; error?: string } }>,
+    pollFn: () => Promise<JobPollResponse>,
     label: string,
   ) {
     const INTERVAL = 2000;
@@ -95,58 +93,75 @@ export function NodeEditorShell({
         addLog(`${label} 완료`, "info");
         return res;
       }
-      if (status === "failed") {
-        throw new Error(error ?? `${label} 실패`);
-      }
+      if (status === "failed") throw new Error(error ?? `${label} 실패`);
     }
     throw new Error(`${label} 시간 초과`);
   }
 
-  // --- Run All: generate text → generate images (sequential pipeline) ---
+  // --- Run All: dynamic pipeline execution based on edge topology ---
   const handleRunAll = useCallback(async () => {
-    if (pipelineStep === "generating" || pipelineStep === "imaging") return;
+    if (pipelineStep === "running") return;
     abortRef.current = false;
-    stepRef.current = "generating";
-    setPipelineStep("generating");
+    setPipelineStep("running");
+    canvasRef.current?.resetEdgeGlow();
     clearLogs();
 
     try {
-      // Step 1: Prompt → Text Generation
-      canvasRef.current?.updateNodesByType("prompt", { status: "generating" });
-      addLog("프롬프트를 처리합니다...", "info");
-      const genJob = await startGenerate(projectId);
-      addLog(`텍스트 생성 작업 시작됨 (${genJob.jobId.slice(0, 8)}...)`, "info");
+      const { nodes, edges } = canvasStateRef.current;
 
-      await pollUntilDone(
-        () => pollGenerate(projectId, genJob.jobId),
-        "텍스트 생성",
-      );
-      canvasRef.current?.updateNodesByType("prompt", { status: "generated" });
+      // Extract uploadedAssetId from upload-image node (if present)
+      const uploadNode = nodes.find((n) => (n.data as NodeData).nodeType === "upload-image");
+      const uploadedAssetId = (uploadNode?.data as NodeData | undefined)?.uploadedAssetId as string | undefined;
 
-      if (abortRef.current) return;
+      // Extract category from prompt node (if set)
+      const promptNode = nodes.find((n) => (n.data as NodeData).nodeType === "prompt");
+      const category = (promptNode?.data as NodeData | undefined)?.category as string | undefined;
 
-      // Step 2: Image Generation
-      stepRef.current = "imaging";
-      setPipelineStep("imaging");
-      canvasRef.current?.updateNodesByType("generate-images", { status: "generating" });
-      addLog("이미지 생성을 시작합니다...", "info");
-      const imgJob = await startGenerateImages(projectId);
-      addLog(`이미지 생성 작업 시작됨 (${imgJob.jobId.slice(0, 8)}...)`, "info");
+      await executePipeline(projectId, nodes, edges, {
+        onStepStart: (nodeId, label) => {
+          canvasRef.current?.updateNodeData(nodeId, { status: "generating" });
+          addLog(`${label}을(를) 시작합니다...`, "info");
+        },
+        onStepDone: (nodeId, result) => {
+          const node = nodes.find((n) => n.id === nodeId);
+          const nodeType = (node?.data as NodeData)?.nodeType;
+          const patch: Partial<NodeData> = { status: "generated" };
 
-      await pollUntilDone(
-        () => pollGenerateImages(projectId, imgJob.jobId),
-        "이미지 생성",
-      );
-      canvasRef.current?.updateNodesByType("generate-images", { status: "generated" });
+          // INLINE-001: inject preview data
+          if (nodeType === "prompt") {
+            const content = (result as Record<string, unknown>).project as Record<string, unknown> | undefined;
+            const sections = (content?.content as { sections?: { headline?: string }[] })?.sections;
+            if (sections?.length) {
+              patch.previewText = sections.map((s) => s.headline).filter(Boolean).slice(0, 2).join(" / ");
+            }
+          }
+          if (nodeType === "generate-images" || nodeType === "remove-bg" || nodeType === "model-compose") {
+            const assets = (result as Record<string, unknown>).assets as { filePath?: string }[] | undefined;
+            if (assets?.length) {
+              patch.previewImages = assets.map((a) => a.filePath).filter((p): p is string => !!p);
+            }
+          }
 
-      setPipelineStep("done");
-      addLog("모든 생성이 완료되었습니다! 미리보기로 확인하세요.", "info");
-      toast.success("생성 완료! 미리보기 버튼으로 결과를 확인하세요.");
+          canvasRef.current?.updateNodeData(nodeId, patch);
+        },
+        onStepError: (nodeId, error) => {
+          canvasRef.current?.updateNodeData(nodeId, { status: "failed" });
+          addLog(`오류: ${error}`, "error");
+        },
+        onSkip: (_nodeId, reason) => addLog(reason, "warn"),
+        onEdgeActivate: (edgeId) => canvasRef.current?.setEdgeGlow(edgeId, "active"),
+        onEdgeDone: (edgeId) => canvasRef.current?.setEdgeGlow(edgeId, "done"),
+        shouldAbort: () => abortRef.current,
+        addLog,
+      }, { ratio: globalRatio, uploadedAssetId, category });
+
+      if (!abortRef.current) {
+        setPipelineStep("done");
+        addLog("모든 생성이 완료되었습니다! 미리보기로 확인하세요.", "info");
+        toast.success("생성 완료! 미리보기 버튼으로 결과를 확인하세요.");
+      }
     } catch (err) {
       if (!abortRef.current) {
-        // Mark current step's node as failed
-        if (stepRef.current === "generating") canvasRef.current?.updateNodesByType("prompt", { status: "failed" });
-        if (stepRef.current === "imaging") canvasRef.current?.updateNodesByType("generate-images", { status: "failed" });
         const msg = err instanceof ApiError ? err.message : err instanceof Error ? err.message : "알 수 없는 오류";
         addLog(`오류: ${msg}`, "error");
         setPipelineStep("error");
@@ -160,6 +175,7 @@ export function NodeEditorShell({
   const handleStop = useCallback(() => {
     abortRef.current = true;
     setPipelineStep("idle");
+    canvasRef.current?.resetEdgeGlow();
     addLog("사용자가 작업을 중단했습니다", "warn");
   }, [addLog]);
 
@@ -190,7 +206,7 @@ export function NodeEditorShell({
   const handlePreview = useCallback(async () => {
     addLog("미리보기를 준비하는 중...", "info");
     try {
-      await setupPreview(projectId, "9:16");
+      await setupPreview(projectId, globalRatio);
       window.open(`/projects/${projectId}/preview`, "_blank");
       addLog("미리보기가 새 탭에서 열렸습니다", "info");
     } catch (err) {
@@ -227,7 +243,7 @@ export function NodeEditorShell({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, exporting]);
 
-  const isRunning = pipelineStep === "generating" || pipelineStep === "imaging";
+  const isRunning = pipelineStep === "running" || pipelineStep === "generating" || pipelineStep === "imaging";
 
   // --- Inline project name edit ---
   const handleNameBlur = useCallback(async () => {
@@ -305,6 +321,8 @@ export function NodeEditorShell({
         <FloatingToolbar
           projectId={projectId}
           mode={mode}
+          ratio={globalRatio}
+          onRatioChange={setGlobalRatio}
           onRunAll={handleRunAll}
           onStop={handleStop}
           onSave={handleSave}
@@ -323,7 +341,6 @@ export function NodeEditorShell({
           mode={mode}
           onStateChange={handleStateChange}
           onNodeSelect={handleNodeSelect}
-          isRunning={isRunning}
         />
         <BottomLogger logs={logs} />
       </div>

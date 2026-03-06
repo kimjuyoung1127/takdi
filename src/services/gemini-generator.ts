@@ -27,6 +27,7 @@ export interface GeminiGenerateOptions {
   apiKey?: string;
   mode?: string;
   maxSections?: number;
+  category?: string;
 }
 
 /**
@@ -43,7 +44,7 @@ export async function generateWithGemini(
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const prompt = buildPrompt(briefText, options?.mode, options?.maxSections);
+  const prompt = buildPrompt(briefText, options?.mode, options?.maxSections, options?.category);
 
   const response = await callWithRetry(async () => {
     return ai.models.generateContent({
@@ -71,16 +72,56 @@ export async function generateWithGemini(
   return parsed;
 }
 
-/** Build prompt from brief text and mode. Generic placeholder — refine per mode after UI is finalized. */
+const CATEGORY_INSTRUCTIONS: Record<string, string> = {
+  fashion: [
+    "- Emphasize material quality, fit, and styling tips.",
+    "- Include size/measurement guidance in body text.",
+    "- Use lifestyle-oriented, aspirational language.",
+    "- Suggest outfit coordination ideas.",
+  ].join("\n"),
+  beauty: [
+    "- Highlight key ingredients and their benefits.",
+    "- Include usage steps and recommended routine.",
+    "- Use scientific yet accessible language.",
+    "- Mention skin type suitability.",
+  ].join("\n"),
+  food: [
+    "- Emphasize taste, freshness, and origin.",
+    "- Include storage and serving suggestions.",
+    "- Use sensory language (taste, aroma, texture).",
+    "- Mention nutritional highlights if relevant.",
+  ].join("\n"),
+  baby: [
+    "- Prioritize safety certifications and materials.",
+    "- Use warm, reassuring parent-friendly language.",
+    "- Include age/stage suitability information.",
+    "- Mention wash/care instructions.",
+  ].join("\n"),
+  electronics: [
+    "- Lead with key specs and performance metrics.",
+    "- Compare with previous generation if applicable.",
+    "- Include compatibility and setup information.",
+    "- Use clear, technical yet accessible language.",
+  ].join("\n"),
+  home: [
+    "- Emphasize dimensions, materials, and assembly.",
+    "- Include room/space suitability suggestions.",
+    "- Mention maintenance and care tips.",
+    "- Use cozy, lifestyle-oriented language.",
+  ].join("\n"),
+};
+
 function buildPrompt(
   briefText: string,
   mode?: string,
-  maxSections?: number
+  maxSections?: number,
+  category?: string,
 ): string {
   const sectionCount = maxSections ?? 5;
   const modeLabel = mode ?? "freeform";
+  const categoryInstructions = category ? CATEGORY_INSTRUCTIONS[category] : undefined;
 
-  return [
+  const lines = [
     "You are an e-commerce product detail page content specialist.",
     "Analyze the provided product brief and structure it into detail page sections.",
     "",
@@ -89,10 +130,15 @@ function buildPrompt(
     "- Each section must have: headline (concise, attention-grabbing), body (persuasive copy, 50-150 chars), imageSlot (slot-1, slot-2, ...), styleKey (\"default\").",
     "- Write in the same language as the brief text.",
     `- Content mode: ${modeLabel}`,
-    "",
-    "Product brief:",
-    briefText,
-  ].join("\n");
+  ];
+
+  if (categoryInstructions) {
+    lines.push("", `Category-specific guidelines (${category}):`, categoryInstructions);
+  }
+
+  lines.push("", "Product brief:", briefText);
+
+  return lines.join("\n");
 }
 
 /** Retry once on rate limit (429). */

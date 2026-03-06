@@ -3,7 +3,7 @@
 import type { BlockType } from "@/types/blocks";
 
 /** 플로우 에디터 노드 타입 */
-export type FlowNodeType = "prompt" | "generate-images" | "bgm" | "cuts" | "render" | "export";
+export type FlowNodeType = "prompt" | "generate-images" | "bgm" | "cuts" | "render" | "export" | "upload-image" | "remove-bg" | "model-compose";
 
 /** 모드별 허용 노드 + 초기 파이프라인 설정 */
 export interface ModeNodeConfig {
@@ -18,12 +18,12 @@ export const MODE_NODE_CONFIG: Record<string, ModeNodeConfig> = {
     initialPipeline: ["prompt", "generate-images", "export"],
   },
   cutout: {
-    allowedNodes: ["prompt", "generate-images", "export"],
-    initialPipeline: ["prompt", "generate-images", "export"],
+    allowedNodes: ["upload-image", "remove-bg", "export"],
+    initialPipeline: ["upload-image", "remove-bg", "export"],
   },
   "model-shot": {
-    allowedNodes: ["prompt", "generate-images", "export"],
-    initialPipeline: ["prompt", "generate-images", "export"],
+    allowedNodes: ["upload-image", "prompt", "model-compose", "export"],
+    initialPipeline: ["upload-image", "prompt", "model-compose", "export"],
   },
   "gif-source": {
     allowedNodes: ["prompt", "generate-images", "render", "export"],
@@ -45,6 +45,9 @@ export const NODE_TYPE_LABELS: Record<FlowNodeType, string> = {
   cuts: "장면 편집",
   render: "영상/GIF 만들기",
   export: "내보내기",
+  "upload-image": "이미지 업로드",
+  "remove-bg": "배경 제거",
+  "model-compose": "모델 합성",
 };
 
 /** 노드 타입 → 설명 */
@@ -55,6 +58,9 @@ export const NODE_TYPE_DESCS: Record<FlowNodeType, string> = {
   cuts: "장면 순서와 전환을 편집합니다",
   render: "영상/GIF를 합성합니다",
   export: "최종 파일을 출력합니다",
+  "upload-image": "상품 이미지를 업로드합니다",
+  "remove-bg": "배경을 자동으로 제거합니다",
+  "model-compose": "AI 모델 착용 이미지를 합성합니다",
 };
 
 /** 프로젝트 모드 → 한글 라벨 */
@@ -66,6 +72,16 @@ export const MODE_LABELS: Record<string, string> = {
   "gif-source": "GIF",
   freeform: "자유 형식",
 };
+
+/** 상품 카테고리 → 라벨 (F1: 카테고리별 프롬프트) */
+export const PRODUCT_CATEGORIES: Array<{ value: string; label: string }> = [
+  { value: "fashion", label: "패션/의류" },
+  { value: "beauty", label: "뷰티/스킨케어" },
+  { value: "food", label: "식품/음료" },
+  { value: "baby", label: "유아/아동" },
+  { value: "electronics", label: "전자/가전" },
+  { value: "home", label: "홈/리빙" },
+];
 
 /** 블록 타입 → 한글 라벨 */
 export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
