@@ -113,6 +113,11 @@ Last Updated: 2026-03-06 (KST, GAP-1)
   - `buildFilterStyle()` CSS filter 문자열 빌더
   - 5종 이미지 블록 적용: hero, image-full, image-text, image-grid, comparison
   - 속성 패널에 보정 슬라이더 추가
+- AI scene compositing implemented (C1):
+  - `POST/GET /api/projects/:id/scene-compose` — 이미지 URL + 장면 프롬프트 → Kie.ai 합성
+  - `startSceneCompose`/`pollSceneCompose` api-client 함수
+  - `SceneComposeAction` 공용 컴포넌트 (프롬프트 입력 + 비동기 폴링)
+  - hero, image-full, image-text 블록 속성패널에 "AI 배경 합성" 버튼 추가
 - Next target: 브라우저 통합 테스트, E2E 테스트, Railway 배포.
 
 ## Gate

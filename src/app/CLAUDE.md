@@ -19,6 +19,9 @@ Next.js App Router 루트 — 페이지 + API routes.
 - `api/projects/[id]/generate/` — 텍스트 생성 (비동기)
 - `api/projects/[id]/generate-images/` — 이미지 생성
 - `api/projects/[id]/remotion/render/` — 렌더링 (비동기)
+- `api/projects/[id]/remove-bg/` — 배경 제거 (비동기, Kie.ai recraft/remove-background)
+- `api/projects/[id]/model-compose/` — 모델 합성 (비동기, Nano Banana 2 + image_input)
+- `api/projects/[id]/scene-compose/` — AI 배경 합성 (비동기, Nano Banana 2 + imageUrl + scenePrompt)
 - `api/projects/[id]/export/` — 내보내기 (비동기)
 
 ## Convention

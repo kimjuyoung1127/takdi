@@ -169,6 +169,19 @@ export function pollModelCompose(projectId: string, jobId: string) {
   return get<JobPollResponse>(`/api/projects/${projectId}/model-compose?jobId=${jobId}`);
 }
 
+// --- Scene Compose ---
+
+export function startSceneCompose(
+  projectId: string,
+  opts: { imageUrl: string; scenePrompt: string; aspectRatio?: string },
+) {
+  return post<AsyncJobResponse>(`/api/projects/${projectId}/scene-compose`, opts);
+}
+
+export function pollSceneCompose(projectId: string, jobId: string) {
+  return get<JobPollResponse>(`/api/projects/${projectId}/scene-compose?jobId=${jobId}`);
+}
+
 // --- Assets ---
 
 export interface AssetRecord {

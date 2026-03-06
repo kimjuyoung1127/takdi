@@ -5,7 +5,7 @@ import type { Block } from "@/types/blocks";
 import { BLOCK_TYPE_LABELS } from "@/lib/constants";
 import { useCompose } from "./compose-context";
 import { ImagePicker } from "./image-picker";
-import { ColorStylePicker, ImageFilterControls } from "./shared";
+import { ColorStylePicker, ImageFilterControls, SceneComposeAction } from "./shared";
 
 interface BlockPropertiesPanelProps {
   block: Block | null;
@@ -77,6 +77,11 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
               filters={block.imageFilters}
               onChange={(f) => onUpdate(block.id, { imageFilters: f })}
             />
+            <SceneComposeAction
+              projectId={projectId}
+              imageUrl={block.imageUrl}
+              onImageChange={(url) => onUpdate(block.id, { imageUrl: url })}
+            />
           </div>
         )}
 
@@ -133,6 +138,11 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
               filters={block.imageFilters}
               onChange={(f) => onUpdate(block.id, { imageFilters: f })}
             />
+            <SceneComposeAction
+              projectId={projectId}
+              imageUrl={block.imageUrl}
+              onImageChange={(url) => onUpdate(block.id, { imageUrl: url })}
+            />
           </div>
         )}
 
@@ -149,6 +159,11 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
             <ImageFilterControls
               filters={block.imageFilters}
               onChange={(f) => onUpdate(block.id, { imageFilters: f })}
+            />
+            <SceneComposeAction
+              projectId={projectId}
+              imageUrl={block.imageUrl}
+              onImageChange={(url) => onUpdate(block.id, { imageUrl: url })}
             />
           </div>
         )}
