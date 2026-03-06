@@ -84,6 +84,14 @@ export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataCh
               <span>노드 삭제</span>
               <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Delete</kbd>
             </div>
+            <div className="flex justify-between">
+              <span>실행 취소</span>
+              <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Ctrl+Z</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>다시 실행</span>
+              <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Ctrl+Shift+Z</kbd>
+            </div>
           </div>
         </div>
 

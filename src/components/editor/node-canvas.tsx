@@ -85,6 +85,14 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
     const [edges, setEdges, onEdgesChange] = useEdgesState(INITIAL_EDGES);
     const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
+    // --- Undo/Redo history ---
+    const MAX_HISTORY = 50;
+    const historyRef = useRef<{ nodes: Node[]; edges: Edge[] }[]>([
+      { nodes: INITIAL_NODES, edges: INITIAL_EDGES },
+    ]);
+    const historyIndexRef = useRef(0);
+    const isUndoRedoRef = useRef(false);
+
     useImperativeHandle(ref, () => ({
       updateNodeData(nodeId: string, patch: Partial<NodeData>) {
         setNodes((nds) =>
@@ -120,6 +128,54 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
     useEffect(() => {
       setEdges((eds) => eds.map((e) => ({ ...e, animated: !!isRunning })));
     }, [isRunning, setEdges]);
+
+    // Record history snapshots (skip if caused by undo/redo)
+    useEffect(() => {
+      if (isUndoRedoRef.current) {
+        isUndoRedoRef.current = false;
+        return;
+      }
+      const snapshot = { nodes: nodes.map((n) => ({ ...n })), edges: edges.map((e) => ({ ...e })) };
+      const history = historyRef.current;
+      const idx = historyIndexRef.current;
+      // Trim future history
+      historyRef.current = history.slice(0, idx + 1);
+      historyRef.current.push(snapshot);
+      if (historyRef.current.length > MAX_HISTORY) historyRef.current.shift();
+      historyIndexRef.current = historyRef.current.length - 1;
+    }, [nodes, edges]);
+
+    // Undo/Redo keyboard handler
+    useEffect(() => {
+      function onKeyDown(e: KeyboardEvent) {
+        const el = e.target as HTMLElement;
+        if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable) return;
+
+        if (e.ctrlKey && e.key === "z" && !e.shiftKey) {
+          e.preventDefault();
+          const idx = historyIndexRef.current;
+          if (idx > 0) {
+            historyIndexRef.current = idx - 1;
+            isUndoRedoRef.current = true;
+            const snap = historyRef.current[idx - 1];
+            setNodes(snap.nodes);
+            setEdges(snap.edges);
+          }
+        } else if (e.ctrlKey && e.shiftKey && e.key === "Z") {
+          e.preventDefault();
+          const idx = historyIndexRef.current;
+          if (idx < historyRef.current.length - 1) {
+            historyIndexRef.current = idx + 1;
+            isUndoRedoRef.current = true;
+            const snap = historyRef.current[idx + 1];
+            setNodes(snap.nodes);
+            setEdges(snap.edges);
+          }
+        }
+      }
+      window.addEventListener("keydown", onKeyDown);
+      return () => window.removeEventListener("keydown", onKeyDown);
+    }, [setNodes, setEdges]);
 
     // Notify parent of state changes
     useEffect(() => {
