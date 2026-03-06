@@ -15,3 +15,4 @@ Operational status documents for Takdi.
 
 ## Rule
 - Keep filenames unchanged for automation compatibility.
+- 정합성 체크 시 서브에이전트 사용 (skill: `subagent-doc-check`)

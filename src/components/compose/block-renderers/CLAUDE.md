@@ -2,7 +2,7 @@
 13종 블록 렌더러 — 개별 파일 + barrel export.
 
 ## Files
-- `index.ts` — barrel export (12종 전체)
+- `index.ts` — barrel export (13종 전체)
 - `hero-block.tsx` — 히어로 (ImageUploadZone + EditableText 오버레이)
 - `selling-point-block.tsx` — 핵심 장점 (12종 아이콘 선택 + 항목 추가/삭제, 최대 4개 안내)
 - `text-block.tsx` — 텍스트 (EditableText 제목 + 본문)
@@ -22,4 +22,5 @@
 - Props: `{ block, selected, onSelect, onUpdate, readOnly? }`
 - 블록 타입: `src/types/blocks.ts` 정의 참조
 - 선택 테두리: `border-indigo-500` / `border-transparent`
+- 새 렌더러 추가 시 서브에이전트로 기존 패턴 수집 후 작업 (skill: `subagent-pattern-collect`)
 - 새 렌더러 추가 시 `index.ts`, `block-canvas.tsx`, `block-properties-panel.tsx`, `block-palette.tsx` 동시 업데이트

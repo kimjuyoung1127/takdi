@@ -20,6 +20,8 @@ Takdi skill assets for documentation and implementation discipline.
 - Ops:
   - `pre-commit-validate` — 커밋 전 검증
   - `perf-page-check` — 페이지 로딩 성능 점검 (loading.tsx, dynamic import, 쿼리 최적화)
+  - `subagent-doc-check` — 서브에이전트 기반 문서 정합성 체크
+  - `subagent-pattern-collect` — 서브에이전트 기반 구현 패턴 수집
 
 ## Rule
 - All skills must include Trigger, Read First, Do, Validation.
