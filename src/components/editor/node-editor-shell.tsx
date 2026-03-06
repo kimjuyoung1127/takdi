@@ -33,6 +33,8 @@ export function NodeEditorShell({
   projectId,
   projectName,
 }: NodeEditorShellProps) {
+  const [name, setName] = useState(projectName);
+  const [editingName, setEditingName] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedNodeData, setSelectedNodeData] = useState<NodeData | null>(null);
   const canvasRef = useRef<NodeCanvasHandle>(null);
@@ -224,6 +226,23 @@ export function NodeEditorShell({
 
   const isRunning = pipelineStep === "generating" || pipelineStep === "imaging";
 
+  // --- Inline project name edit ---
+  const handleNameBlur = useCallback(async () => {
+    setEditingName(false);
+    const trimmed = name.trim();
+    if (!trimmed || trimmed === projectName) {
+      setName(projectName);
+      return;
+    }
+    try {
+      await updateContent(projectId, { name: trimmed });
+      toast.success("프로젝트 이름이 변경되었습니다");
+    } catch {
+      setName(projectName);
+      toast.error("이름 변경 실패");
+    }
+  }, [name, projectName, projectId]);
+
   // Cleanup auto-save timer on unmount
   useEffect(() => {
     return () => {
@@ -258,6 +277,28 @@ export function NodeEditorShell({
       <NodePalette />
 
       <div className="relative flex-1">
+        {/* Inline project name */}
+        <div className="absolute left-4 top-7 z-10">
+          {editingName ? (
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={handleNameBlur}
+              onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { setName(projectName); setEditingName(false); } }}
+              autoFocus
+              className="rounded-lg border border-indigo-300 bg-white px-2 py-1 text-sm font-semibold text-gray-900 shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-300"
+            />
+          ) : (
+            <button
+              onClick={() => setEditingName(true)}
+              className="rounded-lg px-2 py-1 text-sm font-semibold text-gray-700 transition-colors hover:bg-white hover:shadow-sm"
+              title="클릭하여 프로젝트 이름 변경"
+            >
+              {name}
+            </button>
+          )}
+        </div>
+
         <FloatingToolbar
           onRunAll={handleRunAll}
           onStop={handleStop}
@@ -286,7 +327,7 @@ export function NodeEditorShell({
         selectedNodeData={selectedNodeData}
         onNodeDataChange={handleNodeDataChange}
         projectId={projectId}
-        projectName={projectName}
+        projectName={name}
         nodeCount={canvasStateRef.current.nodes.length}
         logs={logs}
       />

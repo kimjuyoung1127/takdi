@@ -57,6 +57,7 @@ export function createProject(data: CreateProjectData) {
 // --- Content ---
 
 export interface UpdateContentData {
+  name?: string;
   content?: string;
   briefText?: string;
   mode?: string;
