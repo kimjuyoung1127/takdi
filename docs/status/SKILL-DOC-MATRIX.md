@@ -24,6 +24,11 @@ Last Updated: 2026-03-06 (KST, UX-005 complete)
 | `async-job-pattern` | implementation | `SCHEMA-INDEX`, `GenerationJob model` | async pipeline | fire-and-forget + polling + job status |
 | `code-conventions` | required | folder `CLAUDE.md`, file headers | all source | API↔FE 1:1 mapping, folder CLAUDE.md, JSDoc headers |
 
+## Domain Knowledge Skills
+| skill | tier | required_docs | target_area | acceptance |
+|---|---|---|---|---|
+| `detail-page-knowledge` | domain | `PRD`, `WIREFRAME-NODE-BYOI`, `USER-FLOW` | UI/UX, product design | UI copy follows Korean tone, blocks cover 9 standard sections, output specs match platform rules |
+
 ## Integrity Gates
 - Gate 1: `FEATURE-MATRIX` == `PROJECT-STATUS` == `SKILL-DOC-MATRIX`
 - Gate 2: route gate enabled only after real route registry exists
