@@ -1,7 +1,7 @@
 /** React Flow 기반 노드 에디터 캔버스 */
 "use client";
 
-import { useCallback, useRef, useEffect, useImperativeHandle, forwardRef } from "react";
+import { useCallback, useRef, useEffect, useImperativeHandle, forwardRef, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -15,8 +15,14 @@ import {
   type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { MousePointerClick } from "lucide-react";
+import { MousePointerClick, Copy, Trash2, RotateCcw } from "lucide-react";
 import { TakdiNode } from "./takdi-node";
+
+interface ContextMenuState {
+  nodeId: string;
+  x: number;
+  y: number;
+}
 
 const nodeTypes = { takdi: TakdiNode };
 
@@ -77,6 +83,7 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState(INITIAL_NODES);
     const [edges, setEdges, onEdgesChange] = useEdgesState(INITIAL_EDGES);
+    const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
     useImperativeHandle(ref, () => ({
       updateNodeData(nodeId: string, patch: Partial<NodeData>) {
@@ -163,7 +170,54 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
 
     const onPaneClick = useCallback(() => {
       onNodeSelect?.(null);
+      setContextMenu(null);
     }, [onNodeSelect]);
+
+    const onNodeContextMenu = useCallback(
+      (event: React.MouseEvent, node: Node) => {
+        event.preventDefault();
+        const bounds = reactFlowWrapper.current?.getBoundingClientRect();
+        setContextMenu({
+          nodeId: node.id,
+          x: event.clientX - (bounds?.left ?? 0),
+          y: event.clientY - (bounds?.top ?? 0),
+        });
+      },
+      [],
+    );
+
+    const handleDuplicate = useCallback(() => {
+      if (!contextMenu) return;
+      const source = nodes.find((n) => n.id === contextMenu.nodeId);
+      if (!source) return;
+      const newNode: Node = {
+        id: `${Date.now()}`,
+        type: "takdi",
+        position: { x: source.position.x + 50, y: source.position.y + 50 },
+        data: { ...source.data, status: "draft" },
+      };
+      setNodes((nds) => [...nds, newNode]);
+      setContextMenu(null);
+    }, [contextMenu, nodes, setNodes]);
+
+    const handleDeleteNode = useCallback(() => {
+      if (!contextMenu) return;
+      const id = contextMenu.nodeId;
+      setNodes((nds) => nds.filter((n) => n.id !== id));
+      setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
+      onNodeSelect?.(null);
+      setContextMenu(null);
+    }, [contextMenu, setNodes, setEdges, onNodeSelect]);
+
+    const handleResetStatus = useCallback(() => {
+      if (!contextMenu) return;
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === contextMenu.nodeId ? { ...n, data: { ...n.data, status: "draft" } } : n,
+        ),
+      );
+      setContextMenu(null);
+    }, [contextMenu, setNodes]);
 
     return (
       <div ref={reactFlowWrapper} className="relative h-full w-full">
@@ -177,6 +231,7 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
           onDrop={onDrop}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
+          onNodeContextMenu={onNodeContextMenu}
           nodeTypes={nodeTypes}
           deleteKeyCode={["Delete", "Backspace"]}
           fitView
@@ -191,6 +246,37 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
             className="rounded-xl border border-gray-100 bg-white/80 shadow-sm"
           />
         </ReactFlow>
+
+        {/* Context menu */}
+        {contextMenu && (
+          <div
+            className="absolute z-50 min-w-[140px] rounded-xl bg-white py-1 shadow-lg ring-1 ring-gray-200"
+            style={{ left: contextMenu.x, top: contextMenu.y }}
+          >
+            <button
+              onClick={handleDuplicate}
+              className="flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              복제
+            </button>
+            <button
+              onClick={handleResetStatus}
+              className="flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              상태 초기화
+            </button>
+            <div className="my-1 h-px bg-gray-100" />
+            <button
+              onClick={handleDeleteNode}
+              className="flex w-full items-center gap-2 px-3 py-2 text-xs text-rose-600 hover:bg-rose-50"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              삭제
+            </button>
+          </div>
+        )}
 
         {/* Empty canvas onboarding overlay */}
         {nodes.length === 0 && (
