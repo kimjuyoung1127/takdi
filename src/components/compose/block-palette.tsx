@@ -24,6 +24,7 @@ interface BlockPaletteProps {
 interface BlockTemplate {
   type: BlockType;
   label: string;
+  desc: string;
   icon: React.ElementType;
   create: () => Block;
 }
@@ -36,7 +37,8 @@ function nextId() {
 const TEMPLATES: BlockTemplate[] = [
   {
     type: "hero",
-    label: "히어로",
+    label: "메인 배너",
+    desc: "상단 메인 이미지 영역",
     icon: Crown,
     create: () => ({
       id: nextId(),
@@ -48,7 +50,8 @@ const TEMPLATES: BlockTemplate[] = [
   },
   {
     type: "selling-point",
-    label: "셀링포인트",
+    label: "핵심 장점",
+    desc: "제품의 핵심 장점을 카드로 보여줍니다",
     icon: Star,
     create: () => ({
       id: nextId(),
@@ -62,6 +65,7 @@ const TEMPLATES: BlockTemplate[] = [
   {
     type: "image-full",
     label: "전체 이미지",
+    desc: "화면 가득 이미지 한 장",
     icon: ImageIcon,
     create: () => ({
       id: nextId(),
@@ -73,7 +77,8 @@ const TEMPLATES: BlockTemplate[] = [
   },
   {
     type: "image-grid",
-    label: "이미지 그리드",
+    label: "이미지 모음",
+    desc: "여러 이미지를 격자로 배치",
     icon: Grid,
     create: () => ({
       id: nextId(),
@@ -86,6 +91,7 @@ const TEMPLATES: BlockTemplate[] = [
   {
     type: "text-block",
     label: "텍스트",
+    desc: "제목과 본문 텍스트",
     icon: Type,
     create: () => ({
       id: nextId(),
@@ -94,11 +100,13 @@ const TEMPLATES: BlockTemplate[] = [
       heading: "제목",
       body: "본문 내용을 입력하세요.",
       align: "left",
+      fontSize: "base",
     }),
   },
   {
     type: "image-text",
     label: "이미지+텍스트",
+    desc: "이미지와 설명을 나란히 배치",
     icon: Columns,
     create: () => ({
       id: nextId(),
@@ -112,7 +120,8 @@ const TEMPLATES: BlockTemplate[] = [
   },
   {
     type: "spec-table",
-    label: "스펙 테이블",
+    label: "제품 사양표",
+    desc: "제품 사양을 표로 정리",
     icon: Table,
     create: () => ({
       id: nextId(),
@@ -125,6 +134,7 @@ const TEMPLATES: BlockTemplate[] = [
   {
     type: "comparison",
     label: "비교",
+    desc: "Before & After 비교",
     icon: GitCompare,
     create: () => ({
       id: nextId(),
@@ -138,6 +148,7 @@ const TEMPLATES: BlockTemplate[] = [
   {
     type: "review",
     label: "리뷰",
+    desc: "고객 후기를 보여줍니다",
     icon: MessageSquare,
     create: () => ({
       id: nextId(),
@@ -145,11 +156,13 @@ const TEMPLATES: BlockTemplate[] = [
       visible: true,
       title: "고객 리뷰",
       reviews: [{ author: "고객", rating: 5, text: "만족합니다!" }],
+      displayStyle: "card",
     }),
   },
   {
     type: "divider",
     label: "구분선",
+    desc: "블록 사이 구분선/여백",
     icon: Minus,
     create: () => ({
       id: nextId(),
@@ -162,6 +175,7 @@ const TEMPLATES: BlockTemplate[] = [
   {
     type: "video",
     label: "영상",
+    desc: "영상 또는 GIF 삽입",
     icon: Video,
     create: () => ({
       id: nextId(),
@@ -169,11 +183,13 @@ const TEMPLATES: BlockTemplate[] = [
       visible: true,
       videoUrl: "",
       posterUrl: "",
+      mediaType: "mp4",
     }),
   },
   {
     type: "cta",
-    label: "CTA",
+    label: "구매 유도",
+    desc: "구매 버튼 + 안내 문구",
     icon: MousePointerClick,
     create: () => ({
       id: nextId(),
@@ -183,6 +199,7 @@ const TEMPLATES: BlockTemplate[] = [
       subtext: "한정 특가 진행 중",
       buttonLabel: "구매하기",
       buttonUrl: "#",
+      ctaStyle: "default",
     }),
   },
 ];
@@ -191,7 +208,7 @@ export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
   return (
     <div className="flex w-56 flex-col border-r border-gray-200 bg-white">
       <div className="border-b border-gray-100 px-4 py-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500">블록</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500">콘텐츠 블록</h2>
       </div>
       <div className="flex-1 overflow-y-auto p-2">
         <div className="grid grid-cols-2 gap-1.5">
@@ -202,6 +219,7 @@ export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
                 key={tmpl.type}
                 onClick={() => onAddBlock(tmpl.create())}
                 className="flex flex-col items-center gap-1 rounded-lg p-2.5 text-gray-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
+                title={tmpl.desc}
               >
                 <Icon className="h-5 w-5" />
                 <span className="text-[11px] leading-tight">{tmpl.label}</span>

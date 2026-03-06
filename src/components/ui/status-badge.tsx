@@ -9,12 +9,15 @@ const STATUS_STYLES: Record<string, string> = {
   failed: "bg-rose-50 text-rose-500",
 };
 
-const STATUS_LABELS: Record<string, string> = {
+export const STATUS_LABELS: Record<string, string> = {
   draft: "초안",
   generating: "생성 중...",
   generated: "생성 완료",
   exported: "내보내기 완료",
   failed: "실패",
+  running: "진행 중",
+  done: "완료",
+  error: "오류",
 };
 
 interface StatusBadgeProps {
@@ -31,7 +34,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         className
       )}
     >
-      {STATUS_LABELS[status] ?? status}
+      {STATUS_LABELS[status] ?? "알 수 없음"}
     </span>
   );
 }

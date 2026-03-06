@@ -1,6 +1,7 @@
 /** 블록 프리뷰 — readOnly 모드 블록 렌더링, 스크롤 프리뷰 */
 "use client";
 
+import { forwardRef } from "react";
 import type { Block } from "@/types/blocks";
 import {
   HeroBlockRenderer,
@@ -55,11 +56,14 @@ function ReadOnlyBlock({ block }: { block: Block }) {
   }
 }
 
-export function BlockPreview({ blocks, platformWidth }: BlockPreviewProps) {
+export const BlockPreview = forwardRef<HTMLDivElement, BlockPreviewProps>(function BlockPreview(
+  { blocks, platformWidth },
+  ref,
+) {
   const visibleBlocks = blocks.filter((b) => b.visible);
 
   return (
-    <div className="mx-auto" style={{ width: platformWidth, maxWidth: "100%" }}>
+    <div ref={ref} className="mx-auto" style={{ width: platformWidth, maxWidth: "100%" }}>
       {visibleBlocks.map((block) => (
         <div key={block.id}>
           <ReadOnlyBlock block={block} />
@@ -72,4 +76,4 @@ export function BlockPreview({ blocks, platformWidth }: BlockPreviewProps) {
       )}
     </div>
   );
-}
+});

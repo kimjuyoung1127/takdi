@@ -6,19 +6,21 @@ export async function GET() {
   try {
     const workspaceId = getWorkspaceId();
 
-    const entries = await prisma.usageLedger.findMany({
-      where: { workspaceId },
-      orderBy: { createdAt: "desc" },
-    });
+    const [totalEvents, generationCount, exportCount, costResult] = await Promise.all([
+      prisma.usageLedger.count({ where: { workspaceId } }),
+      prisma.usageLedger.count({ where: { workspaceId, eventType: "generation_start" } }),
+      prisma.usageLedger.count({ where: { workspaceId, eventType: "export_complete" } }),
+      prisma.usageLedger.aggregate({ where: { workspaceId }, _sum: { costEstimate: true } }),
+    ]);
 
     const summary = {
-      totalEvents: entries.length,
-      generationCount: entries.filter((e) => e.eventType === "generation_start").length,
-      exportCount: entries.filter((e) => e.eventType === "export_complete").length,
-      totalEstimatedCost: entries.reduce((sum, e) => sum + (e.costEstimate ?? 0), 0),
+      totalEvents,
+      generationCount,
+      exportCount,
+      totalEstimatedCost: costResult._sum.costEstimate ?? 0,
     };
 
-    return jsonOk({ workspaceId, summary, entries });
+    return jsonOk({ workspaceId, summary });
   } catch (error) {
     console.error("GET /api/usage/me error:", error);
     return jsonError("Internal server error", 500);

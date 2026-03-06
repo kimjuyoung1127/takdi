@@ -17,6 +17,12 @@ import {
 import "@xyflow/react/dist/style.css";
 import { MousePointerClick, Copy, Trash2, RotateCcw } from "lucide-react";
 import { TakdiNode } from "./takdi-node";
+import {
+  MODE_NODE_CONFIG,
+  DEFAULT_MODE_CONFIG,
+  NODE_TYPE_LABELS,
+  type FlowNodeType,
+} from "@/lib/constants";
 
 interface ContextMenuState {
   nodeId: string;
@@ -43,52 +49,51 @@ export interface NodeCanvasHandle {
   getNodeCount: () => number;
 }
 
-const INITIAL_NODES: Node[] = [
-  {
-    id: "1",
-    type: "takdi",
-    position: { x: 100, y: 100 },
-    data: { label: "텍스트 생성", nodeType: "generate", status: "draft" },
-  },
-  {
-    id: "2",
-    type: "takdi",
-    position: { x: 400, y: 80 },
-    data: {
-      label: "이미지 생성",
-      nodeType: "generate-images",
-      status: "draft",
-    },
-  },
-  {
-    id: "3",
-    type: "takdi",
-    position: { x: 700, y: 100 },
-    data: { label: "렌더링", nodeType: "render", status: "draft" },
-  },
-];
+/** 모드 기반 초기 노드/엣지 생성 + 기존 nodeType: "generate" → "prompt" 정규화 */
+function normalizeNodeType(nodeType: string): string {
+  return nodeType === "generate" ? "prompt" : nodeType;
+}
 
-const INITIAL_EDGES: Edge[] = [
-  { id: "e1-2", source: "1", target: "2" },
-  { id: "e2-3", source: "2", target: "3" },
-];
+function buildInitialNodes(mode: string): { nodes: Node[]; edges: Edge[] } {
+  const config = MODE_NODE_CONFIG[mode] ?? DEFAULT_MODE_CONFIG;
+  const pipeline = config.initialPipeline;
+  const X_START = 100;
+  const X_GAP = 300;
+
+  const nodes: Node[] = pipeline.map((type, i) => ({
+    id: `${i + 1}`,
+    type: "takdi",
+    position: { x: X_START + i * X_GAP, y: 100 },
+    data: { label: NODE_TYPE_LABELS[type], nodeType: type, status: "draft" },
+  }));
+
+  const edges: Edge[] = pipeline.slice(1).map((_, i) => ({
+    id: `e${i + 1}-${i + 2}`,
+    source: `${i + 1}`,
+    target: `${i + 2}`,
+  }));
+
+  return { nodes, edges };
+}
 
 interface NodeCanvasProps {
+  mode: string;
   onStateChange?: (nodes: Node[], edges: Edge[]) => void;
   onNodeSelect?: (nodeId: string | null, nodeData?: NodeData) => void;
   isRunning?: boolean;
 }
 
 export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
-  function NodeCanvas({ onStateChange, onNodeSelect, isRunning }, ref) {
+  function NodeCanvas({ mode, onStateChange, onNodeSelect, isRunning }, ref) {
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
-    const [nodes, setNodes, onNodesChange] = useNodesState(INITIAL_NODES);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(INITIAL_EDGES);
+    const initial = useRef(buildInitialNodes(mode));
+    const [nodes, setNodes, onNodesChange] = useNodesState(initial.current.nodes);
+    const [edges, setEdges, onEdgesChange] = useEdgesState(initial.current.edges);
     const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
     // --- Undo/Redo history ---
     const historyRef = useRef<{ nodes: Node[]; edges: Edge[] }[]>([
-      { nodes: INITIAL_NODES, edges: INITIAL_EDGES },
+      { nodes: initial.current.nodes, edges: initial.current.edges },
     ]);
     const historyIndexRef = useRef(0);
     const isUndoRedoRef = useRef(0);
@@ -339,8 +344,8 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div className="flex flex-col items-center gap-3 rounded-2xl bg-white/80 px-8 py-6 shadow-sm backdrop-blur">
               <MousePointerClick className="h-8 w-8 text-indigo-400" />
-              <p className="text-sm font-medium text-gray-600">캔버스가 비어있습니다</p>
-              <p className="text-xs text-gray-400">좌측 패널에서 노드를 드래그하여 추가하세요</p>
+              <p className="text-sm font-medium text-gray-600">작업 영역이 비어있습니다</p>
+              <p className="text-xs text-gray-400">왼쪽에서 작업 단계를 끌어다 놓으세요</p>
             </div>
           </div>
         )}

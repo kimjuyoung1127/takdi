@@ -1,10 +1,16 @@
 /** 프로젝트 프리뷰 페이지 — Remotion Player로 영상 미리보기 */
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { RemotionPreview } from "@/components/preview/remotion-preview";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { GenerationResultSection, CompositionId } from "@/types";
+import Loading from "./loading";
+
+const RemotionPreview = dynamic(
+  () => import("@/components/preview/remotion-preview").then((m) => m.RemotionPreview),
+  { loading: () => <Loading /> },
+);
 
 const TEMPLATE_TO_COMPOSITION: Record<string, CompositionId> = {
   "9:16": "TakdiVideo_916",
@@ -24,6 +30,7 @@ export default async function PreviewPage({
 
   const project = await prisma.project.findUnique({
     where: { id },
+    select: { id: true, name: true, content: true, status: true },
   });
 
   if (!project) {

@@ -13,8 +13,12 @@ interface RunningState {
 
 type PipelineStep = "idle" | "generating" | "imaging" | "done" | "error";
 
+/** 영상/GIF 파이프라인이 없는 이미지 전용 모드 */
+const IMAGE_ONLY_MODES = new Set(["brand-image", "cutout", "model-shot"]);
+
 interface FloatingToolbarProps {
   projectId?: string;
+  mode?: string;
   onRunAll?: () => void;
   onStop?: () => void;
   onSave?: () => void;
@@ -27,7 +31,7 @@ interface FloatingToolbarProps {
 
 const STEP_LABELS: Record<PipelineStep, string> = {
   idle: "",
-  generating: "1/2 텍스트 생성 중...",
+  generating: "1/2 프롬프트 처리 중...",
   imaging: "2/2 이미지 생성 중...",
   done: "생성 완료!",
   error: "오류 발생",
@@ -53,9 +57,10 @@ function Tooltip({ text, children }: { text: string; children: React.ReactNode }
   );
 }
 
-export function FloatingToolbar({ projectId, onRunAll, onStop, onSave, onPreview, onExport, runningState, pipelineStep = "idle", lastSaved }: FloatingToolbarProps) {
+export function FloatingToolbar({ projectId, mode, onRunAll, onStop, onSave, onPreview, onExport, runningState, pipelineStep = "idle", lastSaved }: FloatingToolbarProps) {
   const { isRunning, isSaving, isExporting } = runningState ?? {};
   const stepLabel = STEP_LABELS[pipelineStep];
+  const isImageOnly = IMAGE_ONLY_MODES.has(mode ?? "");
 
   return (
     <div className="absolute left-1/2 top-6 z-10 flex -translate-x-1/2 flex-col items-center gap-2">
@@ -98,7 +103,7 @@ export function FloatingToolbar({ projectId, onRunAll, onStop, onSave, onPreview
 
         <div className="mx-1 h-4 w-px bg-gray-200" />
 
-        <Tooltip text="현재 캔버스 상태를 저장합니다 (Ctrl+S)">
+        <Tooltip text="현재 작업 상태를 저장합니다 (Ctrl+S)">
           <Button
             variant="ghost"
             size="sm"
@@ -111,19 +116,21 @@ export function FloatingToolbar({ projectId, onRunAll, onStop, onSave, onPreview
           </Button>
         </Tooltip>
 
-        <Tooltip text="생성된 영상을 미리 확인합니다 (STEP 2)">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex items-center gap-1.5 rounded-full px-3 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            onClick={onPreview}
-          >
-            <Eye className="h-4 w-4" />
-            미리보기
-          </Button>
-        </Tooltip>
+        {!isImageOnly && (
+          <Tooltip text="생성된 영상을 미리 확인합니다 (2단계)">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-1.5 rounded-full px-3 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              onClick={onPreview}
+            >
+              <Eye className="h-4 w-4" />
+              미리보기
+            </Button>
+          </Tooltip>
+        )}
 
-        <Tooltip text="최종 파일을 내보냅니다 (STEP 3)">
+        <Tooltip text="최종 파일을 내보냅니다 (3단계)">
           <Button
             variant="ghost"
             size="sm"
@@ -139,7 +146,7 @@ export function FloatingToolbar({ projectId, onRunAll, onStop, onSave, onPreview
         {projectId && (
           <>
             <div className="mx-1 h-4 w-px bg-gray-200" />
-            <Tooltip text="상세페이지 블록 에디터로 이동">
+            <Tooltip text="상세페이지 편집기로 이동">
               <Link
                 href={`/projects/${projectId}/compose`}
                 className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"

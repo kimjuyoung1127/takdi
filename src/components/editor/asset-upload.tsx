@@ -98,7 +98,7 @@ export function AssetUpload({ projectId, onUploadComplete, onError }: AssetUploa
         ) : (
           <Music className="h-3.5 w-3.5" />
         )}
-        BGM 업로드
+        배경음악 업로드
       </Button>
     </div>
   );

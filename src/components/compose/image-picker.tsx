@@ -3,6 +3,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { Upload, ImageIcon, X } from "lucide-react";
+import { toast } from "sonner";
 import { uploadAsset } from "@/lib/api-client";
 
 interface ImagePickerProps {
@@ -25,7 +26,7 @@ export function ImagePicker({ projectId, currentUrl, onImageChange }: ImagePicke
         onImageChange(result.asset.filePath);
         setOpen(false);
       } catch {
-        // error silenced
+        toast.error("이미지 업로드에 실패했습니다");
       } finally {
         setUploading(false);
       }
@@ -86,7 +87,7 @@ export function ImagePicker({ projectId, currentUrl, onImageChange }: ImagePicke
       <div className="flex gap-1">
         <input
           type="text"
-          placeholder="이미지 URL 입력"
+          placeholder="이미지 웹 주소 입력"
           value={urlInput}
           onChange={(e) => setUrlInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") handleUrlSubmit(); }}

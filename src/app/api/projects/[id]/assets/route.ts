@@ -28,15 +28,25 @@ export async function POST(
 
     const sourceType = (formData.get("sourceType") as string) || "uploaded";
     const preserveOriginal = formData.get("preserveOriginal") === "true";
+    const skipValidation = formData.get("skipValidation") === "true";
 
     // Read file buffer
     const buffer = Buffer.from(await file.arrayBuffer());
     const mimeType = file.type;
 
-    // Validate image
-    const validation = validateByoiImage(buffer, mimeType);
-    if (!validation.valid) {
-      return jsonError(validation.reason || "Invalid image", 400);
+    // Validate image (skip for video/gif uploads)
+    let validationResult: { width?: number; height?: number } | null = null;
+    if (skipValidation) {
+      const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+      if (buffer.length > MAX_SIZE) {
+        return jsonError("File too large (max 50MB)", 400);
+      }
+    } else {
+      const validation = validateByoiImage(buffer, mimeType);
+      if (!validation.valid) {
+        return jsonError(validation.reason || "Invalid image", 400);
+      }
+      validationResult = { width: validation.width, height: validation.height };
     }
 
     // Save file
@@ -60,10 +70,7 @@ export async function POST(
     return jsonOk(
       {
         asset,
-        validation: {
-          width: validation.width,
-          height: validation.height,
-        },
+        validation: validationResult,
       },
       201
     );

@@ -1,8 +1,8 @@
 # Claude Handoff
 
-Last Updated: 2026-03-06 (KST, COMPOSE-001 Block Editor)
+Last Updated: 2026-03-06 (KST, MODE-001)
 Branch: `main`
-Baseline commit: `9fc29c0`
+Baseline commit: `5259a94`
 
 ## Current Snapshot
 - All backend API routes implemented (17 endpoints, async where applicable):
@@ -113,17 +113,69 @@ Baseline commit: `9fc29c0`
 - `src/app/projects/[id]/result/page.tsx`: Result preview page.
 - `src/components/compose/`: 3-panel editor shell (palette + dnd-kit canvas + properties).
   - compose-shell, compose-toolbar, block-palette, block-canvas, block-properties-panel.
-  - block-renderers/: 4 full (hero, selling-point, text-block, image-text) + 8 placeholder.
+  - block-renderers/: 12 individual files (all blocks fully editable).
+  - shared/: EditableText, ImageUploadZone, VideoUploadZone, ColorStylePicker.
+  - compose-context.tsx: ComposeProvider + useCompose() (projectId 전달).
   - text-overlay-editor: image text overlay drag editing.
   - image-picker: file upload + URL input.
   - block-preview: readOnly block rendering.
+  - Block types extended: ReviewBlock.displayStyle, VideoBlock.mediaType, CtaBlock.ctaStyle/bgColor/buttonColor.
 - Generate route: editorMode:"compose" → auto-convert sections to blocks.
 - Home page: compose mode card + updated tagline.
 - Floating toolbar: compose editor cross-navigation link.
 - prisma/schema.prisma: Project.editorMode field added.
 - npm: @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities.
 
-13. Align docs after each milestone
+13. ~~Block editor bug fix (COMPOSE-007)~~ — Done
+- `src/app/uploads/[...path]/route.ts`: 업로드 파일 정적 서빙 (path traversal 방어, MIME 자동, immutable cache).
+- `src/app/api/projects/[id]/assets/route.ts`: `skipValidation` 파라미터 → 영상/GIF 업로드 시 byoi-validator 건너뜀 (50MB 제한).
+- `src/lib/api-client.ts`: `uploadAsset` opts에 `skipValidation` 추가.
+- `src/components/compose/shared/video-upload-zone.tsx`: skipValidation=true 전달.
+- `src/components/compose/block-renderers/selling-point-block.tsx`: 아이콘 드롭다운 확대 (grid-cols-3, 라벨 텍스트).
+- `src/components/compose/block-renderers/divider-block.tsx`: unused props → `_onUpdate`/`_readOnly`.
+- `src/types/blocks.ts`: `TextBlockBlock.fontSize` 필드 추가.
+- `src/components/compose/block-renderers/text-block.tsx`: fontSize CSS 분기.
+- `src/components/compose/block-properties-panel.tsx`: 글꼴 크기 선택기 추가.
+- `src/components/compose/block-palette.tsx`: text-block 기본값 `fontSize: "base"`.
+
+14. MVP Demo deployment (DEPLOY-001) — Done
+- ngrok 터널링 (port 3003): `https://43aa-59-12-254-198.ngrok-free.app`
+- SQLite + 로컬 uploads/ 기반, dev 서버 + ngrok 두 터미널 필요.
+
+15. ~~Block image export (EXPORT-001)~~ — Done
+- `html2canvas-pro` npm 패키지 (Tailwind CSS v4 호환 클라이언트 사이드 DOM 캡처).
+- `src/lib/block-export.ts`: captureBlocksAsImage, exportToDownload, buildDefaultFilename 유틸.
+- `src/components/compose/export-dialog.tsx`: 파일명/포맷(PNG·JPG) 설정 모달 다이얼로그.
+- `src/components/compose/block-canvas.tsx`: forwardRef + exporting prop (캡처 시 DnD 핸들/InsertButton 숨김).
+- `src/components/compose/compose-shell.tsx`: exportOpen 상태 + canvasRef + ExportDialog 연동.
+- `src/components/compose/block-preview.tsx`: forwardRef 지원 (Result 페이지 캡처용).
+- `src/app/projects/[id]/result/result-view.tsx`: "이미지 다운로드" 버튼 (JPG 즉시 다운로드).
+- scale: 2 (고해상도), useCORS: true, backgroundColor: #ffffff.
+
+16. ~~UX text polish (UX-011)~~ — Done
+- 20+ 파일에서 기술 용어→사용자 친화 한글 변환 (노드→작업 단계, 에셋→파일, 캔버스→작업 영역 등).
+- `src/lib/constants.ts`: MODE_LABELS, BLOCK_TYPE_LABELS 공유 상수 추출.
+- 블록 팔레트 desc 툴팁, 에러 토스트 추가, BYOI 제거, silent error 수정.
+- status-badge.tsx: STATUS_LABELS export + 노드 상태 추가.
+
+17. ~~Page loading performance (PERF-001)~~ — Done
+- 5개 loading.tsx 스켈레톤: app/, compose/, editor/, result/, preview/.
+- dynamic import: ComposeShell, NodeEditorShell, RemotionPreview (next/dynamic).
+- html2canvas-pro: lazy `await import()` (내보내기 시에만 로드).
+- API 최적화: `select` 필드 제한, `Promise.all` 병렬 쿼리 (usage API).
+- 모드 카드: 로딩 스피너 + 에러 토스트.
+- 성능 점검 스킬: `.claude/skills/takdi-guide/ops/perf-page-check/SKILL.md`.
+
+18. ~~Mode-based node filtering (MODE-001)~~ — Done
+- `src/lib/constants.ts`: FlowNodeType 타입, MODE_NODE_CONFIG(모드→허용노드+초기파이프라인), NODE_TYPE_LABELS/DESCS.
+- `src/app/projects/[id]/editor/page.tsx`: Prisma select에 mode 추가, Shell에 mode prop 전달.
+- `src/components/editor/node-editor-shell.tsx`: mode prop → NodePalette/NodeCanvas/FloatingToolbar 전달, updateNodesByType("generate"→"prompt").
+- `src/components/editor/node-palette.tsx`: MODE_NODE_CONFIG 기반 모드별 노드 필터링.
+- `src/components/editor/node-canvas.tsx`: buildInitialNodes(mode) 동적 초기 노드 생성.
+- `src/components/editor/takdi-node.tsx`: ICONS에 prompt + generate(하위호환) 등록.
+- `src/components/editor/floating-toolbar.tsx`: 이미지 전용 모드 미리보기 숨김, 단계 라벨 "프롬프트 처리 중".
+
+19. Align docs after each milestone
 - Update together:
   - `PROJECT-STATUS.md`
   - `FEATURE-MATRIX.md`

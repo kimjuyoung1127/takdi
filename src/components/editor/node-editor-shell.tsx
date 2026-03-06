@@ -21,10 +21,12 @@ import {
   pollExport,
   ApiError,
 } from "@/lib/api-client";
+import { MODE_NODE_CONFIG, DEFAULT_MODE_CONFIG } from "@/lib/constants";
 
 interface NodeEditorShellProps {
   projectId: string;
   projectName: string;
+  mode: string;
 }
 
 type PipelineStep = "idle" | "generating" | "imaging" | "done" | "error";
@@ -32,6 +34,7 @@ type PipelineStep = "idle" | "generating" | "imaging" | "done" | "error";
 export function NodeEditorShell({
   projectId,
   projectName,
+  mode,
 }: NodeEditorShellProps) {
   const [name, setName] = useState(projectName);
   const [editingName, setEditingName] = useState(false);
@@ -108,9 +111,9 @@ export function NodeEditorShell({
     clearLogs();
 
     try {
-      // Step 1: Text Generation
-      canvasRef.current?.updateNodesByType("generate", { status: "generating" });
-      addLog("텍스트 생성을 시작합니다...", "info");
+      // Step 1: Prompt → Text Generation
+      canvasRef.current?.updateNodesByType("prompt", { status: "generating" });
+      addLog("프롬프트를 처리합니다...", "info");
       const genJob = await startGenerate(projectId);
       addLog(`텍스트 생성 작업 시작됨 (${genJob.jobId.slice(0, 8)}...)`, "info");
 
@@ -118,7 +121,7 @@ export function NodeEditorShell({
         () => pollGenerate(projectId, genJob.jobId),
         "텍스트 생성",
       );
-      canvasRef.current?.updateNodesByType("generate", { status: "generated" });
+      canvasRef.current?.updateNodesByType("prompt", { status: "generated" });
 
       if (abortRef.current) return;
 
@@ -142,7 +145,7 @@ export function NodeEditorShell({
     } catch (err) {
       if (!abortRef.current) {
         // Mark current step's node as failed
-        if (stepRef.current === "generating") canvasRef.current?.updateNodesByType("generate", { status: "failed" });
+        if (stepRef.current === "generating") canvasRef.current?.updateNodesByType("prompt", { status: "failed" });
         if (stepRef.current === "imaging") canvasRef.current?.updateNodesByType("generate-images", { status: "failed" });
         const msg = err instanceof ApiError ? err.message : err instanceof Error ? err.message : "알 수 없는 오류";
         addLog(`오류: ${msg}`, "error");
@@ -274,7 +277,7 @@ export function NodeEditorShell({
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <NodePalette />
+      <NodePalette mode={mode} />
 
       <div className="relative flex-1">
         {/* Inline project name */}
@@ -301,6 +304,7 @@ export function NodeEditorShell({
 
         <FloatingToolbar
           projectId={projectId}
+          mode={mode}
           onRunAll={handleRunAll}
           onStop={handleStop}
           onSave={handleSave}
@@ -316,6 +320,7 @@ export function NodeEditorShell({
         />
         <NodeCanvas
           ref={canvasRef}
+          mode={mode}
           onStateChange={handleStateChange}
           onNodeSelect={handleNodeSelect}
           isRunning={isRunning}

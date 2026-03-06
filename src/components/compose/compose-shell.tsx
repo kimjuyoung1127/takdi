@@ -9,6 +9,8 @@ import { BlockPalette } from "./block-palette";
 import { BlockCanvas } from "./block-canvas";
 import { BlockPropertiesPanel } from "./block-properties-panel";
 import { ComposeToolbar } from "./compose-toolbar";
+import { ComposeProvider } from "./compose-context";
+import { ExportDialog } from "./export-dialog";
 
 const PLATFORM_WIDTHS: Record<string, number> = {
   coupang: 780,
@@ -28,6 +30,8 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [insertIndex, setInsertIndex] = useState<number | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   const blocksRef = useRef(blocks);
   blocksRef.current = blocks;
@@ -133,7 +137,7 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
 
   // Export
   const handleExport = useCallback(() => {
-    toast.info("내보내기 기능은 준비 중입니다");
+    setExportOpen(true);
   }, []);
 
   // Auto-save 30s
@@ -144,7 +148,7 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
         await saveBlocks(projectId, buildDoc());
         setLastSaved(new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }));
       } catch {
-        // silent
+        toast.error("자동 저장에 실패했습니다", { id: "autosave-fail" });
       }
     }, 30_000);
     return () => {
@@ -180,37 +184,49 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
   }, [handleSave, handleUndo, handleRedo, selectedBlockId, blocks, handleBlocksChange]);
 
   return (
-    <div className="flex h-screen flex-col bg-gray-50">
-      <ComposeToolbar
-        projectId={projectId}
+    <ComposeProvider projectId={projectId}>
+      <div className="flex h-screen flex-col bg-gray-50">
+        <ComposeToolbar
+          projectId={projectId}
+          projectName={projectName}
+          platformName={platform}
+          onPlatformChange={handlePlatformChange}
+          onSave={handleSave}
+          onPreview={handlePreview}
+          onExport={handleExport}
+          isSaving={saving}
+          lastSaved={lastSaved}
+        />
+
+        <div className="flex flex-1 overflow-hidden">
+          <BlockPalette onAddBlock={handleAddBlock} />
+
+          <BlockCanvas
+            ref={canvasRef}
+            blocks={blocks}
+            selectedBlockId={selectedBlockId}
+            platformWidth={PLATFORM_WIDTHS[platform] ?? 780}
+            exporting={exportOpen}
+            onBlocksChange={handleBlocksChange}
+            onSelectBlock={setSelectedBlockId}
+            onInsertBlock={handleInsertBlock}
+            onUpdateBlock={handleUpdateBlock}
+          />
+
+          <BlockPropertiesPanel
+            block={selectedBlock}
+            onUpdate={handleUpdateBlock}
+          />
+        </div>
+      </div>
+      <ExportDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
         projectName={projectName}
         platformName={platform}
-        onPlatformChange={handlePlatformChange}
-        onSave={handleSave}
-        onPreview={handlePreview}
-        onExport={handleExport}
-        isSaving={saving}
-        lastSaved={lastSaved}
+        captureRef={canvasRef}
+        platformWidth={PLATFORM_WIDTHS[platform] ?? 780}
       />
-
-      <div className="flex flex-1 overflow-hidden">
-        <BlockPalette onAddBlock={handleAddBlock} />
-
-        <BlockCanvas
-          blocks={blocks}
-          selectedBlockId={selectedBlockId}
-          platformWidth={PLATFORM_WIDTHS[platform] ?? 780}
-          onBlocksChange={handleBlocksChange}
-          onSelectBlock={setSelectedBlockId}
-          onInsertBlock={handleInsertBlock}
-          onUpdateBlock={handleUpdateBlock}
-        />
-
-        <BlockPropertiesPanel
-          block={selectedBlock}
-          onUpdate={handleUpdateBlock}
-        />
-      </div>
-    </div>
+    </ComposeProvider>
   );
 }

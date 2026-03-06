@@ -1,6 +1,6 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-06 (KST, COMPOSE-001 Block Editor)
+Last Updated: 2026-03-06 (KST, MODE-001 모드별 노드 분리)
 
 ## Current Phase
 - Runtime bootstrap completed.
@@ -33,8 +33,11 @@ Last Updated: 2026-03-06 (KST, COMPOSE-001 Block Editor)
   - Block CRUD API (`GET/PUT /api/projects/:id/blocks`)
   - Compose editor page (`/projects/:id/compose`) with 3-panel layout
   - @dnd-kit sortable canvas with drag-and-drop reordering
-  - 4 fully implemented block renderers (hero, selling-point, text-block, image-text) + 8 placeholder renderers
-  - Block properties panel with type-specific editing fields
+  - 12 fully implemented block renderers (개별 파일, 모든 블록 인라인 편집 가능)
+  - ComposeProvider + useCompose() 컨텍스트 (projectId 전달)
+  - 공용 컴포넌트: EditableText, ImageUploadZone, VideoUploadZone, ColorStylePicker
+  - data-placeholder CSS로 플레이스홀더 자동 표시/클리어
+  - Block properties panel with ImagePicker + ColorStylePicker 연동
   - Text overlay editor for images (drag position, font size, color, weight)
   - Image picker (file upload + URL input)
   - Result/preview page (`/projects/:id/result`)
@@ -43,7 +46,42 @@ Last Updated: 2026-03-06 (KST, COMPOSE-001 Block Editor)
   - Home page updated with compose mode card
   - Platform presets (Coupang 780px, Naver 860px)
   - Auto-save 30s + Ctrl+S + Ctrl+Z/Shift+Z undo/redo
-- Next target: E2E 테스트, 블록 내보내기 실제 구현.
+  - Block types extended: ReviewBlock.displayStyle, VideoBlock.mediaType, CtaBlock.ctaStyle/bgColor/buttonColor
+- Block editor bug fixes (COMPOSE-007):
+  - Upload file serving route (`/uploads/[...path]`) — 이미지 404 해소
+  - Video/GIF upload skipValidation — 영상 업로드 400 해소
+  - Icon dropdown enlarged (grid-cols-3, labels) — 사용성 개선
+  - Divider props cleanup — TS 경고 제거
+  - TextBlock fontSize option (sm/base/lg/xl) — 글꼴 크기 변경 지원
+- MVP Demo: ngrok을 통한 클라이언트 데모 배포 완료
+  - dev 서버 (port 3003) + ngrok 터널링
+  - SQLite + 로컬 uploads/ 기반 즉시 배포
+- Block image export implemented (EXPORT-001):
+  - html2canvas-pro 기반 클라이언트 사이드 DOM→이미지 캡처
+  - `src/lib/block-export.ts`: captureBlocksAsImage + exportToDownload + buildDefaultFilename
+  - Compose 에디터: 내보내기 다이얼로그 (파일명/포맷 PNG·JPG 선택)
+  - Result 페이지: 이미지 다운로드 버튼 (JPG 즉시 다운로드)
+  - BlockCanvas forwardRef + exporting 모드 (캡처 시 DnD/UI 숨김)
+  - BlockPreview forwardRef 지원
+- UX text polish completed (UX-011):
+  - 전체 기술 용어 → 사용자 친화 한글 (20+ 파일, "노드"→"작업 단계", "에셋"→"파일", "캔버스"→"작업 영역")
+  - 블록 팔레트 desc 툴팁, 에러 토스트 추가, BYOI 제거
+  - `src/lib/constants.ts` 공유 라벨 상수 (MODE_LABELS, BLOCK_TYPE_LABELS)
+- Page loading performance improved (PERF-001):
+  - 5개 loading.tsx 스켈레톤 (홈, compose, editor, result, preview)
+  - dynamic import: ComposeShell, NodeEditorShell, RemotionPreview (번들 사이즈 감소)
+  - html2canvas-pro lazy import (내보내기 시에만 로드)
+  - API 쿼리 최적화: select 필드 제한, Promise.all 병렬 쿼리
+  - 모드 카드 로딩 스피너 + 에러 토스트
+  - 성능 점검 스킬 생성 (`.claude/skills/takdi-guide/ops/perf-page-check/`)
+- Mode-based node filtering implemented (MODE-001):
+  - `src/lib/constants.ts`: FlowNodeType, MODE_NODE_CONFIG, NODE_TYPE_LABELS/DESCS
+  - 모드별 허용 노드 필터링 (brand-image: 3종, gif-source: 4종, freeform: 6종)
+  - `generate` → `prompt` 노드 리네이밍 ("텍스트 생성" → "프롬프트 입력")
+  - 모드별 초기 파이프라인 자동 생성 (buildInitialNodes)
+  - 이미지 전용 모드에서 미리보기 버튼 숨김
+  - 기존 저장 프로젝트 하위 호환 (ICONS 맵에 generate + prompt 둘 다 등록)
+- Next target: 인라인 결과 미리보기, 동적 파이프라인 실행, E2E 테스트, Railway 배포.
 
 ## Gate
 - Validation gate: 20 real outputs completed.
@@ -53,6 +91,13 @@ Last Updated: 2026-03-06 (KST, COMPOSE-001 Block Editor)
 - Single-user UX first.
 - Multi-tenant-ready internal model.
 - Billing integration deferred.
+
+## Deployment Plan
+- **Current**: ngrok 터널링 (MVP 데모용, 로컬 PC 필요)
+- **Primary**: Railway 배포 예정 (persistent volume, SQLite/PostgreSQL)
+- **Secondary**: Mac Mini + NAS (자체 운영, SQLite 가능)
+- 로컬 개발: SQLite 유지
+- Prisma 추상화로 코드 변경 없이 provider + DATABASE_URL만 교체
 
 ## Contract Snapshot
 - `ProjectStatus`: `draft | generating | generated | failed | exported`

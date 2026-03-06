@@ -1,8 +1,8 @@
-/** 히어로 블록 — 전체 이미지 + 텍스트 오버레이 */
+/** 히어로 블록 — 전체 이미지 + 텍스트 오버레이 (ImageUploadZone + EditableText) */
 "use client";
 
 import type { HeroBlock as HeroBlockType } from "@/types/blocks";
-import { ImageIcon } from "lucide-react";
+import { ImageUploadZone, EditableText } from "../shared";
 
 interface Props {
   block: HeroBlockType;
@@ -19,20 +19,21 @@ export function HeroBlockRenderer({ block, selected, onSelect, onUpdate, readOnl
       onClick={onSelect}
       style={{ minHeight: 300 }}
     >
-      {block.imageUrl ? (
-        <img
-          src={block.imageUrl}
-          alt="Hero"
-          className="h-full w-full object-cover"
-          style={{ minHeight: 300 }}
-        />
-      ) : (
-        <div className="flex h-full min-h-[300px] items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100">
-          <div className="text-center text-gray-400">
-            <ImageIcon className="mx-auto mb-2 h-12 w-12" />
-            <p className="text-sm">히어로 이미지를 추가하세요</p>
+      {readOnly ? (
+        block.imageUrl ? (
+          <img src={block.imageUrl} alt="Hero" className="h-full w-full object-cover" style={{ minHeight: 300 }} />
+        ) : (
+          <div className="flex h-full min-h-[300px] items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100 text-gray-400">
+            <p className="text-sm">히어로 이미지</p>
           </div>
-        </div>
+        )
+      ) : (
+        <ImageUploadZone
+          imageUrl={block.imageUrl}
+          onImageChange={(url) => onUpdate({ imageUrl: url })}
+          className="min-h-[300px]"
+          placeholderText="히어로 이미지를 업로드하세요"
+        />
       )}
 
       {/* Text overlays */}
@@ -52,27 +53,19 @@ export function HeroBlockRenderer({ block, selected, onSelect, onUpdate, readOnl
             maxWidth: "80%",
           }}
         >
-          {readOnly ? (
-            <span>{overlay.text}</span>
-          ) : (
-            <span
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={(e) => {
-                const newText = e.currentTarget.textContent ?? "";
-                if (newText !== overlay.text) {
-                  onUpdate({
-                    overlays: block.overlays.map((o) =>
-                      o.id === overlay.id ? { ...o, text: newText } : o,
-                    ),
-                  });
-                }
-              }}
-              className="outline-none"
-            >
-              {overlay.text}
-            </span>
-          )}
+          <EditableText
+            value={overlay.text}
+            placeholder="텍스트 입력"
+            onChange={(newText) => {
+              onUpdate({
+                overlays: block.overlays.map((o) =>
+                  o.id === overlay.id ? { ...o, text: newText } : o,
+                ),
+              });
+            }}
+            tag="span"
+            readOnly={readOnly}
+          />
         </div>
       ))}
     </div>

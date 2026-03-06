@@ -1,8 +1,14 @@
 /** Compose 블록 에디터 페이지 — 서버 컴포넌트 (DB fetch → ComposeShell) */
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { ComposeShell } from "@/components/compose/compose-shell";
+import dynamic from "next/dynamic";
 import type { BlockDocument } from "@/types/blocks";
+import Loading from "./loading";
+
+const ComposeShell = dynamic(
+  () => import("@/components/compose/compose-shell").then((m) => m.ComposeShell),
+  { loading: () => <Loading /> },
+);
 
 const DEFAULT_DOC: BlockDocument = {
   format: "blocks",

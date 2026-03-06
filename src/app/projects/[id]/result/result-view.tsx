@@ -1,10 +1,13 @@
-/** 결과 뷰 — 클라이언트 컴포넌트 (프리뷰 + 내보내기 링크) */
+/** 결과 뷰 — 클라이언트 컴포넌트 (프리뷰 + 이미지 다운로드) */
 "use client";
 
+import { useRef, useState } from "react";
 import type { BlockDocument } from "@/types/blocks";
 import { BlockPreview } from "@/components/compose/block-preview";
-import { ArrowLeft, Edit } from "lucide-react";
+import { ArrowLeft, Edit, Download, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
+import { captureBlocksAsImage, exportToDownload, buildDefaultFilename } from "@/lib/block-export";
 
 interface ResultViewProps {
   projectId: string;
@@ -13,6 +16,28 @@ interface ResultViewProps {
 }
 
 export function ResultView({ projectId, projectName, doc }: ResultViewProps) {
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (!previewRef.current) return;
+    setDownloading(true);
+    try {
+      const blob = await captureBlocksAsImage(previewRef.current, {
+        width: doc.platform.width,
+        format: "jpg",
+        scale: 2,
+      });
+      const filename = buildDefaultFilename(projectName, doc.platform.name || "export", "jpg");
+      exportToDownload(blob, filename);
+      toast.success("이미지 다운로드 완료");
+    } catch (err) {
+      toast.error(`다운로드 실패: ${err instanceof Error ? err.message : "알 수 없는 오류"}`);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
@@ -29,8 +54,16 @@ export function ResultView({ projectId, projectName, doc }: ResultViewProps) {
         </div>
         <div className="flex items-center gap-2">
           <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-500">
-            {doc.platform.name} · {doc.platform.width}px
+            {doc.platform.name} ({doc.platform.width}px 너비)
           </span>
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            className="flex items-center gap-1 rounded bg-emerald-500 px-3 py-1.5 text-xs text-white hover:bg-emerald-600 disabled:opacity-50"
+          >
+            {downloading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+            이미지 다운로드
+          </button>
           <Link
             href={`/projects/${projectId}/compose`}
             className="flex items-center gap-1 rounded bg-indigo-500 px-3 py-1.5 text-xs text-white hover:bg-indigo-600"
@@ -43,7 +76,7 @@ export function ResultView({ projectId, projectName, doc }: ResultViewProps) {
 
       {/* Preview */}
       <main className="p-8">
-        <BlockPreview blocks={doc.blocks} platformWidth={doc.platform.width} />
+        <BlockPreview ref={previewRef} blocks={doc.blocks} platformWidth={doc.platform.width} />
       </main>
     </div>
   );

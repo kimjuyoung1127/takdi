@@ -5,6 +5,7 @@ import { useState, useCallback } from "react";
 import { Settings, ImageIcon, Clock, DollarSign, Music, LayoutGrid } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AssetUpload } from "./asset-upload";
+import { STATUS_LABELS } from "@/components/ui/status-badge";
 import { fetchUsage, type UsageSummary } from "@/lib/api-client";
 import type { LogEntry } from "@/hooks/use-logger";
 import type { NodeData } from "./node-canvas";
@@ -60,7 +61,7 @@ export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataCh
           <div className="text-center">
             <p className="text-sm font-semibold text-gray-900">{projectName ?? "프로젝트"}</p>
             <p className="mt-1 text-xs text-gray-400">
-              캔버스 노드 {nodeCount ?? 0}개
+              작업 단계 {nodeCount ?? 0}개
             </p>
           </div>
         </div>
@@ -81,7 +82,7 @@ export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataCh
               <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Esc</kbd>
             </div>
             <div className="flex justify-between">
-              <span>노드 삭제</span>
+              <span>단계 삭제</span>
               <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Delete</kbd>
             </div>
             <div className="flex justify-between">
@@ -97,7 +98,7 @@ export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataCh
 
         <div className="mx-5 mt-4 border-t border-gray-100 pt-4">
           <p className="text-xs text-gray-300">
-            노드를 클릭하면 속성을 편집할 수 있습니다
+            작업 단계를 클릭하면 설정을 변경할 수 있습니다
           </p>
         </div>
       </aside>
@@ -107,8 +108,8 @@ export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataCh
   return (
     <aside className="flex w-80 flex-col border-l border-gray-100 bg-white">
       <div className="border-b border-gray-100 px-5 py-4">
-        <h2 className="text-sm font-semibold text-gray-900">속성</h2>
-        <p className="text-xs text-gray-400">노드: {selectedNodeId}</p>
+        <h2 className="text-sm font-semibold text-gray-900">설정</h2>
+        <p className="text-xs text-gray-400">{selectedNodeData?.label ?? selectedNodeId}</p>
       </div>
 
       <Tabs defaultValue="settings" className="flex-1">
@@ -119,7 +120,7 @@ export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataCh
           </TabsTrigger>
           <TabsTrigger value="assets" className="gap-1 text-xs">
             <ImageIcon className="h-3.5 w-3.5" />
-            에셋
+            파일
           </TabsTrigger>
           <TabsTrigger value="history" className="gap-1 text-xs">
             <Clock className="h-3.5 w-3.5" />
@@ -168,7 +169,7 @@ export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataCh
                 }
                 rows={3}
                 className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-300"
-                placeholder="이 노드가 할 일을 간단히 설명하세요"
+                placeholder="이 단계에서 할 작업을 간단히 설명하세요"
               />
             </div>
 
@@ -195,7 +196,9 @@ export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataCh
 
             <div>
               <label className="text-xs font-medium text-gray-500">상태</label>
-              <p className="mt-0.5 text-sm text-gray-900">{selectedNodeData?.status ?? "draft"}</p>
+              <p className="mt-0.5 text-sm text-gray-900">
+                {STATUS_LABELS[selectedNodeData?.status ?? "draft"] ?? selectedNodeData?.status ?? "초안"}
+              </p>
             </div>
           </div>
         </TabsContent>
@@ -269,7 +272,7 @@ export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataCh
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg bg-gray-50 p-3">
-                  <p className="text-[10px] font-medium text-gray-400">총 이벤트</p>
+                  <p className="text-[10px] font-medium text-gray-400">총 작업 수</p>
                   <p className="text-lg font-semibold text-gray-900">
                     {usage.summary.totalEvents}
                   </p>

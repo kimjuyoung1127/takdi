@@ -38,7 +38,7 @@ export function ComposeToolbar({
           className="flex items-center gap-1 text-xs text-gray-400 hover:text-indigo-500"
         >
           <ExternalLink className="h-3 w-3" />
-          노드 에디터
+          영상 편집기
         </Link>
       </div>
 

@@ -35,7 +35,7 @@ export function BottomLogger({ logs = [] }: BottomLoggerProps) {
       <div className="flex h-10 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <Terminal className="h-3.5 w-3.5 text-gray-400" />
-          <span className="text-xs font-medium text-gray-500">로그</span>
+          <span className="text-xs font-medium text-gray-500">작업 기록</span>
           {logs.length > 0 && (
             <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500">
               {logs.length}
@@ -61,7 +61,7 @@ export function BottomLogger({ logs = [] }: BottomLoggerProps) {
         <div className="h-[calc(100%-2.5rem)] overflow-y-auto px-4 pb-2 font-mono text-xs">
           {logs.length === 0 ? (
             <p className="py-4 text-center text-gray-300">
-              아직 로그가 없습니다
+              아직 작업 기록이 없습니다. 생성을 실행하면 기록이 표시됩니다.
             </p>
           ) : (
             logs.map((entry) => (

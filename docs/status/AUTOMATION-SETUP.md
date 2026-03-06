@@ -3,11 +3,18 @@
 This project uses prompt-based external automation.
 No local automation script is required.
 
-## Prompt Paths
-1. `.claude/automations/docs-nightly-organizer.prompt.md`
-2. `.claude/automations/code-doc-align.prompt.md`
-3. `.claude/automations/automation-health-monitor.prompt.md`
-4. `.claude/automations/architecture-diagrams-sync.prompt.md`
+## Prompt Paths (압축 후, 2026-03-06)
+
+| 파일 | 스케줄 | 포함 작업 |
+|------|--------|-----------|
+| `.claude/automations/takdi-nightly.prompt.md` | 매일 23:00 KST | docs-nightly-organizer + code-doc-align |
+| `.claude/automations/takdi-dawn-pipeline.prompt.md` | 매일 04:00 KST | architecture-diagrams-sync + automation-health-monitor + Slack 보고 |
+
+## 구 프롬프트 (deprecated)
+- `docs-nightly-organizer.prompt.md` → takdi-nightly로 통합
+- `code-doc-align.prompt.md` → takdi-nightly로 통합
+- `automation-health-monitor.prompt.md` → takdi-dawn-pipeline으로 통합
+- `architecture-diagrams-sync.prompt.md` → takdi-dawn-pipeline으로 통합
 
 ## Registration Guide
 - Copy prompt content into your external automation tool.
@@ -16,7 +23,10 @@ No local automation script is required.
 - Second run with `DRY_RUN=false`.
 
 ## Required Env
-- `PROJECT_ROOT` (absolute path to Takdi repository)
+- `PROJECT_ROOT` = `C:\Users\gmdqn\takdi`
+
+## Slack 보고 채널
+- Dawn pipeline → `D09LC7XLBQ9`
 
 ## First Real-Run Acceptance
 - lock behavior follows prompt rules

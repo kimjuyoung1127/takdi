@@ -71,6 +71,7 @@ export interface TextBlockBlock extends BaseBlock {
   heading: string;
   body: string;
   align: "left" | "center" | "right";
+  fontSize?: "sm" | "base" | "lg" | "xl";
 }
 
 export interface ImageTextBlock extends BaseBlock {
@@ -98,6 +99,7 @@ export interface ReviewBlock extends BaseBlock {
   type: "review";
   title: string;
   reviews: Array<{ author: string; rating: number; text: string }>;
+  displayStyle?: "card" | "quote" | "minimal";
 }
 
 export interface DividerBlock extends BaseBlock {
@@ -110,6 +112,7 @@ export interface VideoBlock extends BaseBlock {
   type: "video";
   videoUrl: string;
   posterUrl: string;
+  mediaType?: "mp4" | "gif";
 }
 
 export interface CtaBlock extends BaseBlock {
@@ -118,6 +121,9 @@ export interface CtaBlock extends BaseBlock {
   subtext: string;
   buttonLabel: string;
   buttonUrl: string;
+  bgColor?: string;
+  buttonColor?: string;
+  ctaStyle?: "default" | "gradient" | "dark" | "minimal";
 }
 
 // ─── Discriminated Union ───

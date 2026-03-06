@@ -1,7 +1,7 @@
 /** 블록 캔버스 — @dnd-kit 기반 세로 정렬 드래그 */
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, forwardRef } from "react";
 import {
   DndContext,
   closestCenter,
@@ -40,6 +40,7 @@ interface BlockCanvasProps {
   blocks: Block[];
   selectedBlockId: string | null;
   platformWidth: number;
+  exporting?: boolean;
   onBlocksChange: (blocks: Block[]) => void;
   onSelectBlock: (id: string | null) => void;
   onInsertBlock: (index: number) => void;
@@ -77,7 +78,7 @@ function SortableBlock({
           {...attributes}
           {...listeners}
           className="flex h-7 w-7 cursor-grab items-center justify-center rounded bg-white text-gray-400 shadow-sm hover:text-gray-600"
-          title="드래그하여 순서 변경"
+          title="끌어서 순서 변경"
         >
           <GripVertical className="h-4 w-4" />
         </button>
@@ -161,15 +162,19 @@ function InsertButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-export function BlockCanvas({
-  blocks,
-  selectedBlockId,
-  platformWidth,
-  onBlocksChange,
-  onSelectBlock,
-  onInsertBlock,
-  onUpdateBlock,
-}: BlockCanvasProps) {
+export const BlockCanvas = forwardRef<HTMLDivElement, BlockCanvasProps>(function BlockCanvas(
+  {
+    blocks,
+    selectedBlockId,
+    platformWidth,
+    exporting,
+    onBlocksChange,
+    onSelectBlock,
+    onInsertBlock,
+    onUpdateBlock,
+  },
+  ref,
+) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -198,23 +203,30 @@ export function BlockCanvas({
   return (
     <div className="flex-1 overflow-y-auto bg-gray-100 p-8" onClick={() => onSelectBlock(null)}>
       <div
+        ref={ref}
         className="mx-auto"
         style={{ width: platformWidth, maxWidth: "100%" }}
         onClick={(e) => e.stopPropagation()}
       >
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
-            <InsertButton onClick={() => onInsertBlock(0)} />
+            {!exporting && <InsertButton onClick={() => onInsertBlock(0)} />}
             {blocks.map((block, idx) => (
               <div key={block.id}>
-                <SortableBlock
-                  block={block}
-                  selected={selectedBlockId === block.id}
-                  onSelect={() => onSelectBlock(block.id)}
-                  onDelete={() => handleDelete(block.id)}
-                  onUpdate={(patch) => onUpdateBlock(block.id, patch)}
-                />
-                <InsertButton onClick={() => onInsertBlock(idx + 1)} />
+                {exporting ? (
+                  <div className={!block.visible ? "hidden" : ""}>
+                    <BlockDispatch block={block} selected={false} onSelect={() => {}} onUpdate={(patch) => onUpdateBlock(block.id, patch)} />
+                  </div>
+                ) : (
+                  <SortableBlock
+                    block={block}
+                    selected={selectedBlockId === block.id}
+                    onSelect={() => onSelectBlock(block.id)}
+                    onDelete={() => handleDelete(block.id)}
+                    onUpdate={(patch) => onUpdateBlock(block.id, patch)}
+                  />
+                )}
+                {!exporting && <InsertButton onClick={() => onInsertBlock(idx + 1)} />}
               </div>
             ))}
           </SortableContext>
@@ -224,11 +236,11 @@ export function BlockCanvas({
           <div className="flex h-64 items-center justify-center text-center text-gray-400">
             <div>
               <p className="mb-2 text-lg font-medium">블록이 없습니다</p>
-              <p className="text-sm">왼쪽 팔레트에서 블록을 추가하세요</p>
+              <p className="text-sm">왼쪽에서 블록을 추가하세요</p>
             </div>
           </div>
         )}
       </div>
     </div>
   );
-}
+});

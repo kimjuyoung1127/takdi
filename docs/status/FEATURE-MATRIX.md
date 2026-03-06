@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-06 (KST, COMPOSE-001 Block Editor)
+Last Updated: 2026-03-06 (KST, MODE-001)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -36,5 +36,12 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | COMPOSE-003 | Block preview + result page | Done | claude | /projects/:id/result 프리뷰 페이지 |
 | COMPOSE-004 | Text overlay editor | Done | claude | 이미지 위 텍스트 오버레이 드래그 편집 |
 | COMPOSE-005 | Image picker | Done | claude | 파일 업로드/URL 입력 이미지 선택기 |
+| COMPOSE-006 | Block editor UX upgrade | Done | claude | 공용 인프라(ComposeContext, shared/), 12종 풀 편집, ImageUploadZone, EditableText, placeholder CSS, 8종 개별 파일 추출 |
+| COMPOSE-007 | Block editor bug fix + UX | Done | claude | 이미지 404, 영상 400, 아이콘 드롭다운, divider 경고, fontSize 지원 |
+| DEPLOY-001 | MVP demo (ngrok) | Done | claude | ngrok 터널링으로 클라이언트 데모 배포 |
+| EXPORT-001 | Block image export (html2canvas-pro) | Done | claude | 클라이언트 사이드 DOM→PNG/JPG 캡처, Compose 다이얼로그 + Result 다운로드 |
+| UX-011 | User-friendly text polish | Done | claude | 기술 용어→한글 친화 (20+ 파일), 공유 라벨 상수, desc 툴팁, 에러 토스트 |
+| PERF-001 | Page loading performance | Done | claude | 5개 loading.tsx 스켈레톤, dynamic import, lazy html2canvas, API 쿼리 최적화 |
+| MODE-001 | Mode-based node filtering + prompt rename | Done | claude | 모드별 허용 노드 필터링, generate→prompt 리네이밍, 초기 파이프라인 자동 생성 |
 | BILL-001 | Billing integration | Deferred | unassigned | after gate pass |
 | TEAM-001 | Team roles and invites | Deferred | unassigned | after gate pass |

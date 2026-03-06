@@ -1,6 +1,7 @@
 /** Home 화면의 최근 프로젝트 목록 컴포넌트 */
 import Link from "next/link";
 import { FolderOpen } from "lucide-react";
+import { MODE_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 
@@ -21,9 +22,9 @@ export function RecentProjects({ projects }: RecentProjectsProps) {
     return (
       <div className="flex flex-col items-center justify-center rounded-3xl bg-white p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <FolderOpen className="mb-3 h-10 w-10 text-gray-300" />
-        <p className="text-sm text-gray-400">아직 프로젝트가 없습니다</p>
+        <p className="text-sm text-gray-400">첫 프로젝트를 만들어보세요</p>
         <p className="mt-1 text-xs text-gray-300">
-          위에서 모드를 선택해 시작하세요
+          상단에서 &apos;상세페이지&apos; 또는 &apos;모델 촬영&apos; 등 원하는 모드를 선택하세요
         </p>
       </div>
     );
@@ -46,7 +47,7 @@ export function RecentProjects({ projects }: RecentProjectsProps) {
                   {project.name}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {project.mode ?? "freeform"} &middot;{" "}
+                  {MODE_LABELS[project.mode ?? "freeform"] ?? project.mode} &middot;{" "}
                   {new Date(project.updatedAt).toLocaleDateString("ko-KR")}
                 </p>
               </div>

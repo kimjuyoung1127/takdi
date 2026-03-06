@@ -9,9 +9,9 @@ import Link from "next/link";
 const MODES = [
   { mode: "compose", label: "상세페이지", description: "블록 에디터로 상세페이지 제작", editorMode: "compose" as const },
   { mode: "model-shot", label: "모델 촬영", description: "AI 모델 촬영" },
-  { mode: "cutout", label: "컷아웃", description: "배경 제거 컷아웃" },
+  { mode: "cutout", label: "누끼", description: "배경 제거 (누끼)" },
   { mode: "brand-image", label: "브랜드 이미지", description: "브랜드 이미지 생성" },
-  { mode: "gif-source", label: "GIF 소스", description: "움직이는 GIF" },
+  { mode: "gif-source", label: "GIF", description: "움직이는 GIF 만들기" },
   { mode: "freeform", label: "자유 형식", description: "자유 형식 생성" },
 ];
 
@@ -37,7 +37,7 @@ export default async function HomePage() {
           새 프로젝트 시작하기
         </h1>
         <p className="mb-6 text-sm text-gray-400">
-          AI 상세페이지, 원샷으로 완성하세요
+          AI 상세페이지, 한 번에 완성하세요
         </p>
 
         <div className="flex gap-4 overflow-x-auto pb-4">
@@ -54,7 +54,7 @@ export default async function HomePage() {
               <Upload className="h-6 w-6" />
             </div>
             <div className="text-center">
-              <p className="text-sm font-semibold text-gray-600">BYOI</p>
+              <p className="text-sm font-semibold text-gray-600">직접 업로드</p>
               <p className="mt-1 text-xs text-gray-400">내 이미지 사용</p>
             </div>
           </Link>

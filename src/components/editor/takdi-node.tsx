@@ -14,7 +14,8 @@ import {
 import { StatusBadge } from "@/components/ui/status-badge";
 
 const ICONS: Record<string, React.ElementType> = {
-  generate: Sparkles,
+  prompt: Sparkles,
+  generate: Sparkles, // backward compat for saved projects
   "generate-images": ImageIcon,
   bgm: Music,
   cuts: Scissors,

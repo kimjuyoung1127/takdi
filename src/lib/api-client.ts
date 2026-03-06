@@ -151,12 +151,13 @@ export function pollExport(projectId: string, jobId: string) {
 export function uploadAsset(
   projectId: string,
   file: File,
-  opts?: { sourceType?: string; preserveOriginal?: boolean },
+  opts?: { sourceType?: string; preserveOriginal?: boolean; skipValidation?: boolean },
 ) {
   const form = new FormData();
   form.append("file", file);
   if (opts?.sourceType) form.append("sourceType", opts.sourceType);
   if (opts?.preserveOriginal) form.append("preserveOriginal", "true");
+  if (opts?.skipValidation) form.append("skipValidation", "true");
   return request<{ asset: { id: string; filePath: string }; validation?: unknown }>(
     `/api/projects/${projectId}/assets`,
     { method: "POST", body: form },
@@ -190,7 +191,6 @@ export interface UsageSummary {
     exportCount: number;
     totalEstimatedCost: number;
   };
-  entries: unknown[];
 }
 
 export function fetchUsage() {

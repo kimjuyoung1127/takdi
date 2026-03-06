@@ -11,7 +11,20 @@ export async function GET(
 
     const project = await prisma.project.findUnique({
       where: { id },
-      include: { assets: true, jobs: true, exports: true },
+      select: {
+        id: true,
+        name: true,
+        mode: true,
+        status: true,
+        workspaceId: true,
+        content: true,
+        briefText: true,
+        createdAt: true,
+        updatedAt: true,
+        assets: { select: { id: true, filePath: true, sourceType: true, createdAt: true } },
+        jobs: { select: { id: true, status: true, provider: true, createdAt: true }, take: 10, orderBy: { createdAt: "desc" } },
+        exports: { select: { id: true, type: true, filePath: true, createdAt: true }, take: 10, orderBy: { createdAt: "desc" } },
+      },
     });
 
     if (!project) return jsonNotFound("Project");
