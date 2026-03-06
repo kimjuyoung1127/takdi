@@ -55,7 +55,7 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | C2 | Background template library | Done | claude | 6카테고리 24종 장면 템플릿 + SceneComposeAction 템플릿 선택 UI |
 | F1 | Category-aware prompts | Done | claude | 6종 카테고리 (패션/뷰티/식품/유아/전자/홈) + buildPrompt 분기 + 프롬프트 노드 카테고리 선택 UI |
 | E1 | Additional platform presets (11st/Gmarket/SSG) | Done | claude | 6종 플랫폼 (쿠팡/네이버/11번가/G마켓/SSG/자사몰) + PLATFORM_PRESETS 공유 상수 |
-| A1 | Global color palette (BlockDocument.theme) | Not Started | unassigned | Priority 7: High impact, Medium effort |
+| A1 | Global color palette (BlockDocument.theme) | Done | claude | ThemePalette type + 7종 프리셋 + ThemePicker UI + CSS 변수 캔버스 적용 |
 | B3 | Usage steps block (new block type) | Not Started | unassigned | Priority 8: High impact, Low effort |
 | BILL-001 | Billing integration | Deferred | unassigned | after gate pass |
 | TEAM-001 | Team roles and invites | Deferred | unassigned | after gate pass |

@@ -131,6 +131,12 @@ Last Updated: 2026-03-06 (KST, GAP-1)
   - 6종: 쿠팡(780), 네이버(860), 11번가(800), G마켓(860), SSG(750), 자사몰(900)
   - `PLATFORM_PRESETS` / `PLATFORM_WIDTHS` 공유 상수 (constants.ts)
   - compose-shell + compose-toolbar 공유 상수 참조로 전환
+- Global color palette implemented (A1):
+  - `ThemePalette` type (primary/secondary/background/text/accent)
+  - `BlockDocument.theme` optional field
+  - 7종 프리셋: 기본/따뜻한/시원한/자연/럭셔리/파스텔/모노톤
+  - `ThemePicker` UI (프리셋 선택 + 커스텀 색상 편집)
+  - 캔버스에 CSS 변수 + 배경/글자색 적용, ComposeContext에 theme 전달
 - Next target: 브라우저 통합 테스트, E2E 테스트, Railway 배포.
 
 ## Gate

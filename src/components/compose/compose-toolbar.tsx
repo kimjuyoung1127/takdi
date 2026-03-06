@@ -4,6 +4,8 @@
 import { Save, Eye, Download, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PLATFORM_PRESETS } from "@/lib/constants";
+import type { ThemePalette } from "@/types/blocks";
+import { ThemePicker } from "./theme-picker";
 import Link from "next/link";
 
 interface ComposeToolbarProps {
@@ -16,6 +18,8 @@ interface ComposeToolbarProps {
   onExport: () => void;
   isSaving: boolean;
   lastSaved: string | null;
+  theme?: ThemePalette;
+  onThemeChange: (theme: ThemePalette | undefined) => void;
 }
 
 export function ComposeToolbar({
@@ -28,6 +32,8 @@ export function ComposeToolbar({
   onExport,
   isSaving,
   lastSaved,
+  theme,
+  onThemeChange,
 }: ComposeToolbarProps) {
   return (
     <div className="flex h-12 items-center justify-between border-b border-gray-200 bg-white px-4">
@@ -43,8 +49,9 @@ export function ComposeToolbar({
         </Link>
       </div>
 
-      {/* Center: platform select */}
-      <div className="flex items-center gap-2">
+      {/* Center: platform + theme */}
+      <div className="relative flex items-center gap-3">
+        <ThemePicker currentTheme={theme} onThemeChange={onThemeChange} />
         <label className="text-xs text-gray-500">플랫폼:</label>
         <select
           value={platformName}

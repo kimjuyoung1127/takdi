@@ -155,6 +155,16 @@ export type Block =
   | VideoBlock
   | CtaBlock;
 
+// ─── Theme ───
+
+export interface ThemePalette {
+  primary: string;
+  secondary: string;
+  background: string;
+  text: string;
+  accent: string;
+}
+
 // ─── Block Document ───
 
 export interface BlockDocument {
@@ -164,5 +174,6 @@ export interface BlockDocument {
     width: number;
     name: string;
   };
+  theme?: ThemePalette;
   version: number;
 }

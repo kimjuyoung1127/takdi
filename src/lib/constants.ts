@@ -98,6 +98,17 @@ export const PLATFORM_WIDTHS: Record<string, number> = Object.fromEntries(
   PLATFORM_PRESETS.map((p) => [p.value, p.width]),
 );
 
+/** 테마 프리셋 (A1: 글로벌 컬러 팔레트) */
+export const THEME_PRESETS: Array<{ name: string; label: string; palette: import("@/types/blocks").ThemePalette }> = [
+  { name: "default", label: "기본", palette: { primary: "#4f46e5", secondary: "#6366f1", background: "#ffffff", text: "#111827", accent: "#f59e0b" } },
+  { name: "warm", label: "따뜻한", palette: { primary: "#dc2626", secondary: "#f97316", background: "#fffbeb", text: "#1c1917", accent: "#eab308" } },
+  { name: "cool", label: "시원한", palette: { primary: "#0284c7", secondary: "#06b6d4", background: "#f0f9ff", text: "#0c4a6e", accent: "#8b5cf6" } },
+  { name: "nature", label: "자연", palette: { primary: "#16a34a", secondary: "#65a30d", background: "#f7fee7", text: "#14532d", accent: "#ca8a04" } },
+  { name: "luxury", label: "럭셔리", palette: { primary: "#1f2937", secondary: "#6b7280", background: "#fafafa", text: "#111827", accent: "#d97706" } },
+  { name: "pastel", label: "파스텔", palette: { primary: "#ec4899", secondary: "#a78bfa", background: "#fdf2f8", text: "#4a044e", accent: "#60a5fa" } },
+  { name: "mono", label: "모노톤", palette: { primary: "#374151", secondary: "#6b7280", background: "#ffffff", text: "#111827", accent: "#374151" } },
+];
+
 /** 블록 타입 → 한글 라벨 */
 export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   hero: "메인 배너",

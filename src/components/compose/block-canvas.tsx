@@ -21,6 +21,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Plus, X, EyeOff } from "lucide-react";
 import type { Block } from "@/types/blocks";
+import { useCompose } from "./compose-context";
 import {
   HeroBlockRenderer,
   SellingPointBlockRenderer,
@@ -175,6 +176,7 @@ export const BlockCanvas = forwardRef<HTMLDivElement, BlockCanvasProps>(function
   },
   ref,
 ) {
+  const { theme } = useCompose();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -205,7 +207,19 @@ export const BlockCanvas = forwardRef<HTMLDivElement, BlockCanvasProps>(function
       <div
         ref={ref}
         className="mx-auto"
-        style={{ width: platformWidth, maxWidth: "100%" }}
+        style={{
+          width: platformWidth,
+          maxWidth: "100%",
+          ...(theme ? {
+            "--theme-primary": theme.primary,
+            "--theme-secondary": theme.secondary,
+            "--theme-bg": theme.background,
+            "--theme-text": theme.text,
+            "--theme-accent": theme.accent,
+            backgroundColor: theme.background,
+            color: theme.text,
+          } as React.CSSProperties : {}),
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

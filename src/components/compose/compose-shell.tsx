@@ -22,6 +22,7 @@ interface ComposeShellProps {
 export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShellProps) {
   const [blocks, setBlocks] = useState<Block[]>(initialDoc.blocks);
   const [platform, setPlatform] = useState(initialDoc.platform.name || "coupang");
+  const [theme, setTheme] = useState(initialDoc.theme);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
@@ -33,6 +34,8 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
   blocksRef.current = blocks;
   const platformRef = useRef(platform);
   platformRef.current = platform;
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const undoStack = useRef<Block[][]>([]);
   const redoStack = useRef<Block[][]>([]);
@@ -44,6 +47,7 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
     format: "blocks",
     blocks: blocksRef.current,
     platform: { width: PLATFORM_WIDTHS[platformRef.current] ?? 780, name: platformRef.current },
+    theme: themeRef.current,
     version: 1,
   }), []);
 
@@ -180,7 +184,7 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
   }, [handleSave, handleUndo, handleRedo, selectedBlockId, blocks, handleBlocksChange]);
 
   return (
-    <ComposeProvider projectId={projectId}>
+    <ComposeProvider projectId={projectId} theme={theme}>
       <div className="flex h-screen flex-col bg-gray-50">
         <ComposeToolbar
           projectId={projectId}
@@ -192,6 +196,8 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
           onExport={handleExport}
           isSaving={saving}
           lastSaved={lastSaved}
+          theme={theme}
+          onThemeChange={setTheme}
         />
 
         <div className="flex flex-1 overflow-hidden">
