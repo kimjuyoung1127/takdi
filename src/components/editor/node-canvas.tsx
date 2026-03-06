@@ -6,6 +6,7 @@ import {
   ReactFlow,
   Background,
   Controls,
+  MiniMap,
   useNodesState,
   useEdgesState,
   addEdge,
@@ -183,6 +184,12 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
         >
           <Background gap={20} size={1} color="#e5e7eb" />
           <Controls className="rounded-xl bg-white shadow-sm" />
+          <MiniMap
+            nodeStrokeWidth={3}
+            nodeColor="#6366f1"
+            maskColor="rgba(0,0,0,0.08)"
+            className="rounded-xl border border-gray-100 bg-white/80 shadow-sm"
+          />
         </ReactFlow>
 
         {/* Empty canvas onboarding overlay */}
