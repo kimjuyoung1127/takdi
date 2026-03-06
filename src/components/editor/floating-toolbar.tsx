@@ -1,8 +1,9 @@
 /** 에디터 캔버스 상단 플로팅 액션 툴바 — 단계별 가이드 + 툴팁 */
 "use client";
 
-import { Play, Square, Save, Eye, Download, Loader2, CircleCheck } from "lucide-react";
+import { Play, Square, Save, Eye, Download, Loader2, CircleCheck, LayoutPanelTop } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface RunningState {
   isRunning?: boolean;
@@ -13,6 +14,7 @@ interface RunningState {
 type PipelineStep = "idle" | "generating" | "imaging" | "done" | "error";
 
 interface FloatingToolbarProps {
+  projectId?: string;
   onRunAll?: () => void;
   onStop?: () => void;
   onSave?: () => void;
@@ -51,7 +53,7 @@ function Tooltip({ text, children }: { text: string; children: React.ReactNode }
   );
 }
 
-export function FloatingToolbar({ onRunAll, onStop, onSave, onPreview, onExport, runningState, pipelineStep = "idle", lastSaved }: FloatingToolbarProps) {
+export function FloatingToolbar({ projectId, onRunAll, onStop, onSave, onPreview, onExport, runningState, pipelineStep = "idle", lastSaved }: FloatingToolbarProps) {
   const { isRunning, isSaving, isExporting } = runningState ?? {};
   const stepLabel = STEP_LABELS[pipelineStep];
 
@@ -133,6 +135,21 @@ export function FloatingToolbar({ onRunAll, onStop, onSave, onPreview, onExport,
             내보내기
           </Button>
         </Tooltip>
+
+        {projectId && (
+          <>
+            <div className="mx-1 h-4 w-px bg-gray-200" />
+            <Tooltip text="상세페이지 블록 에디터로 이동">
+              <Link
+                href={`/projects/${projectId}/compose`}
+                className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              >
+                <LayoutPanelTop className="h-4 w-4" />
+                상세페이지
+              </Link>
+            </Tooltip>
+          </>
+        )}
       </div>
 
       {/* Last saved indicator */}

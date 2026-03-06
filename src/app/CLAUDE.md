@@ -7,7 +7,10 @@ Next.js App Router 루트 — 페이지 + API routes.
 - `globals.css` — Tailwind CSS + shadcn 디자인 토큰
 - `projects/[id]/editor/page.tsx` — 노드 에디터 페이지
 - `projects/[id]/preview/page.tsx` — Remotion 프리뷰 페이지
+- `projects/[id]/compose/page.tsx` — 블록 에디터 페이지
+- `projects/[id]/result/page.tsx` — 결과 프리뷰 페이지
 - `api/projects/` — 프로젝트 CRUD API
+- `api/projects/[id]/blocks/` — 블록 문서 CRUD (GET/PUT)
 - `api/projects/[id]/generate/` — 텍스트 생성 (비동기)
 - `api/projects/[id]/generate-images/` — 이미지 생성
 - `api/projects/[id]/remotion/render/` — 렌더링 (비동기)

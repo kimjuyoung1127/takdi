@@ -7,6 +7,7 @@
 - `imagen-generator.ts` — Google Imagen 4.0 이미지 생성
 - `bgm-analyzer.ts` — BGM 메타데이터 분석 (stub)
 - `byoi-validator.ts` — BYOI 이미지 검증 (stub)
+- `section-to-blocks.ts` — GenerationResult.sections → Block[] 변환
 
 ## Convention
 - API route → service 1:1 매핑 (route가 service 호출)

@@ -8,12 +8,14 @@ import {
   ImageIcon,
   Film,
   Sparkles,
+  LayoutPanelTop,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createProject } from "@/lib/api-client";
 
 const ICON_MAP: Record<string, LucideIcon> = {
+  compose: LayoutPanelTop,
   "model-shot": UserRound,
   cutout: Scissors,
   "brand-image": ImageIcon,
@@ -25,6 +27,7 @@ interface ModeCardProps {
   mode: string;
   label: string;
   description: string;
+  editorMode?: "flow" | "compose";
   className?: string;
 }
 
@@ -32,6 +35,7 @@ export function ModeCard({
   mode,
   label,
   description,
+  editorMode,
   className,
 }: ModeCardProps) {
   const Icon = ICON_MAP[mode] ?? Sparkles;
@@ -40,7 +44,10 @@ export function ModeCard({
   async function handleClick() {
     try {
       const project = await createProject({ name: `${label} 프로젝트`, mode, briefText: "" });
-      router.push(`/projects/${project.id}/editor`);
+      const target = editorMode === "compose"
+        ? `/projects/${project.id}/compose`
+        : `/projects/${project.id}/editor`;
+      router.push(target);
     } catch {
       // TODO: surface error to user
     }

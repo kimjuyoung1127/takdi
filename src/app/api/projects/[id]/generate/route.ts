@@ -2,8 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { getWorkspaceId, ensureWorkspaceScope } from "@/lib/workspace-guard";
 import { jsonOk, jsonError, jsonNotFound } from "@/lib/api-response";
 import type { GenerationResult } from "@/types";
+import type { BlockDocument } from "@/types/blocks";
 import { generateWithGemini } from "@/services/gemini-generator";
 import { parseBrief } from "@/services/brief-parser";
+import { sectionsToBlocks } from "@/services/section-to-blocks";
 
 /**
  * POST /api/projects/:id/generate
@@ -67,6 +69,7 @@ export async function POST(
     processGeneration(job.id, id, project.briefText ?? "", {
       apiKey: body.apiKey,
       mode: project.mode ?? "freeform",
+      editorMode: project.editorMode ?? "flow",
     }).catch((err) => {
       console.error("Background generation error:", err);
     });
@@ -138,7 +141,7 @@ async function processGeneration(
   jobId: string,
   projectId: string,
   briefText: string,
-  options: { apiKey?: string; mode: string }
+  options: { apiKey?: string; mode: string; editorMode?: string }
 ) {
   try {
     // job → running
@@ -172,13 +175,27 @@ async function processGeneration(
             };
     }
 
+    // If compose mode, convert sections to blocks
+    let contentToSave: string;
+    if (options.editorMode === "compose") {
+      const blockDoc: BlockDocument = {
+        format: "blocks",
+        blocks: sectionsToBlocks(generationOutput.sections),
+        platform: { width: 780, name: "coupang" },
+        version: 1,
+      };
+      contentToSave = JSON.stringify(blockDoc);
+    } else {
+      contentToSave = JSON.stringify(generationOutput);
+    }
+
     // project content save + job done
     await prisma.$transaction([
       prisma.project.update({
         where: { id: projectId },
         data: {
           status: "generated",
-          content: JSON.stringify(generationOutput),
+          content: contentToSave,
         },
       }),
       prisma.generationJob.update({

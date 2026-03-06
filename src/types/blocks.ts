@@ -1,0 +1,149 @@
+/** 상세페이지 블록 에디터 타입 정의 — 12종 블록 + BlockDocument */
+
+// ─── Block Types ───
+
+export type BlockType =
+  | "hero"
+  | "selling-point"
+  | "image-full"
+  | "image-grid"
+  | "text-block"
+  | "image-text"
+  | "spec-table"
+  | "comparison"
+  | "review"
+  | "divider"
+  | "video"
+  | "cta";
+
+// ─── Text Overlay ───
+
+export interface TextOverlay {
+  id: string;
+  text: string;
+  x: number; // % (0–100)
+  y: number; // % (0–100)
+  fontSize: number;
+  color: string;
+  fontWeight: "normal" | "bold";
+  textAlign: "left" | "center" | "right";
+}
+
+// ─── Base Block ───
+
+interface BaseBlock {
+  id: string;
+  type: BlockType;
+  visible: boolean;
+}
+
+// ─── Typed Blocks ───
+
+export interface HeroBlock extends BaseBlock {
+  type: "hero";
+  imageUrl: string;
+  overlays: TextOverlay[];
+}
+
+export interface SellingPointBlock extends BaseBlock {
+  type: "selling-point";
+  items: Array<{
+    icon: string;
+    title: string;
+    description: string;
+  }>;
+}
+
+export interface ImageFullBlock extends BaseBlock {
+  type: "image-full";
+  imageUrl: string;
+  overlays: TextOverlay[];
+}
+
+export interface ImageGridBlock extends BaseBlock {
+  type: "image-grid";
+  images: Array<{ url: string; caption: string }>;
+  columns: 2 | 3;
+}
+
+export interface TextBlockBlock extends BaseBlock {
+  type: "text-block";
+  heading: string;
+  body: string;
+  align: "left" | "center" | "right";
+}
+
+export interface ImageTextBlock extends BaseBlock {
+  type: "image-text";
+  imageUrl: string;
+  imagePosition: "left" | "right";
+  heading: string;
+  body: string;
+}
+
+export interface SpecTableBlock extends BaseBlock {
+  type: "spec-table";
+  title: string;
+  rows: Array<{ label: string; value: string }>;
+}
+
+export interface ComparisonBlock extends BaseBlock {
+  type: "comparison";
+  title: string;
+  before: { label: string; imageUrl: string };
+  after: { label: string; imageUrl: string };
+}
+
+export interface ReviewBlock extends BaseBlock {
+  type: "review";
+  title: string;
+  reviews: Array<{ author: string; rating: number; text: string }>;
+}
+
+export interface DividerBlock extends BaseBlock {
+  type: "divider";
+  style: "line" | "space" | "dot";
+  height: number;
+}
+
+export interface VideoBlock extends BaseBlock {
+  type: "video";
+  videoUrl: string;
+  posterUrl: string;
+}
+
+export interface CtaBlock extends BaseBlock {
+  type: "cta";
+  text: string;
+  subtext: string;
+  buttonLabel: string;
+  buttonUrl: string;
+}
+
+// ─── Discriminated Union ───
+
+export type Block =
+  | HeroBlock
+  | SellingPointBlock
+  | ImageFullBlock
+  | ImageGridBlock
+  | TextBlockBlock
+  | ImageTextBlock
+  | SpecTableBlock
+  | ComparisonBlock
+  | ReviewBlock
+  | DividerBlock
+  | VideoBlock
+  | CtaBlock;
+
+// ─── Block Document ───
+
+export interface BlockDocument {
+  format: "blocks";
+  blocks: Block[];
+  platform: {
+    width: number;
+    name: string;
+  };
+  version: number;
+}

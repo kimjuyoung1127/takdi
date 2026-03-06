@@ -1,6 +1,6 @@
 # Claude Handoff
 
-Last Updated: 2026-03-06 (KST, UX-010 undo/redo)
+Last Updated: 2026-03-06 (KST, COMPOSE-001 Block Editor)
 Branch: `main`
 Baseline commit: `9fc29c0`
 
@@ -103,7 +103,27 @@ Baseline commit: `9fc29c0`
 - UX-009: 노드 우클릭 컨텍스트 메뉴 (복제/삭제/상태초기화).
 - UX-010: Undo/Redo (Ctrl+Z/Ctrl+Shift+Z, 50단계 히스토리 스택).
 
-12. Align docs after each milestone
+12. ~~Block editor (COMPOSE-001~005)~~ — Done
+- `src/types/blocks.ts`: 12 block types (discriminated union) + BlockDocument.
+- `src/app/api/projects/[id]/blocks/route.ts`: GET/PUT BlockDocument.
+- `src/services/section-to-blocks.ts`: GenerationResult.sections → Block[] conversion.
+- `src/lib/platform-presets.ts`: Coupang/Naver output presets.
+- `src/lib/api-client.ts`: getBlocks/saveBlocks added.
+- `src/app/projects/[id]/compose/page.tsx`: Compose editor page (server component).
+- `src/app/projects/[id]/result/page.tsx`: Result preview page.
+- `src/components/compose/`: 3-panel editor shell (palette + dnd-kit canvas + properties).
+  - compose-shell, compose-toolbar, block-palette, block-canvas, block-properties-panel.
+  - block-renderers/: 4 full (hero, selling-point, text-block, image-text) + 8 placeholder.
+  - text-overlay-editor: image text overlay drag editing.
+  - image-picker: file upload + URL input.
+  - block-preview: readOnly block rendering.
+- Generate route: editorMode:"compose" → auto-convert sections to blocks.
+- Home page: compose mode card + updated tagline.
+- Floating toolbar: compose editor cross-navigation link.
+- prisma/schema.prisma: Project.editorMode field added.
+- npm: @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities.
+
+13. Align docs after each milestone
 - Update together:
   - `PROJECT-STATUS.md`
   - `FEATURE-MATRIX.md`

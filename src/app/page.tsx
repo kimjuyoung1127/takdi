@@ -7,6 +7,7 @@ import { Upload } from "lucide-react";
 import Link from "next/link";
 
 const MODES = [
+  { mode: "compose", label: "상세페이지", description: "블록 에디터로 상세페이지 제작", editorMode: "compose" as const },
   { mode: "model-shot", label: "모델 촬영", description: "AI 모델 촬영" },
   { mode: "cutout", label: "컷아웃", description: "배경 제거 컷아웃" },
   { mode: "brand-image", label: "브랜드 이미지", description: "브랜드 이미지 생성" },
@@ -36,7 +37,7 @@ export default async function HomePage() {
           새 프로젝트 시작하기
         </h1>
         <p className="mb-6 text-sm text-gray-400">
-          모드를 선택하여 상세페이지를 생성하세요
+          AI 상세페이지, 원샷으로 완성하세요
         </p>
 
         <div className="flex gap-4 overflow-x-auto pb-4">

@@ -1,6 +1,6 @@
 # Takdi Schema and API Index
 
-Last Updated: 2026-03-06 (KST, UX-005 + API contract sync)
+Last Updated: 2026-03-06 (KST, COMPOSE-001 Block Editor)
 
 ## API Contract (Fixed for MVP)
 - `POST /api/projects`
@@ -21,6 +21,10 @@ Last Updated: 2026-03-06 (KST, UX-005 + API contract sync)
 - `POST /api/projects/:id/bgm` — BGM upload (FormData)
 - `POST /api/projects/:id/cuts/handoff`
 
+## API Contract (Block Editor)
+- `GET /api/projects/:id/blocks` — Read BlockDocument
+- `PUT /api/projects/:id/blocks` — Save BlockDocument
+
 ## API Contract (Remotion)
 - `POST /api/projects/:id/remotion/preview`
 - `POST /api/projects/:id/remotion/render` — Async: returns 202 + jobId
@@ -32,6 +36,9 @@ Last Updated: 2026-03-06 (KST, UX-005 + API contract sync)
 - `GenerationResult = { sections: Array<{ headline: string; body: string; imageSlot: string; styleKey: string }> }`
 - `Asset.sourceType = uploaded | generated | byoi_edited`
 - `CutHandoffPayload = { projectId: string; selectedImageId: string; preserveOriginal: boolean }`
+- `BlockType = hero | selling-point | image-full | image-grid | text-block | image-text | spec-table | comparison | review | divider | video | cta`
+- `BlockDocument = { format: "blocks"; blocks: Block[]; platform: { width: number; name: string }; version: number }`
+- `Project.editorMode = flow | compose`
 
 ## Prisma Domain Entities
 - `User`

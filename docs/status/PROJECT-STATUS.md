@@ -1,6 +1,6 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-06 (KST, UX-010 Undo/Redo)
+Last Updated: 2026-03-06 (KST, COMPOSE-001 Block Editor)
 
 ## Current Phase
 - Runtime bootstrap completed.
@@ -28,7 +28,22 @@ Last Updated: 2026-03-06 (KST, UX-010 Undo/Redo)
   - UX-008: 프로젝트 이름 인라인 편집 (에디터 좌상단)
   - UX-009: 노드 우클릭 컨텍스트 메뉴 (복제/삭제/상태초기화)
   - UX-010: Undo/Redo (Ctrl+Z / Ctrl+Shift+Z, 50단계 히스토리)
-- Next target: E2E 테스트, result 페이지 구현.
+- Block editor implemented (COMPOSE-001~005):
+  - 12 block types with discriminated union types (`src/types/blocks.ts`)
+  - Block CRUD API (`GET/PUT /api/projects/:id/blocks`)
+  - Compose editor page (`/projects/:id/compose`) with 3-panel layout
+  - @dnd-kit sortable canvas with drag-and-drop reordering
+  - 4 fully implemented block renderers (hero, selling-point, text-block, image-text) + 8 placeholder renderers
+  - Block properties panel with type-specific editing fields
+  - Text overlay editor for images (drag position, font size, color, weight)
+  - Image picker (file upload + URL input)
+  - Result/preview page (`/projects/:id/result`)
+  - AI generation → block auto-conversion (editorMode:"compose")
+  - Cross-navigation between node editor and compose editor
+  - Home page updated with compose mode card
+  - Platform presets (Coupang 780px, Naver 860px)
+  - Auto-save 30s + Ctrl+S + Ctrl+Z/Shift+Z undo/redo
+- Next target: E2E 테스트, 블록 내보내기 실제 구현.
 
 ## Gate
 - Validation gate: 20 real outputs completed.
@@ -48,6 +63,8 @@ Last Updated: 2026-03-06 (KST, UX-010 Undo/Redo)
   - `GET /api/projects/:id/generate?jobId=xxx` (poll)
   - `GET /api/projects/:id`
   - `PATCH /api/projects/:id/content`
+  - `GET /api/projects/:id/blocks` — Block document read
+  - `PUT /api/projects/:id/blocks` — Block document write
   - `POST /api/projects/:id/export` → 202
   - `GET /api/projects/:id/export?jobId=xxx` (poll)
   - `POST /api/projects/:id/remotion/render` → 202

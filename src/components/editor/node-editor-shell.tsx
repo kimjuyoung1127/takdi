@@ -300,6 +300,7 @@ export function NodeEditorShell({
         </div>
 
         <FloatingToolbar
+          projectId={projectId}
           onRunAll={handleRunAll}
           onStop={handleStop}
           onSave={handleSave}

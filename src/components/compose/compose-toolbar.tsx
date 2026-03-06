@@ -1,0 +1,94 @@
+/** Compose 에디터 상단 도구바 — 저장, 미리보기, 내보내기, 플랫폼 선택 */
+"use client";
+
+import { Save, Eye, Download, Loader2, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+interface ComposeToolbarProps {
+  projectId: string;
+  projectName: string;
+  platformName: string;
+  onPlatformChange: (platform: string) => void;
+  onSave: () => void;
+  onPreview: () => void;
+  onExport: () => void;
+  isSaving: boolean;
+  lastSaved: string | null;
+}
+
+export function ComposeToolbar({
+  projectId,
+  projectName,
+  platformName,
+  onPlatformChange,
+  onSave,
+  onPreview,
+  onExport,
+  isSaving,
+  lastSaved,
+}: ComposeToolbarProps) {
+  return (
+    <div className="flex h-12 items-center justify-between border-b border-gray-200 bg-white px-4">
+      {/* Left: project name + editor link */}
+      <div className="flex items-center gap-3">
+        <h1 className="text-sm font-semibold text-gray-900 truncate max-w-48">{projectName}</h1>
+        <Link
+          href={`/projects/${projectId}/editor`}
+          className="flex items-center gap-1 text-xs text-gray-400 hover:text-indigo-500"
+        >
+          <ExternalLink className="h-3 w-3" />
+          노드 에디터
+        </Link>
+      </div>
+
+      {/* Center: platform select */}
+      <div className="flex items-center gap-2">
+        <label className="text-xs text-gray-500">플랫폼:</label>
+        <select
+          value={platformName}
+          onChange={(e) => onPlatformChange(e.target.value)}
+          className="rounded border border-gray-200 px-2 py-1 text-xs"
+        >
+          <option value="coupang">쿠팡 (780px)</option>
+          <option value="naver">네이버 (860px)</option>
+        </select>
+      </div>
+
+      {/* Right: actions */}
+      <div className="flex items-center gap-1">
+        {lastSaved && (
+          <span className="mr-2 text-[10px] text-gray-400">저장: {lastSaved}</span>
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onSave}
+          disabled={isSaving}
+          className="flex items-center gap-1 text-xs"
+        >
+          {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+          저장
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onPreview}
+          className="flex items-center gap-1 text-xs"
+        >
+          <Eye className="h-3.5 w-3.5" />
+          미리보기
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onExport}
+          className="flex items-center gap-1 text-xs"
+        >
+          <Download className="h-3.5 w-3.5" />
+          내보내기
+        </Button>
+      </div>
+    </div>
+  );
+}

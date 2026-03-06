@@ -56,6 +56,7 @@ model Project {
   status      String          @default("draft")
   briefText   String?
   mode        String?
+  editorMode  String?         @default("flow")
   templateKey String?
   content     String?
   workspace   Workspace       @relation(fields: [workspaceId], references: [id])

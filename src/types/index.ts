@@ -25,6 +25,23 @@ export interface CutHandoffPayload {
   preserveOriginal: boolean;
 }
 
+// Block editor types
+export type { BlockType, TextOverlay, Block, BlockDocument } from "./blocks";
+export type {
+  HeroBlock,
+  SellingPointBlock,
+  ImageFullBlock,
+  ImageGridBlock,
+  TextBlockBlock,
+  ImageTextBlock,
+  SpecTableBlock,
+  ComparisonBlock,
+  ReviewBlock,
+  DividerBlock,
+  VideoBlock,
+  CtaBlock,
+} from "./blocks";
+
 // Remotion composition IDs — keep stable for automation
 export type CompositionId = "TakdiVideo_916" | "TakdiVideo_1x1" | "TakdiVideo_169";
 

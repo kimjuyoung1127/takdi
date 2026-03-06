@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-06 (KST, UX-010 Undo/Redo)
+Last Updated: 2026-03-06 (KST, COMPOSE-001 Block Editor)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -31,5 +31,10 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | UX-008 | Inline project name editing | Done | claude | 에디터 좌상단 클릭 편집, API name 필드 추가 |
 | UX-009 | Node context menu | Done | claude | 우클릭 복제/삭제/상태초기화 |
 | UX-010 | Undo/Redo | Done | claude | Ctrl+Z/Ctrl+Shift+Z, 50단계 히스토리 스택 |
+| COMPOSE-001 | Block editor (12 block types + dnd-kit canvas) | Done | claude | 상세페이지 블록 에디터: 타입, DB, API, UI, 프리뷰, 통합 |
+| COMPOSE-002 | Section → Block auto-conversion | Done | claude | AI 생성 결과 → 블록 자동 변환 (editorMode:compose) |
+| COMPOSE-003 | Block preview + result page | Done | claude | /projects/:id/result 프리뷰 페이지 |
+| COMPOSE-004 | Text overlay editor | Done | claude | 이미지 위 텍스트 오버레이 드래그 편집 |
+| COMPOSE-005 | Image picker | Done | claude | 파일 업로드/URL 입력 이미지 선택기 |
 | BILL-001 | Billing integration | Deferred | unassigned | after gate pass |
 | TEAM-001 | Team roles and invites | Deferred | unassigned | after gate pass |

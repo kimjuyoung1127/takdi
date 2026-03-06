@@ -68,6 +68,20 @@ export function updateContent(projectId: string, data: UpdateContentData) {
   return patch<{ id: string }>(`/api/projects/${projectId}/content`, data);
 }
 
+// --- Blocks ---
+
+export function getBlocks(projectId: string) {
+  return get<import("@/types/blocks").BlockDocument>(`/api/projects/${projectId}/blocks`);
+}
+
+export function saveBlocks(projectId: string, doc: import("@/types/blocks").BlockDocument) {
+  return request<{ ok: boolean }>(`/api/projects/${projectId}/blocks`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(doc),
+  });
+}
+
 // --- Generate (text) ---
 
 export interface AsyncJobResponse {
