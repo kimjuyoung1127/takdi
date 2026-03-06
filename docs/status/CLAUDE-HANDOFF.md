@@ -1,8 +1,8 @@
 # Claude Handoff
 
-Last Updated: 2026-03-06 (KST, UX-005 auto-save + project summary)
+Last Updated: 2026-03-06 (KST, UX-010 undo/redo)
 Branch: `main`
-Baseline commit: `4ebedd6`
+Baseline commit: `9fc29c0`
 
 ## Current Snapshot
 - All backend API routes implemented (17 endpoints, async where applicable):
@@ -97,6 +97,11 @@ Baseline commit: `4ebedd6`
 - UX-004: sonner 토스트 알림 (저장/생성/내보내기 성공·실패).
 - UX-005: Properties 비선택 시 프로젝트 요약 + 단축키 가이드, 30초 자동 저장 + 마지막 저장 시각.
 - `src/components/ui/sonner.tsx` 추가 (shadcn sonner).
+- UX-006: 파이프라인 실행 중 엣지 `animated` 토글.
+- UX-007: React Flow `MiniMap` 추가 (우하단 캔버스 조감).
+- UX-008: 프로젝트 이름 인라인 편집 + API `name` 필드 추가.
+- UX-009: 노드 우클릭 컨텍스트 메뉴 (복제/삭제/상태초기화).
+- UX-010: Undo/Redo (Ctrl+Z/Ctrl+Shift+Z, 50단계 히스토리 스택).
 
 12. Align docs after each milestone
 - Update together:

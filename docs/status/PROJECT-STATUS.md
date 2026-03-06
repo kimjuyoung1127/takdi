@@ -1,6 +1,6 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-06 (KST, UX-005 Auto-save + Project Summary)
+Last Updated: 2026-03-06 (KST, UX-010 Undo/Redo)
 
 ## Current Phase
 - Runtime bootstrap completed.
@@ -23,6 +23,11 @@ Last Updated: 2026-03-06 (KST, UX-005 Auto-save + Project Summary)
   - UX-003: 파이프라인 중 노드 상태 실시간 반영 (StatusBadge 연동)
   - UX-004: 토스트 알림 (sonner) — 저장/생성/내보내기 성공·실패
   - UX-005: Properties 프로젝트 요약 + 단축키 가이드 + 30초 자동 저장 + 마지막 저장 시각 표시
+  - UX-006: 파이프라인 실행 중 엣지 애니메이션 (흐르는 점선)
+  - UX-007: React Flow MiniMap (우하단 캔버스 조감)
+  - UX-008: 프로젝트 이름 인라인 편집 (에디터 좌상단)
+  - UX-009: 노드 우클릭 컨텍스트 메뉴 (복제/삭제/상태초기화)
+  - UX-010: Undo/Redo (Ctrl+Z / Ctrl+Shift+Z, 50단계 히스토리)
 - Next target: E2E 테스트, result 페이지 구현.
 
 ## Gate

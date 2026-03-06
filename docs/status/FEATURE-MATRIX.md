@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-06 (KST, UX-005 Auto-save + Project Summary)
+Last Updated: 2026-03-06 (KST, UX-010 Undo/Redo)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -26,5 +26,10 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | UX-003 | Real-time node status badges | Done | claude | 파이프라인 중 노드 StatusBadge 실시간 변경 |
 | UX-004 | Toast notifications | Done | claude | sonner 토스트: 저장/생성/내보내기 성공·실패 |
 | UX-005 | Project summary + auto-save | Done | claude | 비선택 시 프로젝트 요약 + 단축키 가이드, 30초 자동 저장 |
+| UX-006 | Animated edges during pipeline | Done | claude | 실행 중 엣지 흐르는 점선 애니메이션 |
+| UX-007 | MiniMap | Done | claude | React Flow 내장 미니맵, 우하단 |
+| UX-008 | Inline project name editing | Done | claude | 에디터 좌상단 클릭 편집, API name 필드 추가 |
+| UX-009 | Node context menu | Done | claude | 우클릭 복제/삭제/상태초기화 |
+| UX-010 | Undo/Redo | Done | claude | Ctrl+Z/Ctrl+Shift+Z, 50단계 히스토리 스택 |
 | BILL-001 | Billing integration | Deferred | unassigned | after gate pass |
 | TEAM-001 | Team roles and invites | Deferred | unassigned | after gate pass |
