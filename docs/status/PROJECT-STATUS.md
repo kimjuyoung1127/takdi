@@ -118,6 +118,9 @@ Last Updated: 2026-03-06 (KST, GAP-1)
   - `startSceneCompose`/`pollSceneCompose` api-client 함수
   - `SceneComposeAction` 공용 컴포넌트 (프롬프트 입력 + 비동기 폴링)
   - hero, image-full, image-text 블록 속성패널에 "AI 배경 합성" 버튼 추가
+- Background template library implemented (C2):
+  - `src/lib/scene-templates.ts` — 6카테고리 24종 장면 프롬프트 (스튜디오/라이프스타일/자연/시즌/미니멀/프리미엄)
+  - SceneComposeAction에 카테고리 탭 + 템플릿 그리드 + 직접 입력 통합 UI
 - Next target: 브라우저 통합 테스트, E2E 테스트, Railway 배포.
 
 ## Gate

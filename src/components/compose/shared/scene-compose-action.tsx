@@ -1,10 +1,11 @@
-/** SceneComposeAction - AI 배경 합성 액션 (속성 패널용) */
+/** SceneComposeAction - AI 배경 합성 액션 (템플릿 선택 + 직접 입력) */
 "use client";
 
 import { useState, useCallback, useRef } from "react";
 import { Wand2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { startSceneCompose, pollSceneCompose } from "@/lib/api-client";
+import { SCENE_CATEGORIES, SCENE_TEMPLATES, type SceneTemplate } from "@/lib/scene-templates";
 
 interface Props {
   projectId: string;
@@ -18,7 +19,14 @@ export function SceneComposeAction({ projectId, imageUrl, onImageChange }: Props
   const [prompt, setPrompt] = useState("");
   const [running, setRunning] = useState(false);
   const [open, setOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("studio");
   const abortRef = useRef(false);
+
+  const categoryTemplates = SCENE_TEMPLATES.filter((t) => t.category === selectedCategory);
+
+  const handleSelectTemplate = useCallback((tpl: SceneTemplate) => {
+    setPrompt(tpl.prompt);
+  }, []);
 
   const handleCompose = useCallback(async () => {
     if (!prompt.trim() || !imageUrl) return;
@@ -32,7 +40,6 @@ export function SceneComposeAction({ projectId, imageUrl, onImageChange }: Props
         scenePrompt: prompt.trim(),
       });
 
-      // Poll for result
       while (!abortRef.current) {
         await new Promise((r) => setTimeout(r, POLL_INTERVAL));
         const result = await pollSceneCompose(projectId, jobId);
@@ -83,15 +90,53 @@ export function SceneComposeAction({ projectId, imageUrl, onImageChange }: Props
           </button>
         )}
       </div>
+
+      {/* Category tabs */}
+      <div className="flex flex-wrap gap-1">
+        {SCENE_CATEGORIES.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.id)}
+            className={`rounded px-2 py-0.5 text-[10px] font-medium transition-colors ${
+              selectedCategory === cat.id
+                ? "bg-purple-500 text-white"
+                : "bg-white text-gray-500 hover:text-purple-600"
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Template grid */}
+      <div className="grid grid-cols-2 gap-1">
+        {categoryTemplates.map((tpl) => (
+          <button
+            key={tpl.id}
+            onClick={() => handleSelectTemplate(tpl)}
+            disabled={running}
+            className={`rounded border px-2 py-1 text-left text-[11px] transition-colors ${
+              prompt === tpl.prompt
+                ? "border-purple-400 bg-purple-100 text-purple-700"
+                : "border-gray-200 bg-white text-gray-600 hover:border-purple-300"
+            }`}
+          >
+            {tpl.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Custom prompt */}
       <input
         type="text"
-        placeholder="장면 설명 (예: 깔끔한 흰색 스튜디오)"
+        placeholder="직접 입력 (예: 깔끔한 흰색 스튜디오)"
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
         onKeyDown={(e) => { if (e.key === "Enter" && !running) handleCompose(); }}
         disabled={running}
         className="w-full rounded border border-purple-200 bg-white px-2 py-1.5 text-xs placeholder:text-gray-400"
       />
+
       <button
         onClick={handleCompose}
         disabled={running || !prompt.trim()}

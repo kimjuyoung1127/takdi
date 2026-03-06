@@ -52,7 +52,7 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | GAP-1 | Cross-mode asset sharing (cutout->compose) | Done | claude | GET /assets API + AssetGrid + ImagePicker 에셋탭 + ImageUploadZone 에셋선택 |
 | GAP-2 | Image quality adjustment (CSS filters) | Done | claude | ImageFilters type + 밝기/대비/채도 슬라이더 + 5종 이미지 블록 적용 |
 | C1 | AI background/scene compositing | Done | claude | scene-compose API + SceneComposeAction UI + 3종 이미지 블록 속성패널 적용 |
-| C2 | Background template library | Not Started | unassigned | Priority 4: High impact, Medium effort (synergy with C1) |
+| C2 | Background template library | Done | claude | 6카테고리 24종 장면 템플릿 + SceneComposeAction 템플릿 선택 UI |
 | F1 | Category-aware prompts | Not Started | unassigned | Priority 5: High impact, Low effort (buildPrompt branching) |
 | E1 | Additional platform presets (11st/Gmarket/SSG) | Not Started | unassigned | Priority 6: Medium impact, Low effort |
 | A1 | Global color palette (BlockDocument.theme) | Not Started | unassigned | Priority 7: High impact, Medium effort |
