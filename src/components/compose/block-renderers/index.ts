@@ -11,3 +11,4 @@ export { ReviewBlockRenderer } from "./review-block";
 export { DividerBlockRenderer } from "./divider-block";
 export { VideoBlockRenderer } from "./video-block";
 export { CtaBlockRenderer } from "./cta-block";
+export { UsageStepsBlockRenderer } from "./usage-steps-block";

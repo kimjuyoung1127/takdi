@@ -16,6 +16,7 @@ import {
   DividerBlockRenderer,
   VideoBlockRenderer,
   CtaBlockRenderer,
+  UsageStepsBlockRenderer,
 } from "./block-renderers";
 
 interface BlockPreviewProps {
@@ -53,6 +54,8 @@ function ReadOnlyBlock({ block }: { block: Block }) {
       return <VideoBlockRenderer block={block} {...props} />;
     case "cta":
       return <CtaBlockRenderer block={block} {...props} />;
+    case "usage-steps":
+      return <UsageStepsBlockRenderer block={block} {...props} />;
   }
 }
 

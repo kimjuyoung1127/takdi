@@ -13,7 +13,7 @@
 - `block-preview.tsx` — readOnly 블록 프리뷰 (forwardRef 지원, 결과 페이지에서 캡처용)
 
 ## Sub-folders
-- `block-renderers/` — 12종 블록 렌더러 (개별 파일)
+- `block-renderers/` — 13종 블록 렌더러 (개별 파일)
 - `shared/` — 공용 재사용 컴포넌트 (EditableText, ImageUploadZone, VideoUploadZone, ColorStylePicker)
 
 ## Convention

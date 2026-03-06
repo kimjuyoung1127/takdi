@@ -1,6 +1,6 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-06 (KST, GAP-1)
+Last Updated: 2026-03-06 (KST, B3)
 
 ## Current Phase
 - Runtime bootstrap completed.
@@ -30,11 +30,11 @@ Last Updated: 2026-03-06 (KST, GAP-1)
   - UX-009: 노드 우클릭 컨텍스트 메뉴 (복제/삭제/상태초기화)
   - UX-010: Undo/Redo (Ctrl+Z / Ctrl+Shift+Z, 50단계 히스토리)
 - Block editor implemented (COMPOSE-001~005):
-  - 12 block types with discriminated union types (`src/types/blocks.ts`)
+  - 13 block types with discriminated union types (`src/types/blocks.ts`)
   - Block CRUD API (`GET/PUT /api/projects/:id/blocks`)
   - Compose editor page (`/projects/:id/compose`) with 3-panel layout
   - @dnd-kit sortable canvas with drag-and-drop reordering
-  - 12 fully implemented block renderers (개별 파일, 모든 블록 인라인 편집 가능)
+  - 13 fully implemented block renderers (개별 파일, 모든 블록 인라인 편집 가능)
   - ComposeProvider + useCompose() 컨텍스트 (projectId 전달)
   - 공용 컴포넌트: EditableText, ImageUploadZone, VideoUploadZone, ColorStylePicker
   - data-placeholder CSS로 플레이스홀더 자동 표시/클리어
@@ -137,6 +137,10 @@ Last Updated: 2026-03-06 (KST, GAP-1)
   - 7종 프리셋: 기본/따뜻한/시원한/자연/럭셔리/파스텔/모노톤
   - `ThemePicker` UI (프리셋 선택 + 커스텀 색상 편집)
   - 캔버스에 CSS 변수 + 배경/글자색 적용, ComposeContext에 theme 전달
+- Usage steps block implemented (B3):
+  - 13번째 블록 타입: `usage-steps` (번호 + 이미지 + 라벨 + 설명)
+  - 추가/삭제 (최대 6단계), ImageUploadZone + EditableText 인라인 편집
+  - 팔레트, 캔버스, 프리뷰, 속성패널 통합 완료
 - Next target: 브라우저 통합 테스트, E2E 테스트, Railway 배포.
 
 ## Gate

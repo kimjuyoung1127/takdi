@@ -306,6 +306,15 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
           </div>
         )}
 
+        {/* usage-steps */}
+        {block.type === "usage-steps" && (
+          <div className="space-y-3">
+            <p className="text-xs text-gray-400">
+              단계 {block.steps.length}개 (최대 6개) — 아래 블록에서 직접 수정
+            </p>
+          </div>
+        )}
+
         {/* video */}
         {block.type === "video" && (
           <div className="space-y-3">

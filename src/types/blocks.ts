@@ -14,7 +14,8 @@ export type BlockType =
   | "review"
   | "divider"
   | "video"
-  | "cta";
+  | "cta"
+  | "usage-steps";
 
 // ─── Image Filters ───
 
@@ -139,6 +140,16 @@ export interface CtaBlock extends BaseBlock {
   ctaStyle?: "default" | "gradient" | "dark" | "minimal";
 }
 
+export interface UsageStepsBlock extends BaseBlock {
+  type: "usage-steps";
+  title: string;
+  steps: Array<{
+    imageUrl: string;
+    label: string;
+    description: string;
+  }>;
+}
+
 // ─── Discriminated Union ───
 
 export type Block =
@@ -153,7 +164,8 @@ export type Block =
   | ReviewBlock
   | DividerBlock
   | VideoBlock
-  | CtaBlock;
+  | CtaBlock
+  | UsageStepsBlock;
 
 // ─── Theme ───
 

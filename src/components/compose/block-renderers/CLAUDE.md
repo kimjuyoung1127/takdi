@@ -1,5 +1,5 @@
 # block-renderers/
-12종 블록 렌더러 — 개별 파일 + barrel export.
+13종 블록 렌더러 — 개별 파일 + barrel export.
 
 ## Files
 - `index.ts` — barrel export (12종 전체)
@@ -15,6 +15,7 @@
 - `divider-block.tsx` — 구분선 (line/space/dot)
 - `video-block.tsx` — 영상 (VideoUploadZone + 포스터 이미지)
 - `cta-block.tsx` — 구매 유도 (4종 스타일 프리셋 + 커스텀 색상, placeholder "보조 문구")
+- `usage-steps-block.tsx` — 사용 방법 (번호 + 이미지 + 라벨 + 설명, 추가/삭제, 최대 6개)
 
 ## Convention
 - 공용 컴포넌트: `../shared/` (EditableText, ImageUploadZone 등)

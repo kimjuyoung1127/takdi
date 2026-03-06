@@ -35,6 +35,7 @@ import {
   DividerBlockRenderer,
   VideoBlockRenderer,
   CtaBlockRenderer,
+  UsageStepsBlockRenderer,
 } from "./block-renderers";
 
 interface BlockCanvasProps {
@@ -146,6 +147,8 @@ function BlockDispatch({
       return <VideoBlockRenderer block={block} {...props} />;
     case "cta":
       return <CtaBlockRenderer block={block} {...props} />;
+    case "usage-steps":
+      return <UsageStepsBlockRenderer block={block} {...props} />;
   }
 }
 

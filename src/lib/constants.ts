@@ -123,4 +123,5 @@ export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   divider: "구분선",
   video: "영상",
   cta: "구매 유도",
+  "usage-steps": "사용 방법",
 };

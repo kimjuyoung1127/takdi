@@ -14,6 +14,7 @@ import {
   MousePointerClick,
   Star,
   Crown,
+  ListOrdered,
 } from "lucide-react";
 import type { Block, BlockType } from "@/types/blocks";
 
@@ -200,6 +201,23 @@ const TEMPLATES: BlockTemplate[] = [
       buttonLabel: "구매하기",
       buttonUrl: "#",
       ctaStyle: "default",
+    }),
+  },
+  {
+    type: "usage-steps",
+    label: "사용 방법",
+    desc: "번호 순서로 사용 방법 안내",
+    icon: ListOrdered,
+    create: () => ({
+      id: nextId(),
+      type: "usage-steps",
+      visible: true,
+      title: "사용 방법",
+      steps: [
+        { imageUrl: "", label: "STEP 1", description: "설명을 입력하세요" },
+        { imageUrl: "", label: "STEP 2", description: "설명을 입력하세요" },
+        { imageUrl: "", label: "STEP 3", description: "설명을 입력하세요" },
+      ],
     }),
   },
 ];
