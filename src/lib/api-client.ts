@@ -146,7 +146,42 @@ export function pollExport(projectId: string, jobId: string) {
   return get<JobPollResponse>(`/api/projects/${projectId}/export?jobId=${jobId}`);
 }
 
+// --- Remove Background ---
+
+export function startRemoveBg(projectId: string, opts?: { assetId?: string }) {
+  return post<AsyncJobResponse>(`/api/projects/${projectId}/remove-bg`, opts);
+}
+
+export function pollRemoveBg(projectId: string, jobId: string) {
+  return get<JobPollResponse>(`/api/projects/${projectId}/remove-bg?jobId=${jobId}`);
+}
+
+// --- Model Compose ---
+
+export function startModelCompose(
+  projectId: string,
+  opts?: { assetId?: string; aspectRatio?: string },
+) {
+  return post<AsyncJobResponse>(`/api/projects/${projectId}/model-compose`, opts);
+}
+
+export function pollModelCompose(projectId: string, jobId: string) {
+  return get<JobPollResponse>(`/api/projects/${projectId}/model-compose?jobId=${jobId}`);
+}
+
 // --- Assets ---
+
+export interface AssetRecord {
+  id: string;
+  filePath: string;
+  mimeType: string | null;
+  sourceType: string;
+  createdAt: string;
+}
+
+export function getProjectAssets(projectId: string) {
+  return get<{ assets: AssetRecord[] }>(`/api/projects/${projectId}/assets`);
+}
 
 export function uploadAsset(
   projectId: string,

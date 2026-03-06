@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-06 (KST, MODE-001)
+Last Updated: 2026-03-06 (KST, GAP-1)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -10,7 +10,7 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | CORE-002 | Text brief input and parse entry | Done | claude | brief-parser service + generate route integration |
 | CORE-003 | Multi-image asset upload | Done | claude | POST /api/projects/:id/assets + BYOI validator |
 | AI-001 | Brief-to-sections generation | Done | claude | Gemini 2.5 Flash + structured output + brief-parser fallback + async 202 |
-| AI-002 | Image-slot mapping | Done | claude | Imagen 4.0 + async job + polling + save-generated-image |
+| AI-002 | Image-slot mapping | Done | claude | ~~Imagen 4.0~~ → Kie.ai Nano Banana 2 (KIE-001) + async job + polling |
 | AI-003 | Manual edit save loop | Done | claude | PATCH /api/projects/:id/content |
 | UI-001 | Node main editor canvas | Done | claude | Home + Editor screens: Tailwind v4, shadcn/ui, React Flow, 20+ components |
 | UI-002 | UI-API integration | Done | claude | api-client layer, editor wiring (Run/Save/Preview/Export), properties panel, file restructure |
@@ -43,5 +43,19 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | UX-011 | User-friendly text polish | Done | claude | 기술 용어→한글 친화 (20+ 파일), 공유 라벨 상수, desc 툴팁, 에러 토스트 |
 | PERF-001 | Page loading performance | Done | claude | 5개 loading.tsx 스켈레톤, dynamic import, lazy html2canvas, API 쿼리 최적화 |
 | MODE-001 | Mode-based node filtering + prompt rename | Done | claude | 모드별 허용 노드 필터링, generate→prompt 리네이밍, 초기 파이프라인 자동 생성 |
+| PIPE-001 | Dynamic pipeline executor | Done | claude | Kahn 토폴로지 정렬 + 콜백 기반 실행 엔진 |
+| TEST-001 | Pipeline executor tests | Done | claude | 35 vitest tests, 7 groups, all mocked (0원) |
+| RATIO-001 | Global ratio setting | Done | claude | 플로팅 툴바 비율 토글, PipelineContext, 노드별 비율 UI 제거 |
+| KIE-001 | Kie.ai Nano Banana 2 migration | Done | claude | Imagen 4.0→Nano Banana 2, 2K/4K 40~60% 비용 절감, 4K 네이티브 |
+| CUTOUT-FIX | Cutout + model-shot pipeline redesign | Done | claude | cutout: upload→remove-bg→export, model-shot: upload→prompt→model-compose→export, 새 노드 3종+API 2종+서비스 1종, 39 tests |
+| COMP-001 | Competitive analysis & improvement roadmap | Done | claude | 4 refs + PicCordial analysis, GAP-1/GAP-2 identified, 8 priority features, docs/ref/COMPETITIVE-ANALYSIS.md |
+| GAP-1 | Cross-mode asset sharing (cutout->compose) | Done | claude | GET /assets API + AssetGrid + ImagePicker 에셋탭 + ImageUploadZone 에셋선택 |
+| GAP-2 | Image quality adjustment/upscale | Not Started | unassigned | Priority 2: High impact, Low~Medium effort |
+| C1 | AI background/scene compositing | Not Started | unassigned | Priority 3: Very High impact, Low effort (Kie.ai image_input exists) |
+| C2 | Background template library | Not Started | unassigned | Priority 4: High impact, Medium effort (synergy with C1) |
+| F1 | Category-aware prompts | Not Started | unassigned | Priority 5: High impact, Low effort (buildPrompt branching) |
+| E1 | Additional platform presets (11st/Gmarket/SSG) | Not Started | unassigned | Priority 6: Medium impact, Low effort |
+| A1 | Global color palette (BlockDocument.theme) | Not Started | unassigned | Priority 7: High impact, Medium effort |
+| B3 | Usage steps block (new block type) | Not Started | unassigned | Priority 8: High impact, Low effort |
 | BILL-001 | Billing integration | Deferred | unassigned | after gate pass |
 | TEAM-001 | Team roles and invites | Deferred | unassigned | after gate pass |

@@ -1,11 +1,12 @@
-/** ImageUploadZone - 클릭으로 이미지 업로드 또는 교체 */
+/** ImageUploadZone - 클릭으로 이미지 업로드 또는 프로젝트 에셋 선택 */
 "use client";
 
 import { useRef, useState, useCallback } from "react";
-import { Upload, ImageIcon, Loader2 } from "lucide-react";
+import { Upload, ImageIcon, Loader2, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import { useCompose } from "../compose-context";
 import { uploadAsset } from "@/lib/api-client";
+import { AssetGrid } from "./asset-grid";
 
 interface ImageUploadZoneProps {
   imageUrl: string;
@@ -27,6 +28,7 @@ export function ImageUploadZone({
   const { projectId } = useCompose();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [showAssets, setShowAssets] = useState(false);
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -66,6 +68,36 @@ export function ImageUploadZone({
     [handleFile],
   );
 
+  const handleAssetSelect = useCallback(
+    (filePath: string) => {
+      onImageChange(filePath);
+      setShowAssets(false);
+    },
+    [onImageChange],
+  );
+
+  if (showAssets) {
+    return (
+      <div
+        className={`overflow-hidden rounded border border-gray-200 bg-white ${className}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
+          <span className="text-xs font-medium text-gray-600">프로젝트 파일</span>
+          <button
+            onClick={() => setShowAssets(false)}
+            className="text-xs text-gray-400 hover:text-gray-600"
+          >
+            닫기
+          </button>
+        </div>
+        <div className="max-h-[240px] overflow-y-auto p-2">
+          <AssetGrid projectId={projectId} onSelect={handleAssetSelect} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`group/upload relative cursor-pointer overflow-hidden ${className}`}
@@ -89,22 +121,38 @@ export function ImageUploadZone({
             alt=""
             className={`h-full w-full ${objectFit === "contain" ? "object-contain" : "object-cover"}`}
           />
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover/upload:opacity-100">
+          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover/upload:opacity-100">
             <div className="flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium text-gray-700">
               <Upload className="h-3.5 w-3.5" />
               이미지 교체
             </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowAssets(true); }}
+              className="flex items-center gap-1 rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-white"
+            >
+              <FolderOpen className="h-3.5 w-3.5" />
+              프로젝트 파일
+            </button>
           </div>
         </>
       ) : (
-        <div className="flex h-full min-h-[120px] items-center justify-center border-2 border-dashed border-gray-300 bg-gray-50 transition-colors hover:border-indigo-300 hover:bg-indigo-50/50">
+        <div className="flex h-full min-h-[120px] flex-col items-center justify-center border-2 border-dashed border-gray-300 bg-gray-50 transition-colors hover:border-indigo-300 hover:bg-indigo-50/50">
           {uploading ? (
             <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
           ) : (
-            <div className="text-center text-gray-400">
-              <ImageIcon className="mx-auto mb-2 h-8 w-8" />
-              <p className="text-xs">{placeholderText}</p>
-            </div>
+            <>
+              <div className="text-center text-gray-400">
+                <ImageIcon className="mx-auto mb-2 h-8 w-8" />
+                <p className="text-xs">{placeholderText}</p>
+              </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowAssets(true); }}
+                className="mt-2 flex items-center gap-1 rounded bg-gray-100 px-2 py-1 text-[11px] text-gray-500 hover:bg-gray-200 hover:text-gray-700"
+              >
+                <FolderOpen className="h-3 w-3" />
+                프로젝트 파일에서 선택
+              </button>
+            </>
           )}
         </div>
       )}

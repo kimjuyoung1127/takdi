@@ -3,3 +3,4 @@ export { EditableText } from "./editable-text";
 export { ImageUploadZone } from "./image-upload-zone";
 export { VideoUploadZone } from "./video-upload-zone";
 export { ColorStylePicker } from "./color-style-picker";
+export { AssetGrid } from "./asset-grid";

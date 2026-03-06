@@ -1,14 +1,15 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-06 (KST, MODE-001 모드별 노드 분리)
+Last Updated: 2026-03-06 (KST, GAP-1)
 
 ## Current Phase
 - Runtime bootstrap completed.
-- All backend API routes implemented (17 endpoints, all async where applicable).
+- All backend API routes implemented (19 endpoints, all async where applicable).
 - Brief text parser implemented (CORE-002): headings/paragraphs → structured sections.
 - Remotion composition baseline implemented (VID-001): 3 ratios (9:16, 1:1, 16:9).
 - Gemini AI generation implemented (AI-001): `@google/genai` + structured output + fallback.
-- Imagen image generation implemented (AI-002): async job + polling + file save + Asset record.
+- ~~Imagen image generation implemented (AI-002)~~ → replaced by Kie.ai Nano Banana 2 (KIE-001).
+- Kie.ai Nano Banana 2 image generation implemented (KIE-001): Kie.ai API proxy, 1K/2K/4K, $0.04~0.09/image.
 - Browser preview implemented (VID-002): @remotion/player + preview page + ratio toggle.
 - Async conversion completed (ASYNC-001): generate, render, export routes → fire-and-forget + polling.
 - UI screens implemented (UI-001): Tailwind v4 + shadcn/ui + React Flow.
@@ -81,7 +82,32 @@ Last Updated: 2026-03-06 (KST, MODE-001 모드별 노드 분리)
   - 모드별 초기 파이프라인 자동 생성 (buildInitialNodes)
   - 이미지 전용 모드에서 미리보기 버튼 숨김
   - 기존 저장 프로젝트 하위 호환 (ICONS 맵에 generate + prompt 둘 다 등록)
-- Next target: 인라인 결과 미리보기, 동적 파이프라인 실행, E2E 테스트, Railway 배포.
+- Pipeline executor tests implemented (TEST-001): 35 vitest tests, 7 groups, all mocked (0원).
+- Global ratio setting implemented (RATIO-001): 플로팅 툴바 비율 토글 (9:16/1:1/16:9), 노드별 비율 UI 제거, PipelineContext로 전달.
+- Image generation migrated to Kie.ai (KIE-001): Imagen 4.0 → Nano Banana 2, 2K/4K에서 40~60% 비용 절감.
+- Cutout + model-shot pipeline redesigned (CUTOUT-FIX):
+  - cutout 모드: `upload-image → remove-bg → export` (프롬프트 불필요, Kie.ai recraft/remove-background)
+  - model-shot 모드: `upload-image → prompt → model-compose → export` (Nano Banana 2 + image_input 참조)
+  - 새 노드 타입 3종: `upload-image` (수동 업로드, skip), `remove-bg` (배경 제거), `model-compose` (모델 합성)
+  - 새 API 2종: `POST/GET /api/projects/:id/remove-bg`, `POST/GET /api/projects/:id/model-compose`
+  - 새 서비스: `removebg-service.ts` (Kie.ai recraft/remove-background 클라이언트)
+  - Properties panel: upload-image 노드 선택 시 인라인 이미지 업로드 UI
+  - PipelineContext에 `uploadedAssetId` 추가 (upload-image 노드 → remove-bg/model-compose 전달)
+  - 기존 모드 (brand-image, gif-source, freeform) 영향 없음
+  - 39개 vitest 테스트 통과 (기존 35 + 신규 4)
+- Competitive analysis completed (COMPETITIVE-ANALYSIS):
+  - 4개 참조 자료 + 1개 직접 경쟁사(PicCordial) 분석
+  - 핵심 갭 2건 발견: GAP-1 모드 간 에셋 단절, GAP-2 이미지 보정/업스케일 미구현
+  - 8개 우선순위 기능 도출 (GAP-1 > GAP-2 > C1 AI 배경 합성 > C2 템플릿 > F1 카테고리 프롬프트)
+  - Takdi 경쟁 우위 확인: 엔드투엔드 파이프라인, 40~75% 비용 절감, 6개 모드
+  - 분석 문서: `docs/ref/COMPETITIVE-ANALYSIS.md`
+- Cross-mode asset sharing implemented (GAP-1):
+  - `GET /api/projects/:id/assets` — 프로젝트 에셋 목록 조회 API
+  - `getProjectAssets()` api-client 함수 추가
+  - `AssetGrid` 공용 컴포넌트 (썸네일 그리드, sourceType 라벨)
+  - ImagePicker: "프로젝트 파일" 탭 추가 (cutout/model-shot 결과 즉시 사용)
+  - ImageUploadZone: "프로젝트 파일에서 선택" 버튼 추가
+- Next target: 브라우저 통합 테스트, E2E 테스트, Railway 배포.
 
 ## Gate
 - Validation gate: 20 real outputs completed.
@@ -110,6 +136,11 @@ Last Updated: 2026-03-06 (KST, MODE-001 모드별 노드 분리)
   - `PATCH /api/projects/:id/content`
   - `GET /api/projects/:id/blocks` — Block document read
   - `PUT /api/projects/:id/blocks` — Block document write
+  - `GET /api/projects/:id/assets` — 에셋 목록 조회
+  - `POST /api/projects/:id/remove-bg` → 202 (배경 제거)
+  - `GET /api/projects/:id/remove-bg?jobId=xxx` (poll)
+  - `POST /api/projects/:id/model-compose` → 202 (모델 합성)
+  - `GET /api/projects/:id/model-compose?jobId=xxx` (poll)
   - `POST /api/projects/:id/export` → 202
   - `GET /api/projects/:id/export?jobId=xxx` (poll)
   - `POST /api/projects/:id/remotion/render` → 202
