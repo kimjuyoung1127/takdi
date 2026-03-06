@@ -276,6 +276,7 @@ export function NodeEditorShell({
           ref={canvasRef}
           onStateChange={handleStateChange}
           onNodeSelect={handleNodeSelect}
+          isRunning={isRunning}
         />
         <BottomLogger logs={logs} />
       </div>

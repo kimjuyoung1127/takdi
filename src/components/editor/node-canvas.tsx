@@ -68,10 +68,11 @@ const INITIAL_EDGES: Edge[] = [
 interface NodeCanvasProps {
   onStateChange?: (nodes: Node[], edges: Edge[]) => void;
   onNodeSelect?: (nodeId: string | null, nodeData?: NodeData) => void;
+  isRunning?: boolean;
 }
 
 export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
-  function NodeCanvas({ onStateChange, onNodeSelect }, ref) {
+  function NodeCanvas({ onStateChange, onNodeSelect, isRunning }, ref) {
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState(INITIAL_NODES);
     const [edges, setEdges, onEdgesChange] = useEdgesState(INITIAL_EDGES);
@@ -106,6 +107,11 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
         return nodes.length;
       },
     }), [setNodes, setEdges, onNodeSelect, nodes.length]);
+
+    // Toggle edge animation when pipeline is running
+    useEffect(() => {
+      setEdges((eds) => eds.map((e) => ({ ...e, animated: !!isRunning })));
+    }, [isRunning, setEdges]);
 
     // Notify parent of state changes
     useEffect(() => {
