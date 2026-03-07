@@ -12,10 +12,12 @@ export interface GuardrailViolation {
   autoFixable: boolean;
 }
 
+const MAX_TEXT = 150;
+const MIN_FONT = 14;
+
 /** 텍스트 최소/최대 길이 검증 */
 function checkTextLength(block: Block): GuardrailViolation[] {
   const violations: GuardrailViolation[] = [];
-  const MAX_TEXT = 150;
 
   if (block.type === "text-block" && block.body.length > MAX_TEXT) {
     violations.push({
@@ -23,17 +25,17 @@ function checkTextLength(block: Block): GuardrailViolation[] {
       rule: "max-text-length",
       message: `본문이 ${MAX_TEXT}자를 초과합니다 (${block.body.length}자)`,
       severity: "warning",
-      autoFixable: false,
+      autoFixable: true,
     });
   }
 
   if (block.type === "hero") {
     for (const overlay of block.overlays) {
-      if (overlay.fontSize < 14) {
+      if (overlay.fontSize < MIN_FONT) {
         violations.push({
           blockId: block.id,
           rule: "min-font-size",
-          message: `오버레이 텍스트 크기가 14px 미만입니다 (${overlay.fontSize}px)`,
+          message: `오버레이 텍스트 크기가 ${MIN_FONT}px 미만입니다 (${overlay.fontSize}px)`,
           severity: "warning",
           autoFixable: true,
         });
@@ -97,7 +99,7 @@ function checkCtaPresence(blocks: Block[]): GuardrailViolation[] {
       rule: "no-cta",
       message: "구매 유도(CTA) 블록이 없습니다. 하단에 CTA 블록 추가를 권장합니다",
       severity: "warning",
-      autoFixable: false,
+      autoFixable: true,
     }];
   }
   return [];
@@ -122,4 +124,55 @@ export function validateBlocks(blocks: Block[]): GuardrailViolation[] {
 /** 단일 블록 위반 건수 */
 export function getBlockViolations(blockId: string, violations: GuardrailViolation[]): GuardrailViolation[] {
   return violations.filter((v) => v.blockId === blockId);
+}
+
+/** 단일 블록 자동 수정 — autoFixable 위반만 교정 */
+export function autoFixBlock(block: Block, violation: GuardrailViolation): Block {
+  switch (violation.rule) {
+    case "min-font-size":
+      if (block.type === "hero") {
+        return {
+          ...block,
+          overlays: block.overlays.map((o) =>
+            o.fontSize < MIN_FONT ? { ...o, fontSize: MIN_FONT } : o,
+          ),
+        };
+      }
+      return block;
+
+    case "max-text-length":
+      if (block.type === "text-block" && block.body.length > MAX_TEXT) {
+        return { ...block, body: block.body.slice(0, MAX_TEXT) + "..." };
+      }
+      return block;
+
+    default:
+      return block;
+  }
+}
+
+/** 전체 블록 일괄 자동 수정 — autoFixable 위반 모두 교정, CTA 블록 자동 추가 포함 */
+export function autoFixAllBlocks(blocks: Block[], createCtaBlock: () => Block): { blocks: Block[]; fixCount: number } {
+  const violations = validateBlocks(blocks);
+  const fixable = violations.filter((v) => v.autoFixable);
+  let fixCount = 0;
+
+  let result = blocks.map((block) => {
+    const blockViolations = fixable.filter((v) => v.blockId === block.id);
+    let fixed = block;
+    for (const v of blockViolations) {
+      fixed = autoFixBlock(fixed, v);
+      fixCount++;
+    }
+    return fixed;
+  });
+
+  // CTA 자동 추가
+  const ctaViolation = fixable.find((v) => v.rule === "no-cta");
+  if (ctaViolation) {
+    result = [...result, createCtaBlock()];
+    fixCount++;
+  }
+
+  return { blocks: result, fixCount };
 }

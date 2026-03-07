@@ -1,7 +1,22 @@
 /** Takdi Studio 루트 레이아웃 — globals.css + 기본 body 스타일 적용 */
 import type { Metadata } from "next";
+import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+
+const notoSansKr = Noto_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+  variable: "--font-sans",
+});
+
+const notoSerifKr = Noto_Serif_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+  variable: "--font-serif",
+});
 
 export const metadata: Metadata = {
   title: "Takdi Studio",
@@ -14,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
+    <html lang="ko" className={`${notoSansKr.variable} ${notoSerifKr.variable}`}>
       <body className="min-h-screen bg-gray-50 antialiased">
         {children}
         <Toaster position="top-center" richColors />

@@ -1,7 +1,7 @@
 /** Compose 에디터 상단 도구바 — 저장, 미리보기, 내보내기, 플랫폼 선택 */
 "use client";
 
-import { Save, Eye, Download, Loader2, ExternalLink, LayoutTemplate, ShieldCheck } from "lucide-react";
+import { Save, Eye, Download, Loader2, ExternalLink, LayoutTemplate, ShieldCheck, Smartphone, Monitor, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PLATFORM_PRESETS } from "@/lib/constants";
 import type { ThemePalette } from "@/types/blocks";
@@ -18,6 +18,9 @@ interface ComposeToolbarProps {
   onExport: () => void;
   onAiGenerate?: () => void;
   onDesignCheck?: () => void;
+  onAutoFixAll?: () => void;
+  mobilePreview?: boolean;
+  onMobilePreviewToggle?: () => void;
   isSaving: boolean;
   lastSaved: string | null;
   theme?: ThemePalette;
@@ -34,6 +37,9 @@ export function ComposeToolbar({
   onExport,
   onAiGenerate,
   onDesignCheck,
+  onAutoFixAll,
+  mobilePreview,
+  onMobilePreviewToggle,
   isSaving,
   lastSaved,
   theme,
@@ -90,6 +96,37 @@ export function ComposeToolbar({
           >
             <ShieldCheck className="h-3.5 w-3.5" />
             디자인 점검
+          </Button>
+        )}
+        {onAutoFixAll && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onAutoFixAll}
+            className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700"
+          >
+            <Wrench className="h-3.5 w-3.5" />
+            전체 수정
+          </Button>
+        )}
+        {onMobilePreviewToggle && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onMobilePreviewToggle}
+            className={`flex items-center gap-1 text-xs ${mobilePreview ? "text-indigo-600 bg-indigo-50" : ""}`}
+          >
+            {mobilePreview ? (
+              <>
+                <Monitor className="h-3.5 w-3.5" />
+                데스크탑
+              </>
+            ) : (
+              <>
+                <Smartphone className="h-3.5 w-3.5" />
+                모바일
+              </>
+            )}
           </Button>
         )}
         {lastSaved && (

@@ -17,7 +17,14 @@ export async function POST(
     const { id } = await params;
     const body = await request.json().catch(() => ({}));
 
-    const project = await prisma.project.findUnique({ where: { id } });
+    const project = await prisma.project.findUnique({
+      where: { id },
+      select: {
+        workspaceId: true,
+        name: true,
+        content: true,
+      },
+    });
     if (!project) return jsonNotFound("Project");
 
     try {

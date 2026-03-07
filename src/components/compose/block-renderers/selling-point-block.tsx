@@ -101,9 +101,9 @@ export function SellingPointBlockRenderer({ block, selected, onSelect, onUpdate,
       className={`w-full rounded-lg border-2 bg-white p-6 transition-colors ${selected ? "border-indigo-500" : "border-transparent hover:border-gray-200"}`}
       onClick={onSelect}
     >
-      <div className={`grid gap-6 ${block.items.length === 1 ? "grid-cols-1" : block.items.length === 2 ? "grid-cols-2" : block.items.length === 3 ? "grid-cols-3" : "grid-cols-4"}`}>
+      <div className={`${block.layout === "horizontal" ? "flex gap-4 overflow-x-auto" : `grid gap-6 ${block.items.length === 1 ? "grid-cols-1" : block.items.length === 2 ? "grid-cols-2" : block.items.length === 3 ? "grid-cols-3" : "grid-cols-4"}`}`}>
         {block.items.map((item, idx) => (
-          <div key={idx} className="group/item relative flex flex-col items-center gap-2 text-center">
+          <div key={idx} className={`group/item relative flex flex-col items-center gap-2 text-center ${block.layout === "horizontal" ? "shrink-0" : ""}`}>
             {!readOnly && block.items.length > 1 && (
               <button
                 onClick={(e) => { e.stopPropagation(); deleteItem(idx); }}

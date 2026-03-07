@@ -17,6 +17,9 @@ Takdi skill assets for documentation and implementation discipline.
 - Compose (Block Editor):
   - `block-renderer-pattern` — 블록 렌더러 생성/수정 패턴
   - `shared-compose-component` — 공용 compose 컴포넌트 패턴
+  - `block-type-add` — 새 블록 타입 추가 10단계 체크리스트
+  - `image-asset-upload-pattern` — 이미지/에셋 업로드 통일 패턴
+  - `editor-interactive-pattern` — 드래그/선택/키보드/인라인 편집 패턴
 - Ops:
   - `pre-commit-validate` — 커밋 전 검증
   - `perf-page-check` — 페이지 로딩 성능 점검 (loading.tsx, dynamic import, 쿼리 최적화)

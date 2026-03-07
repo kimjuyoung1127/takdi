@@ -1,6 +1,6 @@
 # Takdi Schema and API Index
 
-Last Updated: 2026-03-07 (KST, Phase 1-3 competitive improvements)
+Last Updated: 2026-03-07 (KST, Phase 1-3 + Compose UX improvements)
 
 ## API Contract (Fixed for MVP)
 - `POST /api/projects`
@@ -62,12 +62,22 @@ Last Updated: 2026-03-07 (KST, Phase 1-3 competitive improvements)
 - `ImageFilters = { brightness: number; contrast: number; saturate: number }` — 0–200, default 100
 - `ThemePalette = { primary: string; secondary: string; background: string; text: string; accent: string }`
 - `BlockDocument = { format: "blocks"; blocks: Block[]; platform: { width: number; name: string }; theme?: ThemePalette; version: number }`
+- `TextOverlay.fontFamily?: string` — 오버레이별 글꼴 선택 (FONT_PRESETS value)
+- `TextBlockBlock.fontFamily?: string` — 텍스트 블록 글꼴
+- `ImageTextBlock.fontFamily?: string` — 이미지+텍스트 블록 글꼴
+- `FontPreset = { value: string; label: string; family: string; category: "gothic" | "serif" | "display" }` — 글꼴 프리셋 (15종)
+- `FONT_PRESETS` — 15종 한국어 웹폰트 프리셋 (고딕 8 + 명조 4 + 디자인 3)
+- `getFontFamily(value?: string): string | undefined` — 글꼴 value → CSS font-family 변환
 - `BaseBlock.lockLayout?: boolean` — true인 경우 드래그 재정렬 비활성화
 - `ExportMode = "single" | "split" | "card-news"` — 이미지 내보내기 모드
 - `StepTiming = { nodeId: string; label: string; durationMs: number }` — 파이프라인 단계별 실행 시간
-- `GuardrailViolation = { blockId: string; rule: string; message: string; severity: "warning" | "error" }` — 디자인 가드레일 위반
+- `GuardrailViolation = { blockId: string; rule: string; message: string; severity: "warning" | "error"; autoFixable: boolean }` — 디자인 가드레일 위반
 - `BriefTags = { category: string; tone: string; target: string; keywords: string[] }` — 태그 기반 브리프
-- `LayoutTemplate = { id: string; label: string; category: string; sequence: BlockType[] }` — 레이아웃 템플릿
+- `LayoutTemplate = { id: string; label: string; category: string; sequence: BlockType[]; framework?: PersuasionFramework }` — 레이아웃 템플릿 (9종)
+- `PersuasionFramework = "aida" | "pas-korean" | "pastor"` — 설득 프레임워크 타입
+- `HookStyle = "empathy" | "shock" | "question" | "story"` — 훅 문구 스타일 타입
+- `HOOK_LIBRARY` — 6카테고리 × 4스타일 = 24개 감성 훅 프리셋 문구
+- `PERSUASION_FRAMEWORKS` — 3종 프레임워크 정의 (시퀀스 포함)
 - `MoodboardPreset = { id: string; label: string; category: string; theme: ThemePalette; promptHint: string; gradient: string }` — 무드보드 프리셋
 - `PERSUASION_SEQUENCES` — 7종 카테고리별 설득 구조 블록 순서 (AIDA 기반)
 - `Project.editorMode = flow | compose`

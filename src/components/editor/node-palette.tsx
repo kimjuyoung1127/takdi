@@ -8,6 +8,9 @@ import {
   Scissors,
   Film,
   Download,
+  Upload,
+  Eraser,
+  UserRound,
 } from "lucide-react";
 import {
   MODE_NODE_CONFIG,
@@ -24,9 +27,12 @@ const NODE_ICONS: Record<FlowNodeType, React.ElementType> = {
   cuts: Scissors,
   render: Film,
   export: Download,
+  "upload-image": Upload,
+  "remove-bg": Eraser,
+  "model-compose": UserRound,
 };
 
-const ALL_NODE_TYPES: FlowNodeType[] = ["prompt", "generate-images", "bgm", "cuts", "render", "export"];
+const ALL_NODE_TYPES: FlowNodeType[] = ["upload-image", "prompt", "generate-images", "remove-bg", "model-compose", "bgm", "cuts", "render", "export"];
 
 interface NodePaletteProps {
   mode: string;

@@ -1,4 +1,4 @@
-/** 상세페이지 블록 에디터 타입 정의 — 13종 블록 + BlockDocument */
+/** 상세페이지 블록 에디터 타입 정의 — 18종 블록 + BlockDocument */
 
 // ─── Block Types ───
 
@@ -15,7 +15,12 @@ export type BlockType =
   | "divider"
   | "video"
   | "cta"
-  | "usage-steps";
+  | "usage-steps"
+  | "faq"
+  | "notice"
+  | "banner-strip"
+  | "price-promo"
+  | "trust-badge";
 
 // ─── Image Filters ───
 
@@ -36,6 +41,7 @@ export interface TextOverlay {
   color: string;
   fontWeight: "normal" | "bold";
   textAlign: "left" | "center" | "right";
+  fontFamily?: string;
 }
 
 // ─── Base Block ───
@@ -58,6 +64,7 @@ export interface HeroBlock extends BaseBlock {
 
 export interface SellingPointBlock extends BaseBlock {
   type: "selling-point";
+  layout?: "grid" | "horizontal";
   items: Array<{
     icon: string;
     title: string;
@@ -76,6 +83,7 @@ export interface ImageGridBlock extends BaseBlock {
   type: "image-grid";
   images: Array<{ url: string; caption: string }>;
   columns: 2 | 3;
+  shape?: "square" | "rounded" | "circle";
   imageFilters?: ImageFilters;
 }
 
@@ -85,6 +93,7 @@ export interface TextBlockBlock extends BaseBlock {
   body: string;
   align: "left" | "center" | "right";
   fontSize?: "sm" | "base" | "lg" | "xl";
+  fontFamily?: string;
 }
 
 export interface ImageTextBlock extends BaseBlock {
@@ -94,6 +103,7 @@ export interface ImageTextBlock extends BaseBlock {
   heading: string;
   body: string;
   imageFilters?: ImageFilters;
+  fontFamily?: string;
 }
 
 export interface SpecTableBlock extends BaseBlock {
@@ -114,7 +124,7 @@ export interface ReviewBlock extends BaseBlock {
   type: "review";
   title: string;
   reviews: Array<{ author: string; rating: number; text: string }>;
-  displayStyle?: "card" | "quote" | "minimal";
+  displayStyle?: "card" | "quote" | "minimal" | "bubble";
 }
 
 export interface DividerBlock extends BaseBlock {
@@ -151,6 +161,42 @@ export interface UsageStepsBlock extends BaseBlock {
   }>;
 }
 
+export interface FaqBlock extends BaseBlock {
+  type: "faq";
+  title: string;
+  items: Array<{ question: string; answer: string }>;
+}
+
+export interface NoticeBlock extends BaseBlock {
+  type: "notice";
+  title: string;
+  items: Array<{ icon: string; text: string }>;
+  noticeStyle?: "default" | "compact";
+}
+
+export interface BannerStripBlock extends BaseBlock {
+  type: "banner-strip";
+  text: string;
+  subtext?: string;
+  bgColor?: string;
+  textColor?: string;
+}
+
+export interface PricePromoBlock extends BaseBlock {
+  type: "price-promo";
+  productName: string;
+  originalPrice: number;
+  salePrice: number;
+  badge?: string;
+  expiresLabel?: string;
+}
+
+export interface TrustBadgeBlock extends BaseBlock {
+  type: "trust-badge";
+  title: string;
+  badges: Array<{ icon: string; label: string }>;
+}
+
 // ─── Discriminated Union ───
 
 export type Block =
@@ -166,7 +212,12 @@ export type Block =
   | DividerBlock
   | VideoBlock
   | CtaBlock
-  | UsageStepsBlock;
+  | UsageStepsBlock
+  | FaqBlock
+  | NoticeBlock
+  | BannerStripBlock
+  | PricePromoBlock
+  | TrustBadgeBlock;
 
 // ─── Theme ───
 

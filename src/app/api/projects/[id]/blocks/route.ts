@@ -22,7 +22,13 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const project = await prisma.project.findUnique({ where: { id } });
+    const project = await prisma.project.findUnique({
+      where: { id },
+      select: {
+        workspaceId: true,
+        content: true,
+      },
+    });
     if (!project) return jsonNotFound("Project");
 
     try {
@@ -67,7 +73,12 @@ export async function PUT(
       return jsonError("Invalid format: expected 'blocks'", 400);
     }
 
-    const project = await prisma.project.findUnique({ where: { id } });
+    const project = await prisma.project.findUnique({
+      where: { id },
+      select: {
+        workspaceId: true,
+      },
+    });
     if (!project) return jsonNotFound("Project");
 
     try {

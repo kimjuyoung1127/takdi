@@ -1,6 +1,41 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-07 (KST, Phase 1-3)
+Last Updated: 2026-03-07 (KST, Remotion on-demand preview pass completed)
+
+## Latest Update
+- Remotion on-demand preview pass completed and documented in `docs/status/REMOTION-ON-DEMAND-CHECKLIST.md`.
+- Verified with final `npm run build` on 2026-03-07 after clearing a stale `.next` cache.
+- Current production build snapshot:
+  - `/projects/[id]/preview`: `195 kB`
+  - `/projects/[id]/editor`: `212 kB`
+  - `/projects/[id]/compose`: `188 kB`
+  - `/projects/[id]/result`: `124 kB`
+  - shared first load JS: `102 kB`
+- Key shipped changes in this pass:
+  - preview route now renders a lightweight shell first and delays Remotion browser runtime to explicit user click
+  - `@remotion/player` import is isolated to `src/components/preview/remotion-player-runtime.tsx`
+  - preview fallback now works without Player and includes a retry flow for runtime import failures
+  - compatibility wrapper retained in `src/components/preview/remotion-preview.tsx` without Player imports
+  - build blocker fixed by adding `style` support to `EditableText`
+- Previous performance optimization pass remains documented in `docs/status/PERFORMANCE-OPTIMIZATION-CHECKLIST.md`.
+
+- Legacy status snapshot from the earlier performance pass:
+- Performance optimization pass completed across all 15 tracked items.
+- Canonical implementation log: `docs/status/PERFORMANCE-OPTIMIZATION-CHECKLIST.md`
+- Verified with final `npm run build` on 2026-03-07.
+- Current production build snapshot:
+  - `/projects/[id]/preview`: `226 kB`
+  - `/projects/[id]/editor`: `212 kB`
+  - `/projects/[id]/compose`: `185 kB`
+  - `/projects/[id]/result`: `123 kB`
+  - shared first load JS: `102 kB`
+- Completed themes in this pass:
+  - global font migration to `next/font` and removal of CSS font import warnings
+  - Remotion preview composition chunk splitting and editor preview preflight removal
+  - read-only renderer split for result/card-news flows
+  - passive preview image sizing plus upload-time WebP/preview normalization
+  - compose rerender reduction, pointer-only DnD, debounced editor history, polling cleanup
+  - API `select` slimming, page-level metadata coverage, dependency cleanup
 
 ## Current Phase
 - Runtime bootstrap completed.
@@ -165,8 +200,45 @@ Last Updated: 2026-03-07 (KST, Phase 1-3)
   - MoodboardPicker 타일 UI, 선택 시 테마 즉시 적용
 - Layout lock implemented (LOCK-001):
   - BaseBlock.lockLayout 필드, 잠금 블록 드래그 비활성화
+- Guardrail auto-fix implemented (GUARD-002):
+  - `autoFixBlock()`: min-font-size 14px 교정, max-text-length 150자 절단
+  - `autoFixAllBlocks()`: 일괄 수정 + CTA 블록 자동 추가
+  - GuardrailIndicator에 "자동 수정" 버튼, compose-toolbar에 "전체 수정" 버튼
+  - max-text-length, no-cta → autoFixable: true로 변경
+- Persuasion framework expansion implemented (FRAMEWORK-001):
+  - 3종 프레임워크: AIDA(기본), 한국형 PAS, PASTOR
+  - 프레임워크별 레이아웃 템플릿 3종 추가 (총 9종)
+  - BriefBuilder에 프레임워크 선택 UI (시퀀스 프리뷰 포함)
+- Hook phrase library implemented (HOOK-001):
+  - 6카테고리 × 4스타일 = 24개 감성 훅 프리셋 (HOOK_LIBRARY)
+  - BriefBuilder에 훅 스타일 선택 UI, 적용 시 hero 블록 오버레이에 자동 삽입
+- Mobile real-time preview implemented (MOBILE-001):
+  - 375px 모바일 프레임 래퍼 + 모바일/데스크탑 전환 토글 (Smartphone↔Monitor 아이콘)
+  - compose-toolbar에 상태별 "모바일"/"데스크탑" 토글, block-canvas에 프레임 UI
+- Compose editor UX improvements implemented (FONT-001, DND-001, INSERT-001, UPLOAD-001, OVERLAY-001):
+  - **글꼴 선택 (FONT-001)**: 15종 한국어 웹폰트 (고딕 8 + 명조 4 + 디자인 3)
+    - `FONT_PRESETS` 상수, `getFontFamily()` 헬퍼, `FontPreset` 타입
+    - `FontPicker` 팝오버 (카테고리 탭: 전체/고딕/명조/디자인 + 실시간 폰트 프리뷰)
+    - `fontFamily?` 필드: TextOverlay, TextBlockBlock, ImageTextBlock
+    - globals.css에 Google Fonts + CDN @import (14종 웹폰트)
+    - hero/text-block/image-text 블록 렌더러 + 속성패널 적용
+  - **팔레트 드래그 앤 드롭 (DND-001)**: 팔레트→캔버스 직접 드래그
+    - DndContext를 compose-shell로 끌어올려 팔레트+캔버스 통합
+    - `useDraggable` 팔레트 아이템, `useDroppable` 블록 사이 드롭존
+    - `DragOverlay`로 드래그 중 라벨 고스트, 기존 클릭 추가 유지
+  - **삽입 위치 인디케이터 (INSERT-001)**: "+" 클릭 시 시각적 안내
+    - 인디고색 점선 박스 + "여기에 블록이 추가됩니다" 텍스트 (pulse 효과)
+    - ESC 키로 해제, 팔레트 블록 클릭 시 해당 위치에 삽입 후 소멸
+  - **업로드 버튼 명확화 (UPLOAD-001)**: ImageUploadZone 빈 상태 UI 개선
+    - 명시적 "이미지 업로드" 버튼 (Upload 아이콘) + "또는 파일을 끌어다 놓으세요" 안내
+    - 기존 전체 영역 클릭, 드래그 드롭, 프로젝트 파일 선택 유지
+  - **오버레이 드래그 + 정렬 (OVERLAY-001)**: hero 블록 텍스트 위치 편집
+    - 캔버스 내 오버레이 드래그 위치 변경 (mousedown/move/up, contentEditable 충돌 방지)
+    - 드래그 중 직접 DOM 업데이트 (부드러운 시각 피드백), mouseup 시 단일 상태 커밋
+    - 속성패널 오버레이 편집기: 추가/삭제, 9방향 빠른 정렬 프리셋 (3×3 그리드), X/Y 수치 입력, 크기/색상/굵기/정렬/글꼴
+    - 반응형 폰트 스케일링: ResizeObserver로 컨테이너 너비 감지, 모바일(375px) 전환 시 자동 축소 (hero, image-full)
 - 89개 vitest 테스트 통과 (기존 39 + 가드레일 10 + 브리프/템플릿 11 + 기타 29)
-- Next target: 브라우저 통합 테스트, E2E 테스트, Railway 배포.
+- Next target: P1 구현 (플랫폼별 HTML 내보내기, 품질 검사 고도화, 대화형 위자드, 공유 링크, 톤별 플레이스홀더).
 
 ## Gate
 - Validation gate: 20 real outputs completed.

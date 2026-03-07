@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { Loader2, ImageIcon } from "lucide-react";
 import { getProjectAssets, type AssetRecord } from "@/lib/api-client";
+import { AppImage } from "@/components/ui/app-image";
 
 const SOURCE_LABELS: Record<string, string> = {
   uploaded: "업로드",
@@ -64,10 +65,12 @@ export function AssetGrid({ projectId, onSelect }: AssetGridProps) {
             onClick={() => onSelect(asset.filePath)}
             className="group relative aspect-square overflow-hidden rounded border border-gray-200 hover:border-indigo-400"
           >
-            <img
-              src={asset.filePath}
+            <AppImage
+              src={asset.previewPath ?? asset.filePath}
               alt=""
-              className="h-full w-full object-cover"
+              fill
+              sizes="(max-width: 768px) 33vw, 96px"
+              className="object-cover"
             />
             <span className="absolute bottom-0 left-0 right-0 bg-black/50 px-1 py-0.5 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100">
               {SOURCE_LABELS[asset.sourceType] || asset.sourceType}

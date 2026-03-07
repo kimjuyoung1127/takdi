@@ -12,7 +12,6 @@ import { BottomLogger } from "./bottom-logger";
 import { useLogger } from "@/hooks/use-logger";
 import {
   updateContent,
-  setupPreview,
   startExport,
   pollExport,
   ApiError,
@@ -206,14 +205,13 @@ export function NodeEditorShell({
   const handlePreview = useCallback(async () => {
     addLog("미리보기를 준비하는 중...", "info");
     try {
-      await setupPreview(projectId, globalRatio);
-      window.open(`/projects/${projectId}/preview`, "_blank");
+      window.open(`/projects/${projectId}/preview?templateKey=${encodeURIComponent(globalRatio)}`, "_blank");
       addLog("미리보기가 새 탭에서 열렸습니다", "info");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "미리보기 준비 실패";
       addLog(`미리보기 오류: ${msg}`, "error");
     }
-  }, [projectId, addLog]);
+  }, [projectId, globalRatio, addLog]);
 
   // --- Export ---
   const handleExport = useCallback(async () => {

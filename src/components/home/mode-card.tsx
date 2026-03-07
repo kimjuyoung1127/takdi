@@ -1,8 +1,8 @@
-/** Home 화면의 모드 선택 카드 컴포넌트 */
+/** Home mode selection card component. */
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   UserRound,
   Scissors,
@@ -26,6 +26,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   freeform: Sparkles,
 };
 
+const NAVIGATION_FALLBACK_MS = 4000;
+
 interface ModeCardProps {
   mode: string;
   label: string;
@@ -43,20 +45,84 @@ export function ModeCard({
 }: ModeCardProps) {
   const Icon = ICON_MAP[mode] ?? Sparkles;
   const router = useRouter();
+  const pathname = usePathname();
   const [loading, setLoading] = useState(false);
+  const pendingTargetRef = useRef<string | null>(null);
+  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const pendingTarget = pendingTargetRef.current;
+    if (!pendingTarget) {
+      return;
+    }
+
+    if (pathname === pendingTarget) {
+      if (fallbackTimerRef.current) {
+        clearTimeout(fallbackTimerRef.current);
+        fallbackTimerRef.current = null;
+      }
+
+      pendingTargetRef.current = null;
+      setLoading(false);
+      console.timeEnd(`[ModeCard] navigation:${mode}`);
+    }
+  }, [mode, pathname]);
+
+  useEffect(() => {
+    return () => {
+      if (fallbackTimerRef.current) {
+        clearTimeout(fallbackTimerRef.current);
+      }
+    };
+  }, []);
 
   async function handleClick() {
     if (loading) return;
+
+    const createProjectLabel = `[ModeCard] createProject:${mode}`;
+    const navigationLabel = `[ModeCard] navigation:${mode}`;
+
     setLoading(true);
+    console.time(createProjectLabel);
+
     try {
-      const project = await createProject({ name: `${label} 프로젝트`, mode, briefText: "" });
+      const project = await createProject({ name: `${label} project`, mode, briefText: "" });
+      console.timeEnd(createProjectLabel);
+
       const target = editorMode === "compose"
         ? `/projects/${project.id}/compose`
         : `/projects/${project.id}/editor`;
-      router.prefetch(target);
+
+      pendingTargetRef.current = target;
+      console.time(navigationLabel);
+
+      if (process.env.NODE_ENV === "production") {
+        console.info(`[ModeCard] prefetch:${mode}`, target);
+        router.prefetch(target);
+      } else {
+        console.info(`[ModeCard] skip prefetch in dev:${mode}`, target);
+      }
+
+      if (fallbackTimerRef.current) {
+        clearTimeout(fallbackTimerRef.current);
+      }
+      fallbackTimerRef.current = setTimeout(() => {
+        if (pendingTargetRef.current === target && window.location.pathname !== target) {
+          console.warn(`[ModeCard] navigation fallback:${mode}`, target);
+          window.location.assign(target);
+        }
+      }, NAVIGATION_FALLBACK_MS);
+
+      console.info(`[ModeCard] push:${mode}`, target);
       router.push(target);
     } catch {
-      toast.error("프로젝트 생성에 실패했습니다");
+      console.timeEnd(createProjectLabel);
+      if (fallbackTimerRef.current) {
+        clearTimeout(fallbackTimerRef.current);
+        fallbackTimerRef.current = null;
+      }
+      pendingTargetRef.current = null;
+      toast.error("Failed to create project");
       setLoading(false);
     }
   }

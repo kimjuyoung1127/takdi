@@ -1,9 +1,14 @@
 # preview/
-영상 프리뷰 관련 컴포넌트.
+Preview-specific components for the browser Remotion experience.
 
 ## Files
-- `remotion-preview.tsx` — Remotion Player 래퍼 (브라우저 프리뷰, 비율 토글)
+- `preview-shell.tsx` - lightweight ratio selector and preview shell shown on route entry
+- `preview-player-loader.tsx` - click boundary that imports the runtime only after explicit user intent
+- `remotion-player-runtime.tsx` - the only browser runtime file allowed to import `@remotion/player`
+- `remotion-preview-config.ts` - shared composition metadata and template mapping
+- `remotion-preview.tsx` - compatibility wrapper that re-exports `PreviewShell`
 
 ## Convention
-- 클라이언트 컴포넌트 (`"use client"`)
-- Remotion Player 의존성 사용
+- Keep the shell/runtime split intact.
+- Do not import `@remotion/player` outside `remotion-player-runtime.tsx`.
+- Preview route entry must remain useful even when the runtime has not been loaded yet.

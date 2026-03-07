@@ -1,2 +1,3 @@
 {"run_at":"2026-03-05T00:00:00+09:00","result":"pass","status_model_drift":0,"api_contract_drift":0,"route_drift":"not_enabled","errors":[]}
 {"run_at":"2026-03-05T14:30:00+09:00","result":"pass","status_model_drift":0,"api_contract_drift":0,"route_drift":"not_enabled_placeholder_mode","errors":[]}
+{"run_at":"2026-03-06T23:00:00+09:00","result":"pass","status_model_drift":0,"api_contract_drift":0,"metadata_drift":1,"route_drift":"not_enabled_placeholder_mode","drift_detail":"SKILL-DOC-MATRIX Last Updated label behind (UX-005 vs C2)","auto_fix":1,"manual_required":1,"errors":[]}

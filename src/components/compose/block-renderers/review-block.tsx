@@ -69,6 +69,7 @@ export function ReviewBlockRenderer({ block, selected, onSelect, onUpdate, readO
             className={`group/review relative ${
               style === "card" ? "rounded-lg bg-gray-50 p-3" :
               style === "quote" ? "border-l-4 border-indigo-300 pl-4 py-2" :
+              style === "bubble" ? "rounded-2xl bg-indigo-50 p-4 before:absolute before:-bottom-2 before:left-6 before:h-4 before:w-4 before:rotate-45 before:bg-indigo-50" :
               "py-2"
             }`}
           >

@@ -29,6 +29,15 @@ Last Updated: 2026-03-06 (KST, UX-005 complete)
 |---|---|---|---|---|
 | `detail-page-knowledge` | domain | `PRD`, `WIREFRAME-NODE-BYOI`, `USER-FLOW` | UI/UX, product design | UI copy follows Korean tone, blocks cover 9 standard sections, output specs match platform rules |
 
+## Compose Skills
+| skill | tier | required_docs | target_area | acceptance |
+|---|---|---|---|---|
+| `block-renderer-pattern` | compose | `blocks.ts`, renderers barrel | block renderers | renderer follows pattern, barrel registered |
+| `shared-compose-component` | compose | `api-client.ts`, compose-context | shared components | upload/edit components reusable |
+| `block-type-add` | compose | `blocks.ts`, `SCHEMA-INDEX`, `FEATURE-MATRIX` | new block creation | 10-step checklist complete, tsc passes |
+| `image-asset-upload-pattern` | compose | `api-client.ts`, compose-context, shared components | image upload | uploadAsset() unified, readOnly guarded |
+| `editor-interactive-pattern` | compose | `block-canvas`, `compose-shell`, dnd-kit | editor interaction | drag/select/keyboard/readOnly all covered |
+
 ## Integrity Gates
 - Gate 1: `FEATURE-MATRIX` == `PROJECT-STATUS` == `SKILL-DOC-MATRIX`
 - Gate 2: route gate enabled only after real route registry exists

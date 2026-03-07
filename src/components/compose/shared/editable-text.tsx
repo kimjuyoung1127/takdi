@@ -8,6 +8,7 @@ interface EditableTextProps {
   placeholder?: string;
   onChange: (value: string) => void;
   className?: string;
+  style?: React.CSSProperties;
   tag?: "h2" | "h3" | "p" | "span";
   readOnly?: boolean;
 }
@@ -17,6 +18,7 @@ export function EditableText({
   placeholder,
   onChange,
   className = "",
+  style,
   tag: Tag = "p",
   readOnly,
 }: EditableTextProps) {
@@ -43,7 +45,11 @@ export function EditableText({
   }, [Tag]);
 
   if (readOnly) {
-    return <Tag className={className}>{value}</Tag>;
+    return (
+      <Tag className={className} style={style}>
+        {value}
+      </Tag>
+    );
   }
 
   return (
@@ -54,6 +60,7 @@ export function EditableText({
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       data-placeholder={placeholder}
+      style={style}
       className={`outline-none ${className}`}
     />
   );

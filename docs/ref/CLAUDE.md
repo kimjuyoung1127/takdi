@@ -9,6 +9,7 @@ Canonical references for Takdi.
 - `REMOTION-SPEC.md`
 - `USER-FLOW.md`
 - `WIREFRAME-NODE-BYOI.md`
+- `COMPETITIVE-ANALYSIS.md`
 
 ## Rule
 - New long-lived specs must be added here.

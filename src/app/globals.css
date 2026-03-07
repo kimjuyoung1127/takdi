@@ -122,8 +122,45 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans), system-ui, sans-serif;
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+[data-font-role="serif"] {
+  font-family: var(--font-serif), Georgia, serif;
+}
+
+/* Edge glow animations */
+.react-flow__edge.glow-active path {
+  stroke: #6366f1;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 6px #6366f1) drop-shadow(0 0 12px #818cf8);
+  animation: edge-pulse 1.5s ease-in-out infinite;
+}
+
+.react-flow__edge.glow-done path {
+  stroke: #10b981;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px #10b981);
+}
+
+@keyframes edge-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 6px #6366f1) drop-shadow(0 0 12px #818cf8);
+  }
+
+  50% {
+    filter: drop-shadow(0 0 10px #6366f1) drop-shadow(0 0 20px #818cf8);
   }
 }
 

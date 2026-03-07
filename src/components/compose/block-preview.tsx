@@ -3,21 +3,7 @@
 
 import { forwardRef } from "react";
 import type { Block } from "@/types/blocks";
-import {
-  HeroBlockRenderer,
-  SellingPointBlockRenderer,
-  TextBlockRenderer,
-  ImageTextBlockRenderer,
-  ImageFullBlockRenderer,
-  ImageGridBlockRenderer,
-  SpecTableBlockRenderer,
-  ComparisonBlockRenderer,
-  ReviewBlockRenderer,
-  DividerBlockRenderer,
-  VideoBlockRenderer,
-  CtaBlockRenderer,
-  UsageStepsBlockRenderer,
-} from "./block-renderers";
+import { ReadOnlyBlockRenderer } from "./read-only-block-renderers";
 
 interface BlockPreviewProps {
   blocks: Block[];
@@ -25,38 +11,7 @@ interface BlockPreviewProps {
 }
 
 function ReadOnlyBlock({ block }: { block: Block }) {
-  const noop = () => {};
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  const props = { selected: false, onSelect: noop, onUpdate: noop as any, readOnly: true };
-
-  switch (block.type) {
-    case "hero":
-      return <HeroBlockRenderer block={block} {...props} />;
-    case "selling-point":
-      return <SellingPointBlockRenderer block={block} {...props} />;
-    case "text-block":
-      return <TextBlockRenderer block={block} {...props} />;
-    case "image-text":
-      return <ImageTextBlockRenderer block={block} {...props} />;
-    case "image-full":
-      return <ImageFullBlockRenderer block={block} {...props} />;
-    case "image-grid":
-      return <ImageGridBlockRenderer block={block} {...props} />;
-    case "spec-table":
-      return <SpecTableBlockRenderer block={block} {...props} />;
-    case "comparison":
-      return <ComparisonBlockRenderer block={block} {...props} />;
-    case "review":
-      return <ReviewBlockRenderer block={block} {...props} />;
-    case "divider":
-      return <DividerBlockRenderer block={block} {...props} />;
-    case "video":
-      return <VideoBlockRenderer block={block} {...props} />;
-    case "cta":
-      return <CtaBlockRenderer block={block} {...props} />;
-    case "usage-steps":
-      return <UsageStepsBlockRenderer block={block} {...props} />;
-  }
+  return <ReadOnlyBlockRenderer block={block} />;
 }
 
 export const BlockPreview = forwardRef<HTMLDivElement, BlockPreviewProps>(function BlockPreview(

@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-07 (KST, Phase 1-3)
+Last Updated: 2026-03-07 (KST, Phase 1-3 + Compose UX improvements)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -65,5 +65,14 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | MOOD-001 | Moodboard selection | Done | claude | 24종 프리셋 (6카테고리×4스타일) + ThemePalette 자동 매핑 + MoodboardPicker UI |
 | LOCK-001 | Layout lock (lockLayout) | Done | claude | BaseBlock.lockLayout, 잠금 블록 드래그 비활성화 |
 | TEST-002 | Guardrail + template tests | Done | claude | 가드레일 10 + 브리프/템플릿 11 = 21 신규 테스트, 총 89개 |
+| GUARD-002 | Guardrail auto-fix | Done | claude | autoFixBlock(font/text) + autoFixAllBlocks(일괄+CTA추가) + "자동 수정"/"전체 수정" 버튼 |
+| FRAMEWORK-001 | Persuasion framework expansion | Done | claude | AIDA/한국형PAS/PASTOR 3종 프레임워크 + 레이아웃 템플릿 9종 + BriefBuilder 선택 UI |
+| HOOK-001 | Hook phrase library | Done | claude | 6카테고리×4스타일=24 감성 훅 프리셋 + BriefBuilder 훅 선택 UI + hero 블록 자동 삽입 |
+| MOBILE-001 | Mobile real-time preview | Done | claude | 375px 모바일 프레임 래퍼 + 모바일/데스크탑 전환 토글, 반응형 폰트 스케일링 |
+| FONT-001 | Font selection system (15 Korean webfonts) | Done | claude | FontPicker 팝오버 (카테고리탭+실시간 프리뷰), FONT_PRESETS 15종, hero/text-block/image-text 적용 |
+| DND-001 | Palette drag & drop to canvas | Done | claude | DndContext compose-shell 통합, useDraggable 팔레트, useDroppable 드롭존, DragOverlay 고스트 |
+| INSERT-001 | Insert position indicator | Done | claude | "+" 클릭 시 인디고색 삽입 표시줄, ESC 취소, 팔레트 클릭 시 해당 위치 삽입 |
+| UPLOAD-001 | Explicit upload button | Done | claude | ImageUploadZone 빈 상태에 명시적 "이미지 업로드" 버튼 + 드래그앤드롭 안내 |
+| OVERLAY-001 | Hero overlay drag + align presets | Done | claude | 오버레이 드래그 위치 편집, 9방향 빠른 정렬, 속성패널 오버레이 편집기 (추가/삭제/위치/크기/색상/굵기/정렬/글꼴) |
 | BILL-001 | Billing integration | Deferred | unassigned | after gate pass |
 | TEAM-001 | Team roles and invites | Deferred | unassigned | after gate pass |

@@ -1,25 +1,32 @@
-/** React Flow 기반 노드 에디터 캔버스 */
 "use client";
 
-import { useCallback, useRef, useEffect, useImperativeHandle, forwardRef, useState } from "react";
+import {
+  forwardRef,
+  type MouseEvent as ReactMouseEvent,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import {
   ReactFlow,
   Background,
   Controls,
   MiniMap,
-  useNodesState,
-  useEdgesState,
   addEdge,
   type Connection,
-  type Node,
   type Edge,
+  type Node,
+  useEdgesState,
+  useNodesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { MousePointerClick, Copy, Trash2, RotateCcw } from "lucide-react";
+import { Copy, MousePointerClick, RotateCcw, Trash2 } from "lucide-react";
 import { TakdiNode } from "./takdi-node";
 import {
-  MODE_NODE_CONFIG,
   DEFAULT_MODE_CONFIG,
+  MODE_NODE_CONFIG,
   NODE_TYPE_LABELS,
   type FlowNodeType,
 } from "@/lib/constants";
@@ -30,8 +37,9 @@ interface ContextMenuState {
   y: number;
 }
 
-const nodeTypes = { takdi: TakdiNode };
 const MAX_HISTORY = 50;
+const HISTORY_DEBOUNCE_MS = 250;
+const nodeTypes = { takdi: TakdiNode };
 
 export interface NodeData {
   label: string;
@@ -39,6 +47,8 @@ export interface NodeData {
   status?: string;
   briefText?: string;
   ratio?: string;
+  previewText?: string;
+  previewImages?: string[];
   [key: string]: unknown;
 }
 
@@ -47,309 +57,425 @@ export interface NodeCanvasHandle {
   updateNodesByType: (nodeType: string, patch: Partial<NodeData>) => void;
   deleteSelectedNodes: () => void;
   getNodeCount: () => number;
-}
-
-/** 모드 기반 초기 노드/엣지 생성 + 기존 nodeType: "generate" → "prompt" 정규화 */
-function normalizeNodeType(nodeType: string): string {
-  return nodeType === "generate" ? "prompt" : nodeType;
-}
-
-function buildInitialNodes(mode: string): { nodes: Node[]; edges: Edge[] } {
-  const config = MODE_NODE_CONFIG[mode] ?? DEFAULT_MODE_CONFIG;
-  const pipeline = config.initialPipeline;
-  const X_START = 100;
-  const X_GAP = 300;
-
-  const nodes: Node[] = pipeline.map((type, i) => ({
-    id: `${i + 1}`,
-    type: "takdi",
-    position: { x: X_START + i * X_GAP, y: 100 },
-    data: { label: NODE_TYPE_LABELS[type], nodeType: type, status: "draft" },
-  }));
-
-  const edges: Edge[] = pipeline.slice(1).map((_, i) => ({
-    id: `e${i + 1}-${i + 2}`,
-    source: `${i + 1}`,
-    target: `${i + 2}`,
-  }));
-
-  return { nodes, edges };
+  setEdgeGlow: (edgeId: string, state: "active" | "done" | "") => void;
+  resetEdgeGlow: () => void;
 }
 
 interface NodeCanvasProps {
   mode: string;
   onStateChange?: (nodes: Node[], edges: Edge[]) => void;
   onNodeSelect?: (nodeId: string | null, nodeData?: NodeData) => void;
-  isRunning?: boolean;
 }
 
-export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(
-  function NodeCanvas({ mode, onStateChange, onNodeSelect, isRunning }, ref) {
-    const reactFlowWrapper = useRef<HTMLDivElement>(null);
-    const initial = useRef(buildInitialNodes(mode));
-    const [nodes, setNodes, onNodesChange] = useNodesState(initial.current.nodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initial.current.edges);
-    const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+interface CanvasSnapshot {
+  nodes: Node[];
+  edges: Edge[];
+}
 
-    // --- Undo/Redo history ---
-    const historyRef = useRef<{ nodes: Node[]; edges: Edge[] }[]>([
-      { nodes: initial.current.nodes, edges: initial.current.edges },
-    ]);
-    const historyIndexRef = useRef(0);
-    const isUndoRedoRef = useRef(0);
+function buildInitialNodes(mode: string): CanvasSnapshot {
+  const config = MODE_NODE_CONFIG[mode] ?? DEFAULT_MODE_CONFIG;
+  const pipeline = config.initialPipeline;
+  const startX = 100;
+  const gapX = 300;
 
-    useImperativeHandle(ref, () => ({
+  const nodes: Node[] = pipeline.map((type, index) => ({
+    id: `${index + 1}`,
+    type: "takdi",
+    position: { x: startX + index * gapX, y: 100 },
+    data: { label: NODE_TYPE_LABELS[type], nodeType: type, status: "draft" },
+  }));
+
+  const edges: Edge[] = pipeline.slice(1).map((_, index) => ({
+    id: `e${index + 1}-${index + 2}`,
+    source: `${index + 1}`,
+    target: `${index + 2}`,
+  }));
+
+  return { nodes, edges };
+}
+
+function cloneNodes(nodes: Node[]) {
+  return nodes.map((node) => ({
+    ...node,
+    position: { ...node.position },
+    data: { ...(node.data as Record<string, unknown>) },
+  }));
+}
+
+function cloneEdges(edges: Edge[]) {
+  return edges.map((edge) => ({ ...edge }));
+}
+
+function createSnapshot(nodes: Node[], edges: Edge[]): CanvasSnapshot {
+  return {
+    nodes: cloneNodes(nodes),
+    edges: cloneEdges(edges),
+  };
+}
+
+function hashSnapshot(nodes: Node[], edges: Edge[]) {
+  return JSON.stringify({
+    nodes: nodes.map((node) => ({
+      id: node.id,
+      position: node.position,
+      selected: node.selected ?? false,
+      data: node.data,
+    })),
+    edges: edges.map((edge) => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      className: edge.className ?? "",
+      animated: edge.animated ?? false,
+    })),
+  });
+}
+
+export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function NodeCanvas(
+  { mode, onStateChange, onNodeSelect },
+  ref,
+) {
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const initial = useRef(buildInitialNodes(mode));
+  const [nodes, setNodes, onNodesChange] = useNodesState(initial.current.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initial.current.edges);
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+
+  const historyRef = useRef<CanvasSnapshot[]>([createSnapshot(initial.current.nodes, initial.current.edges)]);
+  const historyIndexRef = useRef(0);
+  const suppressHistoryRef = useRef(false);
+  const historyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastHistoryHashRef = useRef(hashSnapshot(initial.current.nodes, initial.current.edges));
+
+  const nodesRef = useRef(nodes);
+  const edgesRef = useRef(edges);
+  nodesRef.current = nodes;
+  edgesRef.current = edges;
+
+  useImperativeHandle(
+    ref,
+    () => ({
       updateNodeData(nodeId: string, patch: Partial<NodeData>) {
-        setNodes((nds) =>
-          nds.map((n) =>
-            n.id === nodeId ? { ...n, data: { ...n.data, ...patch } } : n,
+        setNodes((currentNodes) =>
+          currentNodes.map((node) =>
+            node.id === nodeId ? { ...node, data: { ...node.data, ...patch } } : node,
           ),
         );
       },
       updateNodesByType(nodeType: string, patch: Partial<NodeData>) {
-        setNodes((nds) =>
-          nds.map((n) =>
-            (n.data as NodeData).nodeType === nodeType
-              ? { ...n, data: { ...n.data, ...patch } }
-              : n,
+        setNodes((currentNodes) =>
+          currentNodes.map((node) =>
+            (node.data as NodeData).nodeType === nodeType
+              ? { ...node, data: { ...node.data, ...patch } }
+              : node,
           ),
         );
       },
       deleteSelectedNodes() {
-        setNodes((nds) => {
-          const selectedIds = new Set(nds.filter((n) => n.selected).map((n) => n.id));
-          if (selectedIds.size === 0) return nds;
-          setEdges((eds) => eds.filter((e) => !selectedIds.has(e.source) && !selectedIds.has(e.target)));
-          return nds.filter((n) => !n.selected);
+        setNodes((currentNodes) => {
+          const selectedIds = new Set(currentNodes.filter((node) => node.selected).map((node) => node.id));
+          if (selectedIds.size === 0) {
+            return currentNodes;
+          }
+
+          setEdges((currentEdges) =>
+            currentEdges.filter((edge) => !selectedIds.has(edge.source) && !selectedIds.has(edge.target)),
+          );
+
+          return currentNodes.filter((node) => !node.selected);
         });
         onNodeSelect?.(null);
       },
       getNodeCount() {
-        return nodes.length;
+        return nodesRef.current.length;
       },
-    }), [setNodes, setEdges, onNodeSelect, nodes.length]);
+      setEdgeGlow(edgeId: string, state: "active" | "done" | "") {
+        setEdges((currentEdges) =>
+          currentEdges.map((edge) =>
+            edge.id === edgeId
+              ? { ...edge, className: state ? `glow-${state}` : "", animated: state === "active" }
+              : edge,
+          ),
+        );
+      },
+      resetEdgeGlow() {
+        setEdges((currentEdges) => currentEdges.map((edge) => ({ ...edge, className: "", animated: false })));
+      },
+    }),
+    [onNodeSelect, setEdges, setNodes],
+  );
 
-    // Toggle edge animation when pipeline is running
-    useEffect(() => {
-      setEdges((eds) => eds.map((e) => ({ ...e, animated: !!isRunning })));
-    }, [isRunning, setEdges]);
+  useEffect(() => {
+    if (suppressHistoryRef.current) {
+      suppressHistoryRef.current = false;
+      lastHistoryHashRef.current = hashSnapshot(nodes, edges);
+      return;
+    }
 
-    // Record history snapshots (skip if caused by undo/redo)
-    useEffect(() => {
-      if (isUndoRedoRef.current > 0) {
-        isUndoRedoRef.current -= 1;
+    const nextHash = hashSnapshot(nodes, edges);
+    if (nextHash === lastHistoryHashRef.current) {
+      return;
+    }
+
+    if (historyTimerRef.current) {
+      clearTimeout(historyTimerRef.current);
+    }
+
+    historyTimerRef.current = setTimeout(() => {
+      const latestNodes = nodesRef.current;
+      const latestEdges = edgesRef.current;
+      const latestHash = hashSnapshot(latestNodes, latestEdges);
+
+      if (latestHash === lastHistoryHashRef.current) {
         return;
       }
-      const snapshot = { nodes: nodes.map((n) => ({ ...n })), edges: edges.map((e) => ({ ...e })) };
-      const history = historyRef.current;
-      const idx = historyIndexRef.current;
-      // Trim future history
-      historyRef.current = history.slice(0, idx + 1);
-      historyRef.current.push(snapshot);
-      if (historyRef.current.length > MAX_HISTORY) historyRef.current.shift();
-      historyIndexRef.current = historyRef.current.length - 1;
-    }, [nodes, edges]);
 
-    // Undo/Redo keyboard handler
-    useEffect(() => {
-      function onKeyDown(e: KeyboardEvent) {
-        const el = e.target as HTMLElement;
-        if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable) return;
+      const nextSnapshot = createSnapshot(latestNodes, latestEdges);
+      const trimmedHistory = historyRef.current.slice(0, historyIndexRef.current + 1);
+      trimmedHistory.push(nextSnapshot);
 
-        if (e.ctrlKey && e.key === "z" && !e.shiftKey) {
-          e.preventDefault();
-          const idx = historyIndexRef.current;
-          if (idx > 0) {
-            historyIndexRef.current = idx - 1;
-            isUndoRedoRef.current = 2;
-            const snap = historyRef.current[idx - 1];
-            setNodes(snap.nodes);
-            setEdges(snap.edges);
-          }
-        } else if (e.ctrlKey && e.shiftKey && e.key === "Z") {
-          e.preventDefault();
-          const idx = historyIndexRef.current;
-          if (idx < historyRef.current.length - 1) {
-            historyIndexRef.current = idx + 1;
-            isUndoRedoRef.current = 2;
-            const snap = historyRef.current[idx + 1];
-            setNodes(snap.nodes);
-            setEdges(snap.edges);
-          }
-        }
+      if (trimmedHistory.length > MAX_HISTORY) {
+        trimmedHistory.shift();
       }
-      window.addEventListener("keydown", onKeyDown);
-      return () => window.removeEventListener("keydown", onKeyDown);
-    }, [setNodes, setEdges]);
 
-    // Notify parent of state changes
-    useEffect(() => {
-      onStateChange?.(nodes, edges);
-    }, [nodes, edges, onStateChange]);
+      historyRef.current = trimmedHistory;
+      historyIndexRef.current = trimmedHistory.length - 1;
+      lastHistoryHashRef.current = latestHash;
+    }, HISTORY_DEBOUNCE_MS);
 
-    const onConnect = useCallback(
-      (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-      [setEdges]
-    );
+    return () => {
+      if (historyTimerRef.current) {
+        clearTimeout(historyTimerRef.current);
+        historyTimerRef.current = null;
+      }
+    };
+  }, [edges, nodes]);
 
-    const onDragOver = useCallback((event: React.DragEvent) => {
+  useEffect(() => {
+    return () => {
+      if (historyTimerRef.current) {
+        clearTimeout(historyTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      const element = event.target as HTMLElement;
+      if (element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.isContentEditable) {
+        return;
+      }
+
+      if (event.ctrlKey && event.key === "z" && !event.shiftKey) {
+        event.preventDefault();
+        const index = historyIndexRef.current;
+        if (index <= 0) {
+          return;
+        }
+
+        historyIndexRef.current = index - 1;
+        suppressHistoryRef.current = true;
+        const snapshot = historyRef.current[index - 1];
+        setNodes(cloneNodes(snapshot.nodes));
+        setEdges(cloneEdges(snapshot.edges));
+      } else if (event.ctrlKey && event.shiftKey && event.key === "Z") {
+        event.preventDefault();
+        const index = historyIndexRef.current;
+        if (index >= historyRef.current.length - 1) {
+          return;
+        }
+
+        historyIndexRef.current = index + 1;
+        suppressHistoryRef.current = true;
+        const snapshot = historyRef.current[index + 1];
+        setNodes(cloneNodes(snapshot.nodes));
+        setEdges(cloneEdges(snapshot.edges));
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [setEdges, setNodes]);
+
+  useEffect(() => {
+    onStateChange?.(nodes, edges);
+  }, [edges, nodes, onStateChange]);
+
+  const onConnect = useCallback(
+    (params: Connection) => setEdges((currentEdges) => addEdge(params, currentEdges)),
+    [setEdges],
+  );
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
       event.preventDefault();
-      event.dataTransfer.dropEffect = "move";
-    }, []);
+      const type = event.dataTransfer.getData("application/reactflow-type") as FlowNodeType;
+      const label = event.dataTransfer.getData("application/reactflow-label");
+      if (!type) {
+        return;
+      }
 
-    const onDrop = useCallback(
-      (event: React.DragEvent) => {
-        event.preventDefault();
-        const type = event.dataTransfer.getData("application/reactflow-type");
-        const label = event.dataTransfer.getData("application/reactflow-label");
-        if (!type) return;
+      const bounds = reactFlowWrapper.current?.getBoundingClientRect();
+      const position = {
+        x: event.clientX - (bounds?.left ?? 0),
+        y: event.clientY - (bounds?.top ?? 0),
+      };
 
-        const bounds = reactFlowWrapper.current?.getBoundingClientRect();
-        const position = {
-          x: event.clientX - (bounds?.left ?? 0),
-          y: event.clientY - (bounds?.top ?? 0),
-        };
-
-        const newNode: Node = {
-          id: `${Date.now()}`,
-          type: "takdi",
-          position,
-          data: { label, nodeType: type, status: "draft" },
-        };
-
-        setNodes((nds) => [...nds, newNode]);
-      },
-      [setNodes]
-    );
-
-    const onNodeClick = useCallback(
-      (_: React.MouseEvent, node: Node) => {
-        onNodeSelect?.(node.id, node.data as NodeData);
-      },
-      [onNodeSelect]
-    );
-
-    const onPaneClick = useCallback(() => {
-      onNodeSelect?.(null);
-      setContextMenu(null);
-    }, [onNodeSelect]);
-
-    const onNodeContextMenu = useCallback(
-      (event: React.MouseEvent, node: Node) => {
-        event.preventDefault();
-        const bounds = reactFlowWrapper.current?.getBoundingClientRect();
-        setContextMenu({
-          nodeId: node.id,
-          x: event.clientX - (bounds?.left ?? 0),
-          y: event.clientY - (bounds?.top ?? 0),
-        });
-      },
-      [],
-    );
-
-    const handleDuplicate = useCallback(() => {
-      if (!contextMenu) return;
-      const source = nodes.find((n) => n.id === contextMenu.nodeId);
-      if (!source) return;
       const newNode: Node = {
         id: `${Date.now()}`,
         type: "takdi",
-        position: { x: source.position.x + 50, y: source.position.y + 50 },
-        data: { ...source.data, status: "draft" },
+        position,
+        data: { label, nodeType: type, status: "draft" },
       };
-      setNodes((nds) => [...nds, newNode]);
-      setContextMenu(null);
-    }, [contextMenu, nodes, setNodes]);
 
-    const handleDeleteNode = useCallback(() => {
-      if (!contextMenu) return;
-      const id = contextMenu.nodeId;
-      setNodes((nds) => nds.filter((n) => n.id !== id));
-      setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
-      onNodeSelect?.(null);
-      setContextMenu(null);
-    }, [contextMenu, setNodes, setEdges, onNodeSelect]);
+      setNodes((currentNodes) => [...currentNodes, newNode]);
+    },
+    [setNodes],
+  );
 
-    const handleResetStatus = useCallback(() => {
-      if (!contextMenu) return;
-      setNodes((nds) =>
-        nds.map((n) =>
-          n.id === contextMenu.nodeId ? { ...n, data: { ...n.data, status: "draft" } } : n,
-        ),
-      );
-      setContextMenu(null);
-    }, [contextMenu, setNodes]);
+  const onNodeClick = useCallback(
+    (_event: ReactMouseEvent, node: Node) => {
+      onNodeSelect?.(node.id, node.data as NodeData);
+    },
+    [onNodeSelect],
+  );
 
-    return (
-      <div ref={reactFlowWrapper} className="relative h-full w-full">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onDragOver={onDragOver}
-          onDrop={onDrop}
-          onNodeClick={onNodeClick}
-          onPaneClick={onPaneClick}
-          onNodeContextMenu={onNodeContextMenu}
-          nodeTypes={nodeTypes}
-          deleteKeyCode={["Delete", "Backspace"]}
-          fitView
-          className="bg-gray-50"
-        >
-          <Background gap={20} size={1} color="#e5e7eb" />
-          <Controls className="rounded-xl bg-white shadow-sm" />
-          <MiniMap
-            nodeStrokeWidth={3}
-            nodeColor="#6366f1"
-            maskColor="rgba(0,0,0,0.08)"
-            className="rounded-xl border border-gray-100 bg-white/80 shadow-sm"
-          />
-        </ReactFlow>
+  const onPaneClick = useCallback(() => {
+    onNodeSelect?.(null);
+    setContextMenu(null);
+  }, [onNodeSelect]);
 
-        {/* Context menu */}
-        {contextMenu && (
-          <div
-            className="absolute z-50 min-w-[140px] rounded-xl bg-white py-1 shadow-lg ring-1 ring-gray-200"
-            style={{ left: contextMenu.x, top: contextMenu.y }}
-          >
-            <button
-              onClick={handleDuplicate}
-              className="flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50"
-            >
-              <Copy className="h-3.5 w-3.5" />
-              복제
-            </button>
-            <button
-              onClick={handleResetStatus}
-              className="flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              상태 초기화
-            </button>
-            <div className="my-1 h-px bg-gray-100" />
-            <button
-              onClick={handleDeleteNode}
-              className="flex w-full items-center gap-2 px-3 py-2 text-xs text-rose-600 hover:bg-rose-50"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              삭제
-            </button>
-          </div>
-        )}
+  const onNodeContextMenu = useCallback((event: ReactMouseEvent, node: Node) => {
+    event.preventDefault();
+    const bounds = reactFlowWrapper.current?.getBoundingClientRect();
+    setContextMenu({
+      nodeId: node.id,
+      x: event.clientX - (bounds?.left ?? 0),
+      y: event.clientY - (bounds?.top ?? 0),
+    });
+  }, []);
 
-        {/* Empty canvas onboarding overlay */}
-        {nodes.length === 0 && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-3 rounded-2xl bg-white/80 px-8 py-6 shadow-sm backdrop-blur">
-              <MousePointerClick className="h-8 w-8 text-indigo-400" />
-              <p className="text-sm font-medium text-gray-600">작업 영역이 비어있습니다</p>
-              <p className="text-xs text-gray-400">왼쪽에서 작업 단계를 끌어다 놓으세요</p>
-            </div>
-          </div>
-        )}
-      </div>
+  const handleDuplicate = useCallback(() => {
+    if (!contextMenu) {
+      return;
+    }
+
+    const sourceNode = nodesRef.current.find((node) => node.id === contextMenu.nodeId);
+    if (!sourceNode) {
+      return;
+    }
+
+    const duplicatedNode: Node = {
+      id: `${Date.now()}`,
+      type: "takdi",
+      position: { x: sourceNode.position.x + 50, y: sourceNode.position.y + 50 },
+      data: { ...sourceNode.data, status: "draft" },
+    };
+
+    setNodes((currentNodes) => [...currentNodes, duplicatedNode]);
+    setContextMenu(null);
+  }, [contextMenu, setNodes]);
+
+  const handleDeleteNode = useCallback(() => {
+    if (!contextMenu) {
+      return;
+    }
+
+    const nodeId = contextMenu.nodeId;
+    setNodes((currentNodes) => currentNodes.filter((node) => node.id !== nodeId));
+    setEdges((currentEdges) => currentEdges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
+    onNodeSelect?.(null);
+    setContextMenu(null);
+  }, [contextMenu, onNodeSelect, setEdges, setNodes]);
+
+  const handleResetStatus = useCallback(() => {
+    if (!contextMenu) {
+      return;
+    }
+
+    setNodes((currentNodes) =>
+      currentNodes.map((node) =>
+        node.id === contextMenu.nodeId ? { ...node, data: { ...node.data, status: "draft" } } : node,
+      ),
     );
-  }
-);
+    setContextMenu(null);
+  }, [contextMenu, setNodes]);
+
+  return (
+    <div ref={reactFlowWrapper} className="relative h-full w-full">
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        onNodeClick={onNodeClick}
+        onPaneClick={onPaneClick}
+        onNodeContextMenu={onNodeContextMenu}
+        nodeTypes={nodeTypes}
+        deleteKeyCode={["Delete", "Backspace"]}
+        fitView
+        className="bg-gray-50"
+      >
+        <Background gap={20} size={1} color="#e5e7eb" />
+        <Controls className="rounded-xl bg-white shadow-sm" />
+        <MiniMap
+          nodeStrokeWidth={3}
+          nodeColor="#6366f1"
+          maskColor="rgba(0,0,0,0.08)"
+          className="rounded-xl border border-gray-100 bg-white/80 shadow-sm"
+        />
+      </ReactFlow>
+
+      {contextMenu ? (
+        <div
+          className="absolute z-50 min-w-[140px] rounded-xl bg-white py-1 shadow-lg ring-1 ring-gray-200"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+        >
+          <button
+            type="button"
+            onClick={handleDuplicate}
+            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50"
+          >
+            <Copy className="h-3.5 w-3.5" />
+            Duplicate
+          </button>
+          <button
+            type="button"
+            onClick={handleResetStatus}
+            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reset status
+          </button>
+          <div className="my-1 h-px bg-gray-100" />
+          <button
+            type="button"
+            onClick={handleDeleteNode}
+            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-rose-600 hover:bg-rose-50"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete
+          </button>
+        </div>
+      ) : null}
+
+      {nodes.length === 0 ? (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 rounded-2xl bg-white/80 px-8 py-6 shadow-sm backdrop-blur">
+            <MousePointerClick className="h-8 w-8 text-indigo-400" />
+            <p className="text-sm font-medium text-gray-600">The canvas is empty.</p>
+            <p className="text-xs text-gray-400">Drag a pipeline step from the palette to begin.</p>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+});

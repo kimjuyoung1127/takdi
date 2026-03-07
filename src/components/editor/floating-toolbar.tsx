@@ -11,14 +11,18 @@ interface RunningState {
   isExporting?: boolean;
 }
 
-type PipelineStep = "idle" | "generating" | "imaging" | "done" | "error";
+type PipelineStep = "idle" | "running" | "generating" | "imaging" | "done" | "error";
 
 /** 영상/GIF 파이프라인이 없는 이미지 전용 모드 */
 const IMAGE_ONLY_MODES = new Set(["brand-image", "cutout", "model-shot"]);
 
+const RATIO_OPTIONS = ["9:16", "1:1", "16:9"];
+
 interface FloatingToolbarProps {
   projectId?: string;
   mode?: string;
+  ratio?: string;
+  onRatioChange?: (ratio: string) => void;
   onRunAll?: () => void;
   onStop?: () => void;
   onSave?: () => void;
@@ -31,6 +35,7 @@ interface FloatingToolbarProps {
 
 const STEP_LABELS: Record<PipelineStep, string> = {
   idle: "",
+  running: "파이프라인 실행 중...",
   generating: "1/2 프롬프트 처리 중...",
   imaging: "2/2 이미지 생성 중...",
   done: "생성 완료!",
@@ -39,6 +44,7 @@ const STEP_LABELS: Record<PipelineStep, string> = {
 
 const STEP_COLORS: Record<PipelineStep, string> = {
   idle: "",
+  running: "text-indigo-600 bg-indigo-50",
   generating: "text-amber-600 bg-amber-50",
   imaging: "text-blue-600 bg-blue-50",
   done: "text-emerald-600 bg-emerald-50",
@@ -57,7 +63,7 @@ function Tooltip({ text, children }: { text: string; children: React.ReactNode }
   );
 }
 
-export function FloatingToolbar({ projectId, mode, onRunAll, onStop, onSave, onPreview, onExport, runningState, pipelineStep = "idle", lastSaved }: FloatingToolbarProps) {
+export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAll, onStop, onSave, onPreview, onExport, runningState, pipelineStep = "idle", lastSaved }: FloatingToolbarProps) {
   const { isRunning, isSaving, isExporting } = runningState ?? {};
   const stepLabel = STEP_LABELS[pipelineStep];
   const isImageOnly = IMAGE_ONLY_MODES.has(mode ?? "");
@@ -68,7 +74,7 @@ export function FloatingToolbar({ projectId, mode, onRunAll, onStop, onSave, onP
       {stepLabel && (
         <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${STEP_COLORS[pipelineStep]}`}>
           {pipelineStep === "done" && <CircleCheck className="h-3.5 w-3.5" />}
-          {(pipelineStep === "generating" || pipelineStep === "imaging") && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          {(pipelineStep === "running" || pipelineStep === "generating" || pipelineStep === "imaging") && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
           {stepLabel}
         </div>
       )}
@@ -157,6 +163,23 @@ export function FloatingToolbar({ projectId, mode, onRunAll, onStop, onSave, onP
             </Tooltip>
           </>
         )}
+      </div>
+
+      {/* Ratio toggle */}
+      <div className="flex items-center gap-1 rounded-full bg-white px-3 py-1.5 shadow-md">
+        {RATIO_OPTIONS.map((r) => (
+          <button
+            key={r}
+            onClick={() => onRatioChange?.(r)}
+            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              ratio === r
+                ? "bg-indigo-600 text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            {r}
+          </button>
+        ))}
       </div>
 
       {/* Last saved indicator */}

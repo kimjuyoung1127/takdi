@@ -1,6 +1,7 @@
 /** 레이아웃 템플릿 잠금 — 검증된 블록 구조 잠금 */
 
 import type { BlockType } from "@/types/blocks";
+import type { PersuasionFramework } from "./constants";
 
 export interface LayoutTemplate {
   id: string;
@@ -8,6 +9,7 @@ export interface LayoutTemplate {
   category: string;
   sequence: BlockType[];
   description: string;
+  framework?: PersuasionFramework;
 }
 
 export const LAYOUT_TEMPLATES: LayoutTemplate[] = [
@@ -53,6 +55,30 @@ export const LAYOUT_TEMPLATES: LayoutTemplate[] = [
     sequence: ["hero", "selling-point", "image-text", "image-full", "comparison", "usage-steps", "spec-table", "review", "cta"],
     description: "모든 섹션을 포함한 상세 구조",
   },
+  {
+    id: "aida-standard",
+    label: "AIDA 표준",
+    category: "default",
+    framework: "aida",
+    sequence: ["hero", "selling-point", "image-text", "image-full", "spec-table", "review", "cta"],
+    description: "주의→관심→욕구→행동 클래식 설득 구조",
+  },
+  {
+    id: "pas-korean",
+    label: "한국형 PAS",
+    category: "default",
+    framework: "pas-korean",
+    sequence: ["hero", "text-block", "selling-point", "image-full", "spec-table", "review", "cta"],
+    description: "문제인식→공감→솔루션→라이프스타일→디테일→리뷰→행동",
+  },
+  {
+    id: "pastor",
+    label: "PASTOR",
+    category: "default",
+    framework: "pastor",
+    sequence: ["hero", "text-block", "selling-point", "comparison", "review", "cta"],
+    description: "문제→강화→솔루션→증거→추천→행동",
+  },
 ];
 
 export function getTemplatesByCategory(category: string): LayoutTemplate[] {
@@ -63,4 +89,9 @@ export function getTemplatesByCategory(category: string): LayoutTemplate[] {
 export function getBestTemplate(category: string): LayoutTemplate {
   const match = LAYOUT_TEMPLATES.find((t) => t.category === category);
   return match ?? LAYOUT_TEMPLATES.find((t) => t.id === "minimal-basic")!;
+}
+
+/** 프레임워크별 템플릿 반환 */
+export function getTemplateByFramework(framework: PersuasionFramework): LayoutTemplate | undefined {
+  return LAYOUT_TEMPLATES.find((t) => t.framework === framework);
 }

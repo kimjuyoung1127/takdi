@@ -1,7 +1,8 @@
-/** 이미지+텍스트 블록 — ImageUploadZone + EditableText */
+/** 이미지+텍스트 블록 — ImageUploadZone + EditableText + fontFamily */
 "use client";
 
 import type { ImageTextBlock as ImageTextBlockType } from "@/types/blocks";
+import { getFontFamily } from "@/lib/constants";
 import { ImageUploadZone, EditableText, buildFilterStyle } from "../shared";
 
 interface Props {
@@ -35,8 +36,10 @@ export function ImageTextBlockRenderer({ block, selected, onSelect, onUpdate, re
     </div>
   );
 
+  const fontStyle = getFontFamily(block.fontFamily);
+
   const textSide = (
-    <div className="flex w-1/2 flex-col justify-center p-4">
+    <div className="flex w-1/2 flex-col justify-center p-4" style={{ fontFamily: fontStyle }}>
       <EditableText
         value={block.heading}
         placeholder="제목을 입력하세요"

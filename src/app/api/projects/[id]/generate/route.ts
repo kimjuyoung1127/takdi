@@ -21,7 +21,16 @@ export async function POST(
   try {
     const workspaceId = getWorkspaceId();
 
-    const project = await prisma.project.findUnique({ where: { id } });
+    const project = await prisma.project.findUnique({
+      where: { id },
+      select: {
+        workspaceId: true,
+        status: true,
+        briefText: true,
+        mode: true,
+        editorMode: true,
+      },
+    });
     if (!project) return jsonNotFound("Project");
 
     try {
@@ -99,7 +108,14 @@ export async function GET(
   }
 
   try {
-    const project = await prisma.project.findUnique({ where: { id } });
+    const project = await prisma.project.findUnique({
+      where: { id },
+      select: {
+        workspaceId: true,
+        status: true,
+        content: true,
+      },
+    });
     if (!project) return jsonNotFound("Project");
 
     try {
@@ -110,6 +126,15 @@ export async function GET(
 
     const job = await prisma.generationJob.findUnique({
       where: { id: jobId },
+      select: {
+        id: true,
+        projectId: true,
+        status: true,
+        provider: true,
+        error: true,
+        startedAt: true,
+        doneAt: true,
+      },
     });
 
     if (!job || job.projectId !== id) {

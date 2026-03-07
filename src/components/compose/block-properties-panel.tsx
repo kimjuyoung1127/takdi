@@ -1,11 +1,24 @@
-/** 블록 속성 패널 — 선택된 블록의 타입별 동적 편집 필드 (ImagePicker + 블록별 컨트롤) */
+/** 블록 속성 패널 — 선택된 블록의 타입별 동적 편집 필드 (18종 블록 지원, ImagePicker + FontPicker + 블록별 컨트롤) */
 "use client";
 
-import type { Block } from "@/types/blocks";
+import type { Block, TextOverlay } from "@/types/blocks";
 import { BLOCK_TYPE_LABELS } from "@/lib/constants";
 import { useCompose } from "./compose-context";
 import { ImagePicker } from "./image-picker";
-import { ColorStylePicker, ImageFilterControls, SceneComposeAction } from "./shared";
+import { ColorStylePicker, ImageFilterControls, SceneComposeAction, FontPicker } from "./shared";
+import { Plus, Trash2, RotateCcw } from "lucide-react";
+
+const OVERLAY_ALIGN_PRESETS = [
+  { label: "↖", x: 15, y: 15, title: "좌상" },
+  { label: "↑", x: 50, y: 15, title: "상단 중앙" },
+  { label: "↗", x: 85, y: 15, title: "우상" },
+  { label: "←", x: 15, y: 50, title: "좌측 중앙" },
+  { label: "●", x: 50, y: 50, title: "정중앙" },
+  { label: "→", x: 85, y: 50, title: "우측 중앙" },
+  { label: "↙", x: 15, y: 85, title: "좌하" },
+  { label: "↓", x: 50, y: 85, title: "하단 중앙" },
+  { label: "↘", x: 85, y: 85, title: "우하" },
+];
 
 interface BlockPropertiesPanelProps {
   block: Block | null;
@@ -23,6 +36,7 @@ const REVIEW_STYLE_PRESETS = [
   { value: "card", label: "카드", color: "#f3f4f6" },
   { value: "quote", label: "인용", color: "#a5b4fc" },
   { value: "minimal", label: "미니멀", color: "#ffffff" },
+  { value: "bubble", label: "말풍선", color: "#e0e7ff" },
 ];
 
 export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelProps) {
@@ -82,12 +96,203 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
               imageUrl={block.imageUrl}
               onImageChange={(url) => onUpdate(block.id, { imageUrl: url })}
             />
+
+            {/* Overlay editor */}
+            <div className="border-t border-gray-100 pt-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs font-medium text-gray-500">텍스트 오버레이</span>
+                <button
+                  onClick={() => {
+                    const newOvl: TextOverlay = {
+                      id: `ovl-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                      text: "새 텍스트",
+                      x: 50, y: 50, fontSize: 24, color: "#ffffff", fontWeight: "bold", textAlign: "center",
+                    };
+                    onUpdate(block.id, { overlays: [...block.overlays, newOvl] });
+                  }}
+                  className="flex items-center gap-1 rounded bg-indigo-50 px-2 py-1 text-xs text-indigo-600 hover:bg-indigo-100"
+                >
+                  <Plus className="h-3 w-3" />
+                  추가
+                </button>
+              </div>
+              <p className="mb-2 text-[10px] text-gray-400">캔버스에서 텍스트를 드래그하여 위치 변경</p>
+              {block.overlays.map((overlay) => (
+                <div key={overlay.id} className="mb-2 rounded border border-gray-100 p-2">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <input
+                      type="text"
+                      value={overlay.text}
+                      onChange={(e) =>
+                        onUpdate(block.id, {
+                          overlays: block.overlays.map((o) =>
+                            o.id === overlay.id ? { ...o, text: e.target.value } : o,
+                          ),
+                        })
+                      }
+                      className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs"
+                    />
+                    <button
+                      onClick={() =>
+                        onUpdate(block.id, { overlays: block.overlays.filter((o) => o.id !== overlay.id) })
+                      }
+                      className="ml-1 p-1 text-gray-400 hover:text-red-500"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                  {/* Quick align presets — 9-point grid */}
+                  <div className="mb-1.5">
+                    <label className="text-[10px] text-gray-400">빠른 정렬</label>
+                    <div className="mt-0.5 grid grid-cols-3 gap-0.5">
+                      {OVERLAY_ALIGN_PRESETS.map((preset) => (
+                        <button
+                          key={preset.title}
+                          onClick={() =>
+                            onUpdate(block.id, {
+                              overlays: block.overlays.map((o) =>
+                                o.id === overlay.id ? { ...o, x: preset.x, y: preset.y } : o,
+                              ),
+                            })
+                          }
+                          className={`rounded border px-1 py-0.5 text-[10px] transition-colors ${
+                            overlay.x === preset.x && overlay.y === preset.y
+                              ? "border-indigo-300 bg-indigo-50 text-indigo-600"
+                              : "border-gray-200 text-gray-500 hover:border-indigo-200 hover:bg-indigo-50/50"
+                          }`}
+                          title={preset.title}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1 text-[10px]">
+                    <div>
+                      <label className="text-gray-400">X (%)</label>
+                      <input
+                        type="number" min={0} max={100}
+                        value={overlay.x}
+                        onChange={(e) =>
+                          onUpdate(block.id, {
+                            overlays: block.overlays.map((o) =>
+                              o.id === overlay.id ? { ...o, x: Number(e.target.value) } : o,
+                            ),
+                          })
+                        }
+                        className="w-full rounded border border-gray-200 px-1 py-0.5 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-gray-400">Y (%)</label>
+                      <input
+                        type="number" min={0} max={100}
+                        value={overlay.y}
+                        onChange={(e) =>
+                          onUpdate(block.id, {
+                            overlays: block.overlays.map((o) =>
+                              o.id === overlay.id ? { ...o, y: Number(e.target.value) } : o,
+                            ),
+                          })
+                        }
+                        className="w-full rounded border border-gray-200 px-1 py-0.5 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-gray-400">크기</label>
+                      <input
+                        type="number" min={12} max={120}
+                        value={overlay.fontSize}
+                        onChange={(e) =>
+                          onUpdate(block.id, {
+                            overlays: block.overlays.map((o) =>
+                              o.id === overlay.id ? { ...o, fontSize: Number(e.target.value) } : o,
+                            ),
+                          })
+                        }
+                        className="w-full rounded border border-gray-200 px-1 py-0.5 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-gray-400">색상</label>
+                      <input
+                        type="color"
+                        value={overlay.color}
+                        onChange={(e) =>
+                          onUpdate(block.id, {
+                            overlays: block.overlays.map((o) =>
+                              o.id === overlay.id ? { ...o, color: e.target.value } : o,
+                            ),
+                          })
+                        }
+                        className="h-5 w-full cursor-pointer rounded border border-gray-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-gray-400">굵기</label>
+                      <select
+                        value={overlay.fontWeight}
+                        onChange={(e) =>
+                          onUpdate(block.id, {
+                            overlays: block.overlays.map((o) =>
+                              o.id === overlay.id ? { ...o, fontWeight: e.target.value as "normal" | "bold" } : o,
+                            ),
+                          })
+                        }
+                        className="w-full rounded border border-gray-200 px-1 py-0.5 text-xs"
+                      >
+                        <option value="normal">보통</option>
+                        <option value="bold">굵게</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-gray-400">정렬</label>
+                      <select
+                        value={overlay.textAlign}
+                        onChange={(e) =>
+                          onUpdate(block.id, {
+                            overlays: block.overlays.map((o) =>
+                              o.id === overlay.id ? { ...o, textAlign: e.target.value as "left" | "center" | "right" } : o,
+                            ),
+                          })
+                        }
+                        className="w-full rounded border border-gray-200 px-1 py-0.5 text-xs"
+                      >
+                        <option value="left">왼쪽</option>
+                        <option value="center">가운데</option>
+                        <option value="right">오른쪽</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="mt-1">
+                    <label className="text-[10px] text-gray-400">글꼴</label>
+                    <FontPicker
+                      value={overlay.fontFamily ?? "default"}
+                      onChange={(v) =>
+                        onUpdate(block.id, {
+                          overlays: block.overlays.map((o) =>
+                            o.id === overlay.id ? { ...o, fontFamily: v } : o,
+                          ),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
         {/* text-block */}
         {block.type === "text-block" && (
           <div className="space-y-3">
+            <Field label="글꼴">
+              <FontPicker
+                value={block.fontFamily ?? "default"}
+                onChange={(v) => onUpdate(block.id, { fontFamily: v })}
+              />
+            </Field>
             <Field label="정렬">
               <select
                 value={block.align}
@@ -117,6 +322,12 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
         {/* image-text */}
         {block.type === "image-text" && (
           <div className="space-y-3">
+            <Field label="글꼴">
+              <FontPicker
+                value={block.fontFamily ?? "default"}
+                onChange={(v) => onUpdate(block.id, { fontFamily: v })}
+              />
+            </Field>
             <Field label="이미지 위치">
               <select
                 value={block.imagePosition}
@@ -181,6 +392,17 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
                 <option value={3}>3열</option>
               </select>
             </Field>
+            <Field label="이미지 모양">
+              <select
+                value={block.shape ?? "square"}
+                onChange={(e) => onUpdate(block.id, { shape: e.target.value as "square" | "rounded" | "circle" })}
+                className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm"
+              >
+                <option value="square">사각형</option>
+                <option value="rounded">둥근 모서리</option>
+                <option value="circle">원형</option>
+              </select>
+            </Field>
             <ImageFilterControls
               filters={block.imageFilters}
               onChange={(f) => onUpdate(block.id, { imageFilters: f })}
@@ -218,6 +440,16 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
         {/* selling-point */}
         {block.type === "selling-point" && (
           <div className="space-y-3">
+            <Field label="레이아웃">
+              <select
+                value={block.layout ?? "grid"}
+                onChange={(e) => onUpdate(block.id, { layout: e.target.value as "grid" | "horizontal" })}
+                className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm"
+              >
+                <option value="grid">그리드 (2열)</option>
+                <option value="horizontal">가로 나열</option>
+              </select>
+            </Field>
             <p className="text-xs text-gray-400">
               핵심 장점 {block.items.length}개 (최대 4개) — 아래 블록에서 직접 수정
             </p>
@@ -262,7 +494,7 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
               label="표시 스타일"
               value={block.displayStyle ?? "card"}
               presets={REVIEW_STYLE_PRESETS}
-              onChange={(v) => onUpdate(block.id, { displayStyle: v as "card" | "quote" | "minimal" })}
+              onChange={(v) => onUpdate(block.id, { displayStyle: v as "card" | "quote" | "minimal" | "bubble" })}
             />
             <p className="text-xs text-gray-400">
               리뷰 {block.reviews.length}개 — 아래 블록에서 직접 수정
@@ -335,6 +567,74 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
                 onImageChange={(url) => onUpdate(block.id, { posterUrl: url })}
               />
             </Field>
+          </div>
+        )}
+
+        {/* faq */}
+        {block.type === "faq" && (
+          <div className="space-y-3">
+            <p className="text-xs text-gray-400">
+              질문 {block.items.length}개 (최대 10개) — 아래 블록에서 직접 수정
+            </p>
+          </div>
+        )}
+
+        {/* notice */}
+        {block.type === "notice" && (
+          <div className="space-y-3">
+            <Field label="스타일">
+              <select
+                value={block.noticeStyle ?? "default"}
+                onChange={(e) => onUpdate(block.id, { noticeStyle: e.target.value as "default" | "compact" })}
+                className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm"
+              >
+                <option value="default">기본</option>
+                <option value="compact">간결</option>
+              </select>
+            </Field>
+            <p className="text-xs text-gray-400">
+              항목 {block.items.length}개 (최대 8개) — 아래 블록에서 직접 수정
+            </p>
+          </div>
+        )}
+
+        {/* banner-strip */}
+        {block.type === "banner-strip" && (
+          <div className="space-y-3">
+            <Field label="배경색">
+              <input
+                type="color"
+                value={block.bgColor || "#4f46e5"}
+                onChange={(e) => onUpdate(block.id, { bgColor: e.target.value })}
+                className="h-8 w-full cursor-pointer rounded border border-gray-200"
+              />
+            </Field>
+            <Field label="텍스트색">
+              <input
+                type="color"
+                value={block.textColor || "#ffffff"}
+                onChange={(e) => onUpdate(block.id, { textColor: e.target.value })}
+                className="h-8 w-full cursor-pointer rounded border border-gray-200"
+              />
+            </Field>
+          </div>
+        )}
+
+        {/* price-promo */}
+        {block.type === "price-promo" && (
+          <div className="space-y-3">
+            <p className="text-xs text-gray-400">
+              할인율 자동 계산 — 아래 블록에서 가격 직접 수정
+            </p>
+          </div>
+        )}
+
+        {/* trust-badge */}
+        {block.type === "trust-badge" && (
+          <div className="space-y-3">
+            <p className="text-xs text-gray-400">
+              뱃지 {block.badges.length}개 (최대 8개) — 아래 블록에서 직접 수정
+            </p>
           </div>
         )}
       </div>

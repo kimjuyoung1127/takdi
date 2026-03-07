@@ -1,0 +1,118 @@
+/** 인증/뱃지 블록 — 인증 마크·수상 이력·안전 인증 아이콘 나열 */
+"use client";
+
+import type { TrustBadgeBlock } from "@/types/blocks";
+import { Plus, X } from "lucide-react";
+import { EditableText } from "../shared";
+
+interface Props {
+  block: TrustBadgeBlock;
+  selected: boolean;
+  onSelect: () => void;
+  onUpdate: (patch: Partial<TrustBadgeBlock>) => void;
+  readOnly?: boolean;
+}
+
+const BADGE_ICONS = [
+  { value: "check-circle", label: "인증", emoji: "✅" },
+  { value: "shield", label: "안전", emoji: "🛡️" },
+  { value: "award", label: "수상", emoji: "🏆" },
+  { value: "leaf", label: "유기농", emoji: "🌿" },
+  { value: "heart", label: "건강", emoji: "❤️" },
+  { value: "star", label: "우수", emoji: "⭐" },
+  { value: "lock", label: "보안", emoji: "🔒" },
+  { value: "thumbs-up", label: "추천", emoji: "👍" },
+  { value: "lab", label: "시험", emoji: "🧪" },
+  { value: "globe", label: "국제", emoji: "🌐" },
+];
+
+function getBadgeEmoji(icon: string): string {
+  return BADGE_ICONS.find((b) => b.value === icon)?.emoji ?? "✅";
+}
+
+export function TrustBadgeBlockRenderer({ block, selected, onSelect, onUpdate, readOnly }: Props) {
+  const updateBadge = (index: number, patch: Partial<TrustBadgeBlock["badges"][0]>) => {
+    const badges = block.badges.map((b, i) => (i === index ? { ...b, ...patch } : b));
+    onUpdate({ badges });
+  };
+
+  const deleteBadge = (index: number) => {
+    if (block.badges.length <= 1) return;
+    onUpdate({ badges: block.badges.filter((_, i) => i !== index) });
+  };
+
+  const addBadge = () => {
+    if (block.badges.length >= 8) return;
+    onUpdate({
+      badges: [...block.badges, { icon: "check-circle", label: "인증 마크" }],
+    });
+  };
+
+  return (
+    <div
+      className={`w-full rounded-lg border-2 bg-white p-6 transition-colors ${selected ? "border-indigo-500" : "border-transparent hover:border-gray-200"}`}
+      onClick={onSelect}
+    >
+      <EditableText
+        value={block.title}
+        placeholder="인증 및 수상"
+        onChange={(v) => onUpdate({ title: v })}
+        className="mb-4 text-center text-lg font-bold text-gray-900"
+        tag="h3"
+        readOnly={readOnly}
+      />
+
+      <div className="flex flex-wrap items-center justify-center gap-4">
+        {block.badges.map((badge, idx) => (
+          <div key={idx} className="group/badge relative flex flex-col items-center gap-1.5">
+            {/* Icon */}
+            {readOnly ? (
+              <span className="text-3xl">{getBadgeEmoji(badge.icon)}</span>
+            ) : (
+              <select
+                value={badge.icon}
+                onChange={(e) => updateBadge(idx, { icon: e.target.value })}
+                onClick={(e) => e.stopPropagation()}
+                className="rounded border border-gray-200 bg-white px-1 py-0.5 text-lg"
+              >
+                {BADGE_ICONS.map((bi) => (
+                  <option key={bi.value} value={bi.value}>
+                    {bi.emoji} {bi.label}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <EditableText
+              value={badge.label}
+              placeholder="인증명"
+              onChange={(v) => updateBadge(idx, { label: v })}
+              className="text-center text-xs font-medium text-gray-600"
+              tag="span"
+              readOnly={readOnly}
+            />
+
+            {/* Delete */}
+            {!readOnly && block.badges.length > 1 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); deleteBadge(idx); }}
+                className="absolute -right-1 -top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-red-500 opacity-0 transition-opacity group-hover/badge:opacity-100"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {!readOnly && block.badges.length < 8 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); addBadge(); }}
+          className="mx-auto mt-4 flex items-center gap-1 rounded-full border border-dashed border-gray-300 px-3 py-1.5 text-xs text-gray-400 transition-colors hover:border-indigo-300 hover:text-indigo-500"
+        >
+          <Plus className="h-3 w-3" /> 뱃지 추가
+        </button>
+      )}
+    </div>
+  );
+}

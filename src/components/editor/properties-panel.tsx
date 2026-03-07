@@ -4,6 +4,7 @@
 import { useState, useCallback } from "react";
 import { Settings, ImageIcon, Clock, DollarSign, Music, LayoutGrid } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { AppImage } from "@/components/ui/app-image";
 import { AssetUpload } from "./asset-upload";
 import { STATUS_LABELS } from "@/components/ui/status-badge";
 import { fetchUsage, type UsageSummary } from "@/lib/api-client";
@@ -198,9 +199,11 @@ export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataCh
                   <div className="space-y-2">
                     {typeof selectedNodeData?.uploadedFilePath === "string" && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <AppImage
                         src={selectedNodeData.uploadedFilePath}
                         alt="업로드된 이미지"
+                        width={96}
+                        height={96}
                         className="h-24 w-24 rounded-lg border border-gray-200 object-cover"
                       />
                     )}

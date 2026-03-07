@@ -1,19 +1,32 @@
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { mkdir, writeFile } from "fs/promises";
+import path from "path";
 import { prisma } from "@/lib/prisma";
-import { getWorkspaceId, ensureWorkspaceScope } from "@/lib/workspace-guard";
-import { jsonOk, jsonError, jsonNotFound } from "@/lib/api-response";
+import { ensureWorkspaceScope } from "@/lib/workspace-guard";
+import { jsonError, jsonNotFound, jsonOk } from "@/lib/api-response";
 import { validateByoiImage } from "@/services/byoi-validator";
+import {
+  findPreviewPath,
+  normalizeImageVariants,
+  readImageSize,
+  sanitizeUploadName,
+  shouldNormalizeImage,
+  toPublicUploadPath,
+} from "@/lib/asset-images";
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
 
-    const project = await prisma.project.findUnique({ where: { id } });
-    if (!project) return jsonNotFound("Project");
+    const project = await prisma.project.findUnique({
+      where: { id },
+      select: { workspaceId: true },
+    });
+    if (!project) {
+      return jsonNotFound("Project");
+    }
 
     try {
       ensureWorkspaceScope(project.workspaceId);
@@ -24,9 +37,33 @@ export async function GET(
     const assets = await prisma.asset.findMany({
       where: { projectId: id },
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        filePath: true,
+        mimeType: true,
+        sourceType: true,
+        preserveOriginal: true,
+        createdAt: true,
+      },
     });
 
-    return jsonOk({ assets });
+    const enrichedAssets = await Promise.all(
+      assets.map(async (asset) => {
+        const previewPath = await findPreviewPath(asset.filePath);
+        const { width, height } = asset.mimeType?.startsWith("image/")
+          ? await readImageSize(asset.filePath)
+          : { width: undefined, height: undefined };
+
+        return {
+          ...asset,
+          previewPath,
+          width,
+          height,
+        };
+      }),
+    );
+
+    return jsonOk({ assets: enrichedAssets });
   } catch (error) {
     console.error("GET /api/projects/[id]/assets error:", error);
     return jsonError("Internal server error", 500);
@@ -35,14 +72,18 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
-    const workspaceId = getWorkspaceId();
 
-    const project = await prisma.project.findUnique({ where: { id } });
-    if (!project) return jsonNotFound("Project");
+    const project = await prisma.project.findUnique({
+      where: { id },
+      select: { workspaceId: true },
+    });
+    if (!project) {
+      return jsonNotFound("Project");
+    }
 
     try {
       ensureWorkspaceScope(project.workspaceId);
@@ -51,22 +92,22 @@ export async function POST(
     }
 
     const formData = await request.formData();
-    const file = formData.get("file") as File | null;
-    if (!file) return jsonError("No file provided", 400);
+    const file = formData.get("file");
+    if (!(file instanceof File)) {
+      return jsonError("No file provided", 400);
+    }
 
     const sourceType = (formData.get("sourceType") as string) || "uploaded";
     const preserveOriginal = formData.get("preserveOriginal") === "true";
     const skipValidation = formData.get("skipValidation") === "true";
 
-    // Read file buffer
     const buffer = Buffer.from(await file.arrayBuffer());
     const mimeType = file.type;
 
-    // Validate image (skip for video/gif uploads)
     let validationResult: { width?: number; height?: number } | null = null;
     if (skipValidation) {
-      const MAX_SIZE = 50 * 1024 * 1024; // 50MB
-      if (buffer.length > MAX_SIZE) {
+      const maxSize = 50 * 1024 * 1024;
+      if (buffer.length > maxSize) {
         return jsonError("File too large (max 50MB)", 400);
       }
     } else {
@@ -77,30 +118,75 @@ export async function POST(
       validationResult = { width: validation.width, height: validation.height };
     }
 
-    // Save file
-    const uploadsDir = join(process.cwd(), "uploads", id);
+    const uploadsDir = path.join(process.cwd(), "uploads", id);
     await mkdir(uploadsDir, { recursive: true });
-    const fileName = `${Date.now()}-${file.name}`;
-    const filePath = join(uploadsDir, fileName);
-    await writeFile(filePath, buffer);
 
-    // Create Asset record
+    const timestamp = Date.now();
+    const safeBaseName = sanitizeUploadName(file.name);
+    const originalExtension = path.extname(file.name) || ".bin";
+
+    let storedPath: string;
+    let previewPath: string | undefined;
+    let storedMimeType = mimeType;
+    let width = validationResult?.width;
+    let height = validationResult?.height;
+
+    if (shouldNormalizeImage(mimeType)) {
+      const { mainBuffer, previewBuffer, width: normalizedWidth, height: normalizedHeight } =
+        await normalizeImageVariants(buffer);
+
+      const mainFileName = `${timestamp}-${safeBaseName}.webp`;
+      const previewFileName = `${timestamp}-${safeBaseName}-preview.webp`;
+
+      await Promise.all([
+        writeFile(path.join(uploadsDir, mainFileName), mainBuffer),
+        writeFile(path.join(uploadsDir, previewFileName), previewBuffer),
+      ]);
+
+      if (preserveOriginal) {
+        await writeFile(path.join(uploadsDir, `${timestamp}-${safeBaseName}-original${originalExtension}`), buffer);
+      }
+
+      storedPath = toPublicUploadPath(id, mainFileName);
+      previewPath = toPublicUploadPath(id, previewFileName);
+      storedMimeType = "image/webp";
+      width = normalizedWidth;
+      height = normalizedHeight;
+    } else {
+      const passthroughFileName = `${timestamp}-${safeBaseName}${originalExtension}`;
+      await writeFile(path.join(uploadsDir, passthroughFileName), buffer);
+      storedPath = toPublicUploadPath(id, passthroughFileName);
+    }
+
     const asset = await prisma.asset.create({
       data: {
         projectId: id,
         sourceType,
-        filePath: `/uploads/${id}/${fileName}`,
-        mimeType,
+        filePath: storedPath,
+        mimeType: storedMimeType,
         preserveOriginal,
+      },
+      select: {
+        id: true,
+        filePath: true,
+        mimeType: true,
+        sourceType: true,
+        preserveOriginal: true,
+        createdAt: true,
       },
     });
 
     return jsonOk(
       {
-        asset,
+        asset: {
+          ...asset,
+          previewPath,
+          width,
+          height,
+        },
         validation: validationResult,
       },
-      201
+      201,
     );
   } catch (error) {
     console.error("POST /api/projects/[id]/assets error:", error);

@@ -1,30 +1,54 @@
-import { prisma } from "@/lib/prisma";
-import fs from "fs/promises";
+import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { prisma } from "@/lib/prisma";
+import {
+  normalizeImageVariants,
+  sanitizeUploadName,
+  shouldNormalizeImage,
+  toPublicUploadPath,
+} from "@/lib/asset-images";
 
-/**
- * Save base64 image bytes to disk and create an Asset record.
- * Returns the new asset ID and file path.
- */
 export async function saveGeneratedImage(
   projectId: string,
   imageBytes: string,
   mimeType: string,
-  slotLabel: string
+  slotLabel: string,
 ): Promise<{ assetId: string; filePath: string }> {
-  const ext = mimeType === "image/png" ? "png" : "jpg";
-  const fileName = `gen_${projectId}_${slotLabel}_${Date.now()}.${ext}`;
-  const filePath = path.join("uploads", fileName);
+  const uploadsDir = path.join(process.cwd(), "uploads", projectId);
+  await mkdir(uploadsDir, { recursive: true });
 
-  await fs.mkdir("uploads", { recursive: true });
-  await fs.writeFile(filePath, Buffer.from(imageBytes, "base64"));
+  const buffer = Buffer.from(imageBytes, "base64");
+  const timestamp = Date.now();
+  const safeSlotLabel = sanitizeUploadName(slotLabel);
+
+  let filePath: string;
+  let storedMimeType = mimeType;
+
+  if (shouldNormalizeImage(mimeType)) {
+    const { mainBuffer, previewBuffer } = await normalizeImageVariants(buffer);
+    const mainFileName = `gen-${safeSlotLabel}-${timestamp}.webp`;
+    const previewFileName = `gen-${safeSlotLabel}-${timestamp}-preview.webp`;
+
+    await Promise.all([
+      writeFile(path.join(uploadsDir, mainFileName), mainBuffer),
+      writeFile(path.join(uploadsDir, previewFileName), previewBuffer),
+    ]);
+
+    filePath = toPublicUploadPath(projectId, mainFileName);
+    storedMimeType = "image/webp";
+  } else {
+    const extension = mimeType === "image/png" ? "png" : "jpg";
+    const fileName = `gen-${safeSlotLabel}-${timestamp}.${extension}`;
+    await writeFile(path.join(uploadsDir, fileName), buffer);
+    filePath = toPublicUploadPath(projectId, fileName);
+  }
 
   const asset = await prisma.asset.create({
     data: {
       projectId,
       sourceType: "generated",
       filePath,
-      mimeType,
+      mimeType: storedMimeType,
     },
   });
 

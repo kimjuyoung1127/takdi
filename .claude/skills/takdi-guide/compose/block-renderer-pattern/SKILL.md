@@ -25,8 +25,10 @@ Creating or modifying a block renderer in `src/components/compose/block-renderer
 9. **Types**: Block type defined in `src/types/blocks.ts`
 
 ## Checklist
+- [ ] Block interface added to `src/types/blocks.ts` + Block union updated
 - [ ] Added to `block-renderers/index.ts` barrel
 - [ ] `BlockDispatch` in `block-canvas.tsx` handles new type
 - [ ] `block-properties-panel.tsx` has section for new type
 - [ ] `block-palette.tsx` has template with default values
+- [ ] `readOnly` prop handled (static content when true)
 - [ ] `tsc --noEmit` passes

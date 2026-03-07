@@ -1,13 +1,30 @@
-/** 프로젝트 노드 에디터 페이지 — 서버 컴포넌트 (DB fetch + status guard) */
-import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import dynamic from "next/dynamic";
+import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import Loading from "./loading";
 
 const NodeEditorShell = dynamic(
-  () => import("@/components/editor/node-editor-shell").then((m) => m.NodeEditorShell),
+  () => import("@/components/editor/node-editor-shell").then((module) => module.NodeEditorShell),
   { loading: () => <Loading /> },
 );
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const project = await prisma.project.findUnique({
+    where: { id },
+    select: { name: true },
+  });
+
+  return {
+    title: project ? `${project.name} | Pipeline Editor | Takdi Studio` : "Pipeline Editor | Takdi Studio",
+    description: "Edit the Takdi Studio automation pipeline for this project.",
+  };
+}
 
 export default async function EditorPage({
   params,

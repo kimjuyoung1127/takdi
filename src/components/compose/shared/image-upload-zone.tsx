@@ -144,10 +144,14 @@ export function ImageUploadZone({
             <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
           ) : (
             <>
-              <div className="text-center text-gray-400">
-                <ImageIcon className="mx-auto mb-2 h-8 w-8" />
-                <p className="text-xs">{placeholderText}</p>
-              </div>
+              <button
+                onClick={handleClick}
+                className="flex flex-col items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-5 py-3 text-indigo-600 transition-colors hover:bg-indigo-100"
+              >
+                <Upload className="h-6 w-6" />
+                <span className="text-sm font-medium">이미지 업로드</span>
+              </button>
+              <p className="mt-2 text-[11px] text-gray-400">또는 파일을 끌어다 놓으세요</p>
               <button
                 onClick={(e) => { e.stopPropagation(); setShowAssets(true); }}
                 className="mt-2 flex items-center gap-1 rounded bg-gray-100 px-2 py-1 text-[11px] text-gray-500 hover:bg-gray-200 hover:text-gray-700"

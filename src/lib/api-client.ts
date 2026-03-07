@@ -187,8 +187,12 @@ export function pollSceneCompose(projectId: string, jobId: string) {
 export interface AssetRecord {
   id: string;
   filePath: string;
+  previewPath?: string;
   mimeType: string | null;
   sourceType: string;
+  preserveOriginal?: boolean;
+  width?: number;
+  height?: number;
   createdAt: string;
 }
 
@@ -206,7 +210,7 @@ export function uploadAsset(
   if (opts?.sourceType) form.append("sourceType", opts.sourceType);
   if (opts?.preserveOriginal) form.append("preserveOriginal", "true");
   if (opts?.skipValidation) form.append("skipValidation", "true");
-  return request<{ asset: { id: string; filePath: string }; validation?: unknown }>(
+  return request<{ asset: AssetRecord; validation?: unknown }>(
     `/api/projects/${projectId}/assets`,
     { method: "POST", body: form },
   );

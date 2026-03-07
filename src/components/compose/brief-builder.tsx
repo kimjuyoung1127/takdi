@@ -1,11 +1,11 @@
-/** 템플릿 빌더 — 카테고리 선택 → 설득 구조 빈 블록 즉시 배치 */
+/** 템플릿 빌더 — 카테고리 선택 → 프레임워크/훅 → 설득 구조 빈 블록 즉시 배치 */
 "use client";
 
 import { useState, useCallback } from "react";
 import { X, LayoutTemplate as LayoutTemplateIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PRODUCT_CATEGORIES } from "@/lib/constants";
-import { getTemplatesByCategory, getBestTemplate, type LayoutTemplate } from "@/lib/layout-templates";
+import { PRODUCT_CATEGORIES, PERSUASION_FRAMEWORKS, HOOK_LIBRARY, HOOK_STYLES, type PersuasionFramework, type HookStyle } from "@/lib/constants";
+import { getTemplatesByCategory, getTemplateByFramework, getBestTemplate, type LayoutTemplate } from "@/lib/layout-templates";
 import { BLOCK_TEMPLATES } from "./block-palette";
 import { MoodboardPicker } from "./moodboard-picker";
 import type { MoodboardPreset } from "@/lib/moodboard-presets";
@@ -34,6 +34,8 @@ export function BriefBuilder({ open, onClose, onApplyTemplate }: BriefBuilderPro
   const [category, setCategory] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [selectedMoodboard, setSelectedMoodboard] = useState<string | null>(null);
+  const [framework, setFramework] = useState<PersuasionFramework>("aida");
+  const [hookStyle, setHookStyle] = useState<HookStyle | null>(null);
 
   const [selectedMoodboardPreset, setSelectedMoodboardPreset] = useState<MoodboardPreset | null>(null);
 
@@ -43,17 +45,42 @@ export function BriefBuilder({ open, onClose, onApplyTemplate }: BriefBuilderPro
   }, []);
 
   const handleApply = useCallback(() => {
-    const template = selectedTemplate
-      ? getTemplatesByCategory(category).find((t) => t.id === selectedTemplate) ?? getBestTemplate(category)
-      : getBestTemplate(category);
+    // Priority: explicit template > framework template > category best match
+    const explicitTemplate = selectedTemplate
+      ? getTemplatesByCategory(category).find((t) => t.id === selectedTemplate)
+      : null;
+    const template = explicitTemplate
+      ?? getTemplateByFramework(framework)
+      ?? getBestTemplate(category);
     const blocks = templateToBlocks(template);
+
+    // Apply hook text to hero block heading
+    if (hookStyle && category && HOOK_LIBRARY[category]) {
+      const hookText = HOOK_LIBRARY[category][hookStyle];
+      if (hookText) {
+        const heroIdx = blocks.findIndex((b) => b.type === "hero");
+        if (heroIdx >= 0) {
+          const hero = blocks[heroIdx];
+          if (hero.type === "hero" && hero.overlays.length > 0) {
+            blocks[heroIdx] = {
+              ...hero,
+              overlays: hero.overlays.map((o, i) =>
+                i === 0 ? { ...o, text: hookText } : o,
+              ),
+            };
+          }
+        }
+      }
+    }
+
     onApplyTemplate(blocks, selectedMoodboardPreset?.theme);
     onClose();
-  }, [category, selectedTemplate, selectedMoodboardPreset, onApplyTemplate, onClose]);
+  }, [category, selectedTemplate, framework, hookStyle, selectedMoodboardPreset, onApplyTemplate, onClose]);
 
   if (!open) return null;
 
   const templates = category ? getTemplatesByCategory(category) : [];
+  const hookOptions = category && HOOK_LIBRARY[category] ? HOOK_LIBRARY[category] : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
@@ -78,7 +105,7 @@ export function BriefBuilder({ open, onClose, onApplyTemplate }: BriefBuilderPro
             {PRODUCT_CATEGORIES.map((cat) => (
               <button
                 key={cat.value}
-                onClick={() => { setCategory(cat.value); setSelectedTemplate(null); }}
+                onClick={() => { setCategory(cat.value); setSelectedTemplate(null); setHookStyle(null); }}
                 className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                   category === cat.value
                     ? "bg-indigo-500 text-white"
@@ -91,10 +118,69 @@ export function BriefBuilder({ open, onClose, onApplyTemplate }: BriefBuilderPro
           </div>
         </div>
 
-        {/* 레이아웃 템플릿 선택 */}
+        {/* 설득 프레임워크 선택 */}
+        {category && (
+          <div className="mb-5">
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">설득 프레임워크</label>
+            <div className="space-y-1.5">
+              {PERSUASION_FRAMEWORKS.map((fw) => (
+                <button
+                  key={fw.value}
+                  onClick={() => { setFramework(fw.value); setSelectedTemplate(null); }}
+                  className={`w-full rounded-lg border-2 px-3 py-2 text-left transition ${
+                    framework === fw.value
+                      ? "border-indigo-500 bg-indigo-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-800">{fw.label}</span>
+                    <span className="text-[10px] text-gray-400">{fw.sequence.length}개 블록</span>
+                  </div>
+                  <p className="mt-0.5 text-[11px] text-gray-500">{fw.desc}</p>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {fw.sequence.map((type, i) => (
+                      <span key={i} className="rounded bg-gray-100 px-1.5 py-0.5 text-[9px] text-gray-500">
+                        {type}
+                      </span>
+                    ))}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 훅 스타일 선택 */}
+        {hookOptions && (
+          <div className="mb-5">
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">첫 문장 스타일</label>
+            <div className="grid grid-cols-2 gap-2">
+              {HOOK_STYLES.map((hs) => {
+                const text = hookOptions[hs.value];
+                return (
+                  <button
+                    key={hs.value}
+                    onClick={() => setHookStyle(hs.value)}
+                    className={`rounded-lg border-2 px-3 py-2 text-left transition ${
+                      hookStyle === hs.value
+                        ? "border-indigo-500 bg-indigo-50"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <span className="text-xs font-semibold text-gray-800">{hs.label}</span>
+                    <p className="mt-0.5 text-[10px] text-gray-500 line-clamp-2">&ldquo;{text}&rdquo;</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 레이아웃 템플릿 선택 (카테고리별) */}
         {category && templates.length > 0 && (
           <div className="mb-5">
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">레이아웃 구조</label>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">레이아웃 구조 (선택)</label>
             <div className="space-y-1.5">
               {templates.map((tmpl) => (
                 <button

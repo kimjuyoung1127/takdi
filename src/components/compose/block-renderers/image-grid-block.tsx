@@ -16,6 +16,7 @@ interface Props {
 export function ImageGridBlockRenderer({ block, selected, onSelect, onUpdate, readOnly }: Props) {
   const maxCells = block.columns * 2;
   const images = block.images.length > 0 ? block.images : [];
+  const shapeClass = block.shape === "circle" ? "rounded-full" : block.shape === "rounded" ? "rounded-xl" : "rounded";
 
   const updateImage = (index: number, patch: Partial<{ url: string; caption: string }>) => {
     const next = images.map((img, i) => (i === index ? { ...img, ...patch } : img));
@@ -47,7 +48,7 @@ export function ImageGridBlockRenderer({ block, selected, onSelect, onUpdate, re
                 <X className="h-3 w-3" />
               </button>
             )}
-            <div className="aspect-square overflow-hidden rounded">
+            <div className={`aspect-square overflow-hidden ${shapeClass}`}>
               {readOnly ? (
                 img.url ? (
                   <img src={img.url} alt={img.caption} className="h-full w-full object-cover" style={buildFilterStyle(block.imageFilters) ? { filter: buildFilterStyle(block.imageFilters) } : undefined} />

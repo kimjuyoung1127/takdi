@@ -1,8 +1,12 @@
-/** 전체 이미지 블록 — ImageUploadZone + 오버레이 */
+/** 전체 이미지 블록 — ImageUploadZone + 오버레이 (반응형 폰트) */
 "use client";
 
+import { useRef, useState, useEffect } from "react";
 import type { ImageFullBlock } from "@/types/blocks";
+import { getFontFamily } from "@/lib/constants";
 import { ImageUploadZone, EditableText, buildFilterStyle } from "../shared";
+
+const BASE_WIDTH = 780;
 
 interface Props {
   block: ImageFullBlock;
@@ -13,8 +17,23 @@ interface Props {
 }
 
 export function ImageFullBlockRenderer({ block, selected, onSelect, onUpdate, readOnly }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [fontScale, setFontScale] = useState(1);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? BASE_WIDTH;
+      setFontScale(Math.min(1, width / BASE_WIDTH));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <div
+      ref={containerRef}
       className={`relative w-full overflow-hidden rounded-lg border-2 transition-colors ${selected ? "border-indigo-500" : "border-transparent hover:border-gray-200"}`}
       onClick={onSelect}
     >
@@ -45,9 +64,10 @@ export function ImageFullBlockRenderer({ block, selected, onSelect, onUpdate, re
             left: `${overlay.x}%`,
             top: `${overlay.y}%`,
             transform: "translate(-50%, -50%)",
-            fontSize: overlay.fontSize,
+            fontSize: Math.round(overlay.fontSize * fontScale),
             color: overlay.color,
             fontWeight: overlay.fontWeight,
+            fontFamily: getFontFamily(overlay.fontFamily),
             textAlign: overlay.textAlign,
             textShadow: "0 2px 8px rgba(0,0,0,0.5)",
             maxWidth: "80%",

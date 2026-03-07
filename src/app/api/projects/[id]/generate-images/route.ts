@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getWorkspaceId, ensureWorkspaceScope } from "@/lib/workspace-guard";
 import { jsonOk, jsonError, jsonNotFound } from "@/lib/api-response";
 import type { GenerationResultSection } from "@/types";
-import { generateImageWithImagen } from "@/services/imagen-generator";
+import { generateImageWithKie, downloadImageAsBase64 } from "@/services/kie-generator";
 import { saveGeneratedImage } from "@/lib/save-generated-image";
 
 /**
@@ -66,7 +66,7 @@ export async function POST(
         data: {
           projectId: id,
           status: "queued",
-          provider: "imagen",
+          provider: "kie-nano-banana-2",
           input: JSON.stringify({
             slots: targetSections.map((s) => s.imageSlot),
             aspectRatio: body.aspectRatio ?? "1:1",
@@ -203,16 +203,17 @@ async function processImageGeneration(
     const assets: { assetId: string; filePath: string }[] = [];
     for (const section of sections) {
       const prompt = `${section.headline}. ${section.body}`;
-      const result = await generateImageWithImagen(prompt, {
+      const kieResult = await generateImageWithKie(prompt, {
         apiKey: options.apiKey,
         aspectRatio: options.aspectRatio,
-        styleParams: options.styleParams,
       });
+      // Download the first result URL and save as base64
+      const img = await downloadImageAsBase64(kieResult.imageUrls[0]);
       const saved = await saveGeneratedImage(
         projectId,
-        result.imageBytes,
-        result.mimeType,
-        section.imageSlot
+        img.imageBytes,
+        img.mimeType,
+        section.imageSlot,
       );
       assets.push(saved);
     }

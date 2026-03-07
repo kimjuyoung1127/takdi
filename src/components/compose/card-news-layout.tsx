@@ -3,45 +3,14 @@
 
 import { forwardRef } from "react";
 import type { Block } from "@/types/blocks";
-import {
-  HeroBlockRenderer,
-  SellingPointBlockRenderer,
-  TextBlockRenderer,
-  ImageTextBlockRenderer,
-  ImageFullBlockRenderer,
-  ImageGridBlockRenderer,
-  SpecTableBlockRenderer,
-  ComparisonBlockRenderer,
-  ReviewBlockRenderer,
-  DividerBlockRenderer,
-  VideoBlockRenderer,
-  CtaBlockRenderer,
-  UsageStepsBlockRenderer,
-} from "./block-renderers";
+import { ReadOnlyBlockRenderer } from "./read-only-block-renderers";
 
 interface CardNewsLayoutProps {
   blocks: Block[];
 }
 
 function CardBlockDispatch({ block }: { block: Block }) {
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  const noop = { selected: false, onSelect: () => {}, onUpdate: (() => {}) as any };
-
-  switch (block.type) {
-    case "hero": return <HeroBlockRenderer block={block} {...noop} />;
-    case "selling-point": return <SellingPointBlockRenderer block={block} {...noop} />;
-    case "text-block": return <TextBlockRenderer block={block} {...noop} />;
-    case "image-text": return <ImageTextBlockRenderer block={block} {...noop} />;
-    case "image-full": return <ImageFullBlockRenderer block={block} {...noop} />;
-    case "image-grid": return <ImageGridBlockRenderer block={block} {...noop} />;
-    case "spec-table": return <SpecTableBlockRenderer block={block} {...noop} />;
-    case "comparison": return <ComparisonBlockRenderer block={block} {...noop} />;
-    case "review": return <ReviewBlockRenderer block={block} {...noop} />;
-    case "divider": return <DividerBlockRenderer block={block} {...noop} />;
-    case "video": return <VideoBlockRenderer block={block} {...noop} />;
-    case "cta": return <CtaBlockRenderer block={block} {...noop} />;
-    case "usage-steps": return <UsageStepsBlockRenderer block={block} {...noop} />;
-  }
+  return <ReadOnlyBlockRenderer block={block} />;
 }
 
 export const CardNewsLayout = forwardRef<HTMLDivElement, CardNewsLayoutProps>(

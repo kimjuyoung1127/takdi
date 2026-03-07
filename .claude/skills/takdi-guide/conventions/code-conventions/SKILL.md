@@ -78,7 +78,13 @@ Page:  /projects/[id]/preview
 - 기존 파일은 수정 시에만 추가 (소급 적용 안 함).
 - CSS, config 등 비코드 파일은 생략 가능.
 
+## Exceptions
+- 테스트 파일 (`*.test.ts`, `*.spec.ts`, `__tests__/`): JSDoc 헤더 생략 가능
+- 설정 파일 (`*.config.ts`, `*.config.js`): JSDoc 헤더 생략 가능
+- 타입 정의 전용 파일 (`*.d.ts`): JSDoc 헤더 생략 가능
+- CSS/JSON/환경 파일: 컨벤션 적용 대상 아님
+
 ## Validation
-- 새 파일 생성 시: 헤더 주석 존재 여부 확인
+- 새 파일 생성 시: 헤더 주석 존재 여부 확인 (예외 파일 제외)
 - 새 폴더 생성 시: CLAUDE.md 존재 여부 확인
 - 새 컴포넌트 폴더 생성 시: API 세그먼트 매핑 확인
