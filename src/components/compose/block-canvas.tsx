@@ -1,7 +1,7 @@
 /** 블록 캔버스 — @dnd-kit 기반 세로 정렬 드래그 */
 "use client";
 
-import { useState, useCallback, forwardRef } from "react";
+import { useState, useCallback, useMemo, forwardRef } from "react";
 import {
   DndContext,
   closestCenter,
@@ -21,7 +21,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Plus, X, EyeOff } from "lucide-react";
 import type { Block } from "@/types/blocks";
+import { validateBlocks, getBlockViolations } from "@/lib/design-guardrails";
 import { useCompose } from "./compose-context";
+import { GuardrailIndicator } from "./guardrail-indicator";
 import {
   HeroBlockRenderer,
   SellingPointBlockRenderer,
@@ -64,6 +66,7 @@ function SortableBlock({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.id,
+    disabled: block.lockLayout,
   });
 
   const style = {
@@ -79,8 +82,9 @@ function SortableBlock({
         <button
           {...attributes}
           {...listeners}
-          className="flex h-7 w-7 cursor-grab items-center justify-center rounded bg-white text-gray-400 shadow-sm hover:text-gray-600"
-          title="끌어서 순서 변경"
+          className={`flex h-7 w-7 items-center justify-center rounded bg-white shadow-sm ${block.lockLayout ? "cursor-not-allowed text-gray-200" : "cursor-grab text-gray-400 hover:text-gray-600"}`}
+          title={block.lockLayout ? "레이아웃 잠금됨" : "끌어서 순서 변경"}
+          disabled={block.lockLayout}
         >
           <GripVertical className="h-4 w-4" />
         </button>
@@ -180,6 +184,7 @@ export const BlockCanvas = forwardRef<HTMLDivElement, BlockCanvasProps>(function
   ref,
 ) {
   const { theme } = useCompose();
+  const violations = useMemo(() => validateBlocks(blocks), [blocks]);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -231,17 +236,20 @@ export const BlockCanvas = forwardRef<HTMLDivElement, BlockCanvasProps>(function
             {blocks.map((block, idx) => (
               <div key={block.id}>
                 {exporting ? (
-                  <div className={!block.visible ? "hidden" : ""}>
+                  <div className={!block.visible ? "hidden" : ""} data-block-id={block.id} {...(!block.visible ? { "data-hidden": true } : {})}>
                     <BlockDispatch block={block} selected={false} onSelect={() => {}} onUpdate={(patch) => onUpdateBlock(block.id, patch)} />
                   </div>
                 ) : (
-                  <SortableBlock
-                    block={block}
-                    selected={selectedBlockId === block.id}
-                    onSelect={() => onSelectBlock(block.id)}
-                    onDelete={() => handleDelete(block.id)}
-                    onUpdate={(patch) => onUpdateBlock(block.id, patch)}
-                  />
+                  <div className="relative">
+                    <SortableBlock
+                      block={block}
+                      selected={selectedBlockId === block.id}
+                      onSelect={() => onSelectBlock(block.id)}
+                      onDelete={() => handleDelete(block.id)}
+                      onUpdate={(patch) => onUpdateBlock(block.id, patch)}
+                    />
+                    <GuardrailIndicator violations={getBlockViolations(block.id, violations)} />
+                  </div>
                 )}
                 {!exporting && <InsertButton onClick={() => onInsertBlock(idx + 1)} />}
               </div>

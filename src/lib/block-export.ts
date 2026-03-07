@@ -1,6 +1,7 @@
 /** 블록 → 이미지 내보내기 유틸 (html2canvas-pro 기반 클라이언트 사이드 캡처) */
 
 export type ExportFormat = "png" | "jpg";
+export type ExportMode = "single" | "split" | "card-news";
 
 export interface CaptureOptions {
   width?: number;
@@ -52,6 +53,47 @@ export function exportToDownload(blob: Blob, filename: string) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+/**
+ * 블록별 개별 이미지 캡처 → ZIP 파일로 묶어 반환.
+ * 각 블록 요소를 순서대로 캡처하여 001.png, 002.png, ... 형식으로 저장.
+ */
+export async function captureBlocksAsSplitImages(
+  blockElements: HTMLElement[],
+  opts: CaptureOptions = {},
+): Promise<Blob> {
+  const { format = "png", quality = 0.92, scale = 2 } = opts;
+  const { default: JSZip } = await import("jszip");
+  const { default: html2canvas } = await import("html2canvas-pro");
+
+  const zip = new JSZip();
+  const ext = format === "jpg" ? "jpg" : "png";
+  const mimeType = format === "jpg" ? "image/jpeg" : "image/png";
+
+  for (let i = 0; i < blockElements.length; i++) {
+    const el = blockElements[i];
+    const canvas = await html2canvas(el, {
+      scale,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      width: opts.width,
+      logging: false,
+    });
+
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error("캡처 실패"))),
+        mimeType,
+        quality,
+      );
+    });
+
+    const num = String(i + 1).padStart(3, "0");
+    zip.file(`${num}.${ext}`, blob);
+  }
+
+  return zip.generateAsync({ type: "blob" });
 }
 
 /**

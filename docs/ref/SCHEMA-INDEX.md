@@ -1,6 +1,6 @@
 # Takdi Schema and API Index
 
-Last Updated: 2026-03-06 (KST, COMPOSE-001 Block Editor)
+Last Updated: 2026-03-07 (KST, Phase 1-3 competitive improvements)
 
 ## API Contract (Fixed for MVP)
 - `POST /api/projects`
@@ -12,12 +12,34 @@ Last Updated: 2026-03-06 (KST, COMPOSE-001 Block Editor)
 - `GET /api/projects/:id/export?jobId=xxx` — Poll export job status
 - `GET /api/usage/me`
 
-## API Contract (Image Generation)
-- `POST /api/projects/:id/generate-images` — Async: returns 202 + jobId
+## API Contract (Image Generation — Kie.ai Nano Banana 2)
+- `POST /api/projects/:id/generate-images` — Async: returns 202 + jobId (provider: kie-nano-banana-2)
 - `GET /api/projects/:id/generate-images?jobId=xxx` — Poll image generation job status
+- Body options: `{ aspectRatio?: string, slots?: string[], apiKey?: string }`
+
+## API Contract (Remove Background — Kie.ai recraft/remove-background)
+- `POST /api/projects/:id/remove-bg` — Async: returns 202 + jobId (provider: kie-remove-background)
+- `GET /api/projects/:id/remove-bg?jobId=xxx` — Poll background removal job status
+- Body options: `{ assetId: string }`
+
+## API Contract (Model Compose — Nano Banana 2 + image_input)
+- `POST /api/projects/:id/model-compose` — Async: returns 202 + jobId (provider: kie-nano-banana-2-model-compose)
+- `GET /api/projects/:id/model-compose?jobId=xxx` — Poll model composition job status
+- Body options: `{ assetId: string, aspectRatio?: string }`
+- Prompt text: extracted from project.briefText
+
+## Pipeline Executor Contract
+- `executePipeline(projectId, nodes, edges, callbacks, context?)` — 토폴로지 순서 실행
+- `PipelineContext = { ratio?: string, uploadedAssetId?: string, category?: string }` — generate-images→aspectRatio, render→templateKey, remove-bg/model-compose→assetId, generate→category
+
+## API Contract (Scene Compose — Kie.ai Nano Banana 2)
+- `POST /api/projects/:id/scene-compose` — Async: returns 202 + jobId (이미지 URL + 장면 프롬프트 → Kie.ai 합성)
+- `GET /api/projects/:id/scene-compose?jobId=xxx` — Poll scene composition job status
+- Body options: `{ imageUrl: string, scenePrompt: string }`
 
 ## API Contract (Assets + BYOI)
 - `POST /api/projects/:id/assets` — Image upload (FormData)
+- `GET /api/projects/:id/assets` — List project assets (에셋 목록 조회)
 - `POST /api/projects/:id/bgm` — BGM upload (FormData)
 - `POST /api/projects/:id/cuts/handoff`
 
@@ -36,9 +58,20 @@ Last Updated: 2026-03-06 (KST, COMPOSE-001 Block Editor)
 - `GenerationResult = { sections: Array<{ headline: string; body: string; imageSlot: string; styleKey: string }> }`
 - `Asset.sourceType = uploaded | generated | byoi_edited`
 - `CutHandoffPayload = { projectId: string; selectedImageId: string; preserveOriginal: boolean }`
-- `BlockType = hero | selling-point | image-full | image-grid | text-block | image-text | spec-table | comparison | review | divider | video | cta`
-- `BlockDocument = { format: "blocks"; blocks: Block[]; platform: { width: number; name: string }; version: number }`
+- `BlockType = hero | selling-point | image-full | image-grid | text-block | image-text | spec-table | comparison | review | divider | video | cta | usage-steps`
+- `ImageFilters = { brightness: number; contrast: number; saturate: number }` — 0–200, default 100
+- `ThemePalette = { primary: string; secondary: string; background: string; text: string; accent: string }`
+- `BlockDocument = { format: "blocks"; blocks: Block[]; platform: { width: number; name: string }; theme?: ThemePalette; version: number }`
+- `BaseBlock.lockLayout?: boolean` — true인 경우 드래그 재정렬 비활성화
+- `ExportMode = "single" | "split" | "card-news"` — 이미지 내보내기 모드
+- `StepTiming = { nodeId: string; label: string; durationMs: number }` — 파이프라인 단계별 실행 시간
+- `GuardrailViolation = { blockId: string; rule: string; message: string; severity: "warning" | "error" }` — 디자인 가드레일 위반
+- `BriefTags = { category: string; tone: string; target: string; keywords: string[] }` — 태그 기반 브리프
+- `LayoutTemplate = { id: string; label: string; category: string; sequence: BlockType[] }` — 레이아웃 템플릿
+- `MoodboardPreset = { id: string; label: string; category: string; theme: ThemePalette; promptHint: string; gradient: string }` — 무드보드 프리셋
+- `PERSUASION_SEQUENCES` — 7종 카테고리별 설득 구조 블록 순서 (AIDA 기반)
 - `Project.editorMode = flow | compose`
+- `FlowNodeType = prompt | generate-images | bgm | cuts | render | export | upload-image | remove-bg | model-compose`
 
 ## Prisma Domain Entities
 - `User`

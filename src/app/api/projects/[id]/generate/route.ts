@@ -182,7 +182,7 @@ async function processGeneration(
     if (options.editorMode === "compose") {
       const blockDoc: BlockDocument = {
         format: "blocks",
-        blocks: sectionsToBlocks(generationOutput.sections),
+        blocks: sectionsToBlocks(generationOutput.sections, options.category),
         platform: { width: 780, name: "coupang" },
         version: 1,
       };

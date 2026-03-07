@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import type { GenerationResult } from "@/types";
+import { PERSUASION_SEQUENCES } from "@/lib/constants";
 
 const MODEL = "gemini-2.5-flash";
 
@@ -121,13 +122,20 @@ function buildPrompt(
   const modeLabel = mode ?? "freeform";
   const categoryInstructions = category ? CATEGORY_INSTRUCTIONS[category] : undefined;
 
+  // Determine styleKey sequence from persuasion mapping
+  const sequence = category
+    ? (PERSUASION_SEQUENCES[category] ?? PERSUASION_SEQUENCES.default)
+    : PERSUASION_SEQUENCES.default;
+  const styleKeyHint = sequence.slice(0, sectionCount).join(", ");
+
   const lines = [
     "You are an e-commerce product detail page content specialist.",
     "Analyze the provided product brief and structure it into detail page sections.",
     "",
     "Requirements:",
     `- Generate up to ${sectionCount} sections.`,
-    "- Each section must have: headline (concise, attention-grabbing), body (persuasive copy, 50-150 chars), imageSlot (slot-1, slot-2, ...), styleKey (\"default\").",
+    `- Each section must have: headline (concise, attention-grabbing), body (persuasive copy, 50-150 chars), imageSlot (slot-1, slot-2, ...), styleKey (one of the block types below).`,
+    `- Use these styleKey values in order for optimal persuasion flow: ${styleKeyHint}`,
     "- Write in the same language as the brief text.",
     `- Content mode: ${modeLabel}`,
   ];

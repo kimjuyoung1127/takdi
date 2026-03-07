@@ -1,4 +1,4 @@
-/** 블록 팔레트 — 12종 블록 카드, 클릭으로 캔버스에 추가 */
+/** 블록 팔레트 — 13종 블록 카드, 클릭으로 캔버스에 추가 */
 "use client";
 
 import {
@@ -35,7 +35,7 @@ function nextId() {
   return `blk-${Date.now()}-${++paletteIdCounter}`;
 }
 
-const TEMPLATES: BlockTemplate[] = [
+export const BLOCK_TEMPLATES: BlockTemplate[] = [
   {
     type: "hero",
     label: "메인 배너",
@@ -230,7 +230,7 @@ export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
       </div>
       <div className="flex-1 overflow-y-auto p-2">
         <div className="grid grid-cols-2 gap-1.5">
-          {TEMPLATES.map((tmpl) => {
+          {BLOCK_TEMPLATES.map((tmpl) => {
             const Icon = tmpl.icon;
             return (
               <button

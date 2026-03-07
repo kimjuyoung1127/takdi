@@ -1,12 +1,14 @@
-/** 내보내기 다이얼로그 — 파일명/포맷 설정 + 다운로드 실행 */
+/** 내보내기 다이얼로그 — 단일/분할 이미지 + HTML 내보내기 */
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, Download, Loader2 } from "lucide-react";
+import { X, Download, Loader2, FileArchive, Image, Code, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { ExportFormat } from "@/lib/block-export";
-import { buildDefaultFilename, captureBlocksAsImage, exportToDownload } from "@/lib/block-export";
+import type { ExportFormat, ExportMode } from "@/lib/block-export";
+import { buildDefaultFilename, captureBlocksAsImage, captureBlocksAsSplitImages, exportToDownload } from "@/lib/block-export";
+import { blocksToHtml } from "@/services/html-exporter";
 import { toast } from "sonner";
+import type { Block } from "@/types/blocks";
 
 interface ExportDialogProps {
   open: boolean;
@@ -15,6 +17,7 @@ interface ExportDialogProps {
   platformName: string;
   captureRef: React.RefObject<HTMLElement | null>;
   platformWidth: number;
+  blocks?: Block[];
 }
 
 export function ExportDialog({
@@ -24,8 +27,11 @@ export function ExportDialog({
   platformName,
   captureRef,
   platformWidth,
+  blocks,
 }: ExportDialogProps) {
   const [format, setFormat] = useState<ExportFormat>("jpg");
+  const [mode, setMode] = useState<ExportMode>("single");
+  const [htmlMode, setHtmlMode] = useState(false);
   const [filename, setFilename] = useState("");
   const [exporting, setExporting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -41,6 +47,11 @@ export function ExportDialog({
   if (!open) return null;
 
   const handleExport = async () => {
+    if (htmlMode) {
+      handleHtmlExport();
+      return;
+    }
+
     if (!captureRef.current) {
       toast.error("미리보기를 로드할 수 없습니다. 페이지를 새로고침해주세요");
       return;
@@ -48,20 +59,59 @@ export function ExportDialog({
 
     setExporting(true);
     try {
-      const blob = await captureBlocksAsImage(captureRef.current, {
-        width: platformWidth,
-        format,
-        scale: 2,
-      });
-      const fullFilename = `${filename}.${format}`;
-      exportToDownload(blob, fullFilename);
-      toast.success("이미지 다운로드 완료");
+      if (mode === "split" || mode === "card-news") {
+        // Split/card-news: capture each visible block element individually
+        const container = captureRef.current;
+        const blockEls = Array.from(
+          container.querySelectorAll<HTMLElement>("[data-block-id]"),
+        ).filter((el) => !el.closest("[data-hidden]"));
+
+        if (blockEls.length === 0) {
+          toast.error("내보낼 블록이 없습니다");
+          return;
+        }
+
+        const captureWidth = mode === "card-news" ? 1080 : platformWidth;
+        const zipBlob = await captureBlocksAsSplitImages(blockEls, {
+          width: captureWidth,
+          format,
+          scale: 2,
+        });
+        const label = mode === "card-news" ? "카드뉴스" : "분할 이미지";
+        exportToDownload(zipBlob, `${filename}.zip`);
+        toast.success(`${label} ${blockEls.length}장 ZIP 다운로드 완료`);
+      } else {
+        const blob = await captureBlocksAsImage(captureRef.current, {
+          width: platformWidth,
+          format,
+          scale: 2,
+        });
+        exportToDownload(blob, `${filename}.${format}`);
+        toast.success("이미지 다운로드 완료");
+      }
       onClose();
     } catch (err) {
       toast.error(`내보내기 실패: ${err instanceof Error ? err.message : "알 수 없는 오류"}`);
     } finally {
       setExporting(false);
     }
+  };
+
+  const handleHtmlExport = () => {
+    if (!blocks || blocks.length === 0) {
+      toast.error("내보낼 블록이 없습니다");
+      return;
+    }
+    const html = blocksToHtml(blocks, platformWidth);
+    navigator.clipboard.writeText(html).then(
+      () => toast.success("HTML 코드가 클립보드에 복사되었습니다"),
+      () => {
+        // Fallback: download as file
+        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+        exportToDownload(blob, `${filename}.html`);
+        toast.success("HTML 파일 다운로드 완료");
+      },
+    );
   };
 
   return (
@@ -71,9 +121,58 @@ export function ExportDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-900">이미지 내보내기</h2>
+          <h2 className="text-sm font-semibold text-gray-900">내보내기</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* 내보내기 모드 */}
+        <label className="mb-1 block text-xs text-gray-500">내보내기 방식</label>
+        <div className="mb-4 flex gap-2">
+          <button
+            onClick={() => { setMode("single"); setHtmlMode(false); }}
+            className={`flex items-center gap-1.5 rounded border px-3 py-1.5 text-xs font-medium transition ${
+              mode === "single" && !htmlMode
+                ? "border-indigo-500 bg-indigo-50 text-indigo-600"
+                : "border-gray-200 text-gray-500 hover:border-gray-300"
+            }`}
+          >
+            <Image className="h-3.5 w-3.5" />
+            단일 이미지
+          </button>
+          <button
+            onClick={() => { setMode("split"); setHtmlMode(false); }}
+            className={`flex items-center gap-1.5 rounded border px-3 py-1.5 text-xs font-medium transition ${
+              mode === "split" && !htmlMode
+                ? "border-indigo-500 bg-indigo-50 text-indigo-600"
+                : "border-gray-200 text-gray-500 hover:border-gray-300"
+            }`}
+          >
+            <FileArchive className="h-3.5 w-3.5" />
+            분할 (ZIP)
+          </button>
+          <button
+            onClick={() => { setMode("card-news"); setHtmlMode(false); }}
+            className={`flex items-center gap-1.5 rounded border px-3 py-1.5 text-xs font-medium transition ${
+              mode === "card-news" && !htmlMode
+                ? "border-indigo-500 bg-indigo-50 text-indigo-600"
+                : "border-gray-200 text-gray-500 hover:border-gray-300"
+            }`}
+          >
+            <LayoutGrid className="h-3.5 w-3.5" />
+            카드뉴스
+          </button>
+          <button
+            onClick={() => setHtmlMode(true)}
+            className={`flex items-center gap-1.5 rounded border px-3 py-1.5 text-xs font-medium transition ${
+              htmlMode
+                ? "border-indigo-500 bg-indigo-50 text-indigo-600"
+                : "border-gray-200 text-gray-500 hover:border-gray-300"
+            }`}
+          >
+            <Code className="h-3.5 w-3.5" />
+            HTML
           </button>
         </div>
 
@@ -86,26 +185,44 @@ export function ExportDialog({
             onChange={(e) => setFilename(e.target.value)}
             className="flex-1 rounded border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-indigo-400"
           />
-          <span className="text-sm text-gray-400">.{format}</span>
+          <span className="text-sm text-gray-400">
+            .{htmlMode ? "html" : (mode === "split" || mode === "card-news") ? "zip" : format}
+          </span>
         </div>
 
-        {/* 포맷 선택 */}
-        <label className="mb-1 block text-xs text-gray-500">포맷</label>
-        <div className="mb-6 flex gap-2">
-          {(["png", "jpg"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFormat(f)}
-              className={`rounded border px-3 py-1.5 text-xs font-medium transition ${
-                format === f
-                  ? "border-indigo-500 bg-indigo-50 text-indigo-600"
-                  : "border-gray-200 text-gray-500 hover:border-gray-300"
-              }`}
-            >
-              {f.toUpperCase()}
-            </button>
-          ))}
-        </div>
+        {/* 포맷 선택 (이미지 모드만) */}
+        {!htmlMode && (
+          <>
+            <label className="mb-1 block text-xs text-gray-500">포맷</label>
+            <div className="mb-6 flex gap-2">
+              {(["png", "jpg"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFormat(f)}
+                  className={`rounded border px-3 py-1.5 text-xs font-medium transition ${
+                    format === f
+                      ? "border-indigo-500 bg-indigo-50 text-indigo-600"
+                      : "border-gray-200 text-gray-500 hover:border-gray-300"
+                  }`}
+                >
+                  {f.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {htmlMode && (
+          <p className="mb-6 text-xs text-gray-400">
+            인라인 스타일 HTML로 변환합니다. 쿠팡/네이버 상세페이지에 바로 붙여넣기 가능합니다.
+          </p>
+        )}
+
+        {mode === "card-news" && !htmlMode && (
+          <p className="mb-6 text-xs text-gray-400">
+            각 블록을 1080×1080 정방형 슬라이드로 변환합니다. 인스타그램/SNS 카드뉴스에 적합합니다.
+          </p>
+        )}
 
         {/* 내보내기 버튼 */}
         <Button
@@ -118,7 +235,13 @@ export function ExportDialog({
           ) : (
             <Download className="h-4 w-4" />
           )}
-          {exporting ? "내보내는 중..." : "이미지 다운로드"}
+          {exporting
+            ? "내보내는 중..."
+            : htmlMode
+              ? "HTML 복사"
+              : mode === "split" || mode === "card-news"
+                ? "ZIP 다운로드"
+                : "이미지 다운로드"}
         </Button>
       </div>
     </div>

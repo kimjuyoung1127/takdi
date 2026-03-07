@@ -1,6 +1,6 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-06 (KST, B3)
+Last Updated: 2026-03-07 (KST, Phase 1-3)
 
 ## Current Phase
 - Runtime bootstrap completed.
@@ -94,7 +94,7 @@ Last Updated: 2026-03-06 (KST, B3)
   - Properties panel: upload-image 노드 선택 시 인라인 이미지 업로드 UI
   - PipelineContext에 `uploadedAssetId` 추가 (upload-image 노드 → remove-bg/model-compose 전달)
   - 기존 모드 (brand-image, gif-source, freeform) 영향 없음
-  - 39개 vitest 테스트 통과 (기존 35 + 신규 4)
+  - vitest 테스트 (CUTOUT-FIX 기준 39개, 이후 89개로 확장)
 - Competitive analysis completed (COMPETITIVE-ANALYSIS):
   - 4개 참조 자료 + 1개 직접 경쟁사(PicCordial) 분석
   - 핵심 갭 2건 발견: GAP-1 모드 간 에셋 단절, GAP-2 이미지 보정/업스케일 미구현
@@ -141,6 +141,31 @@ Last Updated: 2026-03-06 (KST, B3)
   - 13번째 블록 타입: `usage-steps` (번호 + 이미지 + 라벨 + 설명)
   - 추가/삭제 (최대 6단계), ImageUploadZone + EditableText 인라인 편집
   - 팔레트, 캔버스, 프리뷰, 속성패널 통합 완료
+- Persuasion layout mapping implemented (LAYOUT-001):
+  - 7종 카테고리별 AIDA 설득 구조 블록 순서 자동 매핑 (PERSUASION_SEQUENCES)
+  - section-to-blocks에 category 파라미터, sortByPersuasionSequence() 정렬
+  - Gemini 프롬프트에 styleKey 순서 힌트 주입
+- Pipeline speed measurement implemented (SPEED-001):
+  - StepTiming 인터페이스, performance.now() 기반 단계별 타이밍
+  - onStepTiming/onPipelineDone 콜백, 완료 토스트에 총 소요 시간 표시
+- Zero-prompt template builder implemented (TEMPLATE-001):
+  - 태그 기반 브리프 빌더 (카테고리/톤/타겟/키워드 선택)
+  - 6종 레이아웃 템플릿 (layout-templates.ts), 템플릿 배치 전용 (API 호출 없음)
+  - BriefBuilder 모달: 카테고리 선택 → 레이아웃 템플릿 → 무드보드 선택
+- Multi-format export implemented (EXPORT-002):
+  - 4모드 내보내기: 단일 이미지, 분할 ZIP (JSZip), 카드뉴스 1080×1080, HTML 인라인 스타일
+  - html-exporter.ts: 13종 블록 → 인라인 스타일 HTML 변환 (XSS 방지)
+  - export-dialog.tsx 4모드 선택 UI
+- Design guardrail system implemented (GUARD-001):
+  - 5종 규칙: max-text-length(150자), min-font-size(14px), adjacent-duplicate, missing-image, no-cta
+  - validateBlocks() 규칙 엔진 + GuardrailIndicator 경고 아이콘
+  - "디자인 점검" 버튼 (compose-toolbar)
+- Moodboard selection implemented (MOOD-001):
+  - 24종 무드보드 프리셋 (6카테고리 × 4스타일), ThemePalette 자동 매핑
+  - MoodboardPicker 타일 UI, 선택 시 테마 즉시 적용
+- Layout lock implemented (LOCK-001):
+  - BaseBlock.lockLayout 필드, 잠금 블록 드래그 비활성화
+- 89개 vitest 테스트 통과 (기존 39 + 가드레일 10 + 브리프/템플릿 11 + 기타 29)
 - Next target: 브라우저 통합 테스트, E2E 테스트, Railway 배포.
 
 ## Gate
@@ -202,3 +227,14 @@ Last Updated: 2026-03-06 (KST, B3)
 ## Drift
 - status-model drift: 0
 - api-contract drift: 0 (doc baseline)
+
+## Architecture Sync (dawn pipeline — 2026-03-06)
+- Last checked: 2026-03-06 04:00 KST
+- Overall: MEDIUM confidence alignment — no contradictions detected
+- HIGH: 0 | MEDIUM: 2 | LOW: 3
+- MEDIUM-1: ARCHITECTURE.md does not enumerate all 17 API routes by name (count correct, specificity low)
+- MEDIUM-2: 5 production services missing from ARCHITECTURE.md (removebg-service, kie-generator, section-to-blocks, byoi-validator, bgm-analyzer)
+- LOW-1: Block type system (13 types) not referenced in ARCHITECTURE.md
+- LOW-2: FlowNodeType (9 nodes) vs BlockType (13 blocks) distinction undocumented
+- LOW-3: ExportArtifact export types not enumerated
+- Manual required: Update ARCHITECTURE.md Section 2 to list missing services and enumerate all 17 routes

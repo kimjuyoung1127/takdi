@@ -109,6 +109,35 @@ export const THEME_PRESETS: Array<{ name: string; label: string; palette: import
   { name: "mono", label: "모노톤", palette: { primary: "#374151", secondary: "#6b7280", background: "#ffffff", text: "#111827", accent: "#374151" } },
 ];
 
+/** 카테고리별 설득 구조 블록 시퀀스 (심리학 기반 AIDA 매핑) */
+export const PERSUASION_SEQUENCES: Record<string, BlockType[]> = {
+  fashion: ["hero", "selling-point", "image-grid", "comparison", "usage-steps", "review", "spec-table", "cta"],
+  beauty: ["hero", "selling-point", "usage-steps", "image-text", "spec-table", "review", "cta"],
+  electronics: ["hero", "spec-table", "comparison", "selling-point", "image-grid", "review", "cta"],
+  food: ["hero", "image-full", "selling-point", "usage-steps", "spec-table", "review", "cta"],
+  baby: ["hero", "selling-point", "image-text", "usage-steps", "spec-table", "review", "cta"],
+  home: ["hero", "image-full", "selling-point", "comparison", "spec-table", "review", "cta"],
+  default: ["hero", "selling-point", "image-text", "image-full", "spec-table", "review", "cta"],
+};
+
+/** 톤 프리셋 (제로 프롬프트 브리프 빌더용) */
+export const TONE_PRESETS: Array<{ value: string; label: string; desc: string }> = [
+  { value: "professional", label: "전문적", desc: "신뢰감 있는 정보 중심" },
+  { value: "friendly", label: "친근한", desc: "편안하고 가까운 느낌" },
+  { value: "luxury", label: "럭셔리", desc: "프리미엄, 고급스러운 톤" },
+  { value: "playful", label: "발랄한", desc: "활기차고 재미있는 톤" },
+];
+
+/** 타겟 오디언스 프리셋 (제로 프롬프트 브리프 빌더용) */
+export const TARGET_AUDIENCE: Array<{ value: string; label: string }> = [
+  { value: "20s-female", label: "20대 여성" },
+  { value: "30s-female", label: "30대 여성" },
+  { value: "20s-male", label: "20대 남성" },
+  { value: "30s-male", label: "30대 남성" },
+  { value: "parents", label: "부모/양육자" },
+  { value: "all", label: "전연령" },
+];
+
 /** 블록 타입 → 한글 라벨 */
 export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   hero: "메인 배너",

@@ -115,6 +115,12 @@ export function topologicalSort(nodes: Node[], edges: Edge[]): string[] {
   return order;
 }
 
+export interface StepTiming {
+  nodeId: string;
+  label: string;
+  durationMs: number;
+}
+
 export interface PipelineCallbacks {
   onStepStart: (nodeId: string, label: string) => void;
   onStepDone: (nodeId: string, result: JobPollResponse) => void;
@@ -122,6 +128,8 @@ export interface PipelineCallbacks {
   onSkip: (nodeId: string, reason: string) => void;
   onEdgeActivate: (edgeId: string) => void;
   onEdgeDone: (edgeId: string) => void;
+  onStepTiming?: (timing: StepTiming) => void;
+  onPipelineDone?: (totalMs: number, timings: StepTiming[]) => void;
   shouldAbort: () => boolean;
   addLog: (msg: string, level?: "info" | "warn" | "error") => void;
 }
@@ -146,7 +154,7 @@ async function pollUntilDone(
   throw new Error("작업 시간 초과");
 }
 
-/** 동적 파이프라인 실행 — 토폴로지 순서대로 노드 실행 */
+/** 동적 파이프라인 실행 — 토폴로지 순서대로 노드 실행 + 타이밍 측정 */
 export async function executePipeline(
   projectId: string,
   nodes: Node[],
@@ -155,6 +163,8 @@ export async function executePipeline(
   context?: PipelineContext,
 ): Promise<void> {
   const order = topologicalSort(nodes, edges);
+  const pipelineStart = performance.now();
+  const timings: StepTiming[] = [];
 
   for (const nodeId of order) {
     if (callbacks.shouldAbort()) break;
@@ -175,16 +185,23 @@ export async function executePipeline(
       continue;
     }
 
+    const stepStart = performance.now();
     try {
       callbacks.onStepStart(nodeId, executor.label);
       const job = await executor.start(projectId, context);
       callbacks.addLog(`${executor.label} 작업 시작됨 (${job.jobId.slice(0, 8)}...)`, "info");
 
       const result = await pollUntilDone(projectId, job.jobId, executor.poll, callbacks.shouldAbort);
-      callbacks.addLog(`${executor.label} 완료`, "info");
+      const durationMs = Math.round(performance.now() - stepStart);
+      const timing: StepTiming = { nodeId, label: executor.label, durationMs };
+      timings.push(timing);
+      callbacks.onStepTiming?.(timing);
+      callbacks.addLog(`${executor.label} 완료 (${(durationMs / 1000).toFixed(1)}초)`, "info");
       callbacks.onStepDone(nodeId, result);
       inEdges.forEach((e) => callbacks.onEdgeDone(e.id));
     } catch (err) {
+      const durationMs = Math.round(performance.now() - stepStart);
+      timings.push({ nodeId, label: executor.label, durationMs });
       const msg = err instanceof Error ? err.message : "알 수 없는 오류";
       if (msg === "중단됨") {
         inEdges.forEach((e) => callbacks.onEdgeDone(e.id));
@@ -195,4 +212,7 @@ export async function executePipeline(
       throw err;
     }
   }
+
+  const totalMs = Math.round(performance.now() - pipelineStart);
+  callbacks.onPipelineDone?.(totalMs, timings);
 }

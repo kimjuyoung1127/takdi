@@ -12,6 +12,8 @@ import { BlockPropertiesPanel } from "./block-properties-panel";
 import { ComposeToolbar } from "./compose-toolbar";
 import { ComposeProvider } from "./compose-context";
 import { ExportDialog } from "./export-dialog";
+import { BriefBuilder } from "./brief-builder";
+import { validateBlocks } from "@/lib/design-guardrails";
 
 interface ComposeShellProps {
   projectId: string;
@@ -28,6 +30,7 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [insertIndex, setInsertIndex] = useState<number | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [briefOpen, setBriefOpen] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const blocksRef = useRef(blocks);
@@ -135,10 +138,30 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
     });
   }, [projectId, buildDoc]);
 
+  // Design check
+  const handleDesignCheck = useCallback(() => {
+    const violations = validateBlocks(blocks);
+    if (violations.length === 0) {
+      toast.success("디자인 검증 통과! 문제가 발견되지 않았습니다");
+    } else {
+      toast.warning(`${violations.length}개 디자인 개선 사항이 있습니다. 블록 우측 경고 아이콘을 확인하세요`);
+    }
+  }, [blocks]);
+
   // Export
   const handleExport = useCallback(() => {
     setExportOpen(true);
   }, []);
+
+  // Template apply (no API call — instant block placement)
+  const handleApplyTemplate = useCallback((newBlocks: Block[], newTheme?: import("@/types/blocks").ThemePalette) => {
+    pushUndo(blocksRef.current);
+    setBlocks(newBlocks);
+    if (newTheme) {
+      setTheme(newTheme);
+    }
+    toast.success(`${newBlocks.length}개 블록 템플릿 배치 완료`);
+  }, [pushUndo]);
 
   // Auto-save 30s
   useEffect(() => {
@@ -194,6 +217,8 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
           onSave={handleSave}
           onPreview={handlePreview}
           onExport={handleExport}
+          onAiGenerate={() => setBriefOpen(true)}
+          onDesignCheck={handleDesignCheck}
           isSaving={saving}
           lastSaved={lastSaved}
           theme={theme}
@@ -228,6 +253,12 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
         platformName={platform}
         captureRef={canvasRef}
         platformWidth={PLATFORM_WIDTHS[platform] ?? 780}
+        blocks={blocks}
+      />
+      <BriefBuilder
+        open={briefOpen}
+        onClose={() => setBriefOpen(false)}
+        onApplyTemplate={handleApplyTemplate}
       />
     </ComposeProvider>
   );

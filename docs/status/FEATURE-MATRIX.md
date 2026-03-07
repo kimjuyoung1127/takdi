@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-06 (KST, B3)
+Last Updated: 2026-03-07 (KST, Phase 1-3)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -31,7 +31,7 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | UX-008 | Inline project name editing | Done | claude | 에디터 좌상단 클릭 편집, API name 필드 추가 |
 | UX-009 | Node context menu | Done | claude | 우클릭 복제/삭제/상태초기화 |
 | UX-010 | Undo/Redo | Done | claude | Ctrl+Z/Ctrl+Shift+Z, 50단계 히스토리 스택 |
-| COMPOSE-001 | Block editor (12 block types + dnd-kit canvas) | Done | claude | 상세페이지 블록 에디터: 타입, DB, API, UI, 프리뷰, 통합 |
+| COMPOSE-001 | Block editor (13 block types + dnd-kit canvas) | Done | claude | 상세페이지 블록 에디터: 타입, DB, API, UI, 프리뷰, 통합 |
 | COMPOSE-002 | Section → Block auto-conversion | Done | claude | AI 생성 결과 → 블록 자동 변환 (editorMode:compose) |
 | COMPOSE-003 | Block preview + result page | Done | claude | /projects/:id/result 프리뷰 페이지 |
 | COMPOSE-004 | Text overlay editor | Done | claude | 이미지 위 텍스트 오버레이 드래그 편집 |
@@ -57,5 +57,13 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | E1 | Additional platform presets (11st/Gmarket/SSG) | Done | claude | 6종 플랫폼 (쿠팡/네이버/11번가/G마켓/SSG/자사몰) + PLATFORM_PRESETS 공유 상수 |
 | A1 | Global color palette (BlockDocument.theme) | Done | claude | ThemePalette type + 7종 프리셋 + ThemePicker UI + CSS 변수 캔버스 적용 |
 | B3 | Usage steps block (new block type) | Done | claude | 13번째 블록: 번호+이미지+라벨+설명, 추가/삭제(최대 6), 팔레트+캔버스+프리뷰+속성패널 통합 |
+| LAYOUT-001 | Persuasion layout mapping (AIDA) | Done | claude | 7종 카테고리별 설득 구조 블록 순서 자동 매핑 (PERSUASION_SEQUENCES), section-to-blocks 연동 |
+| SPEED-001 | Pipeline speed measurement | Done | claude | StepTiming, performance.now() 단계별 타이밍, onStepTiming/onPipelineDone 콜백 |
+| TEMPLATE-001 | Zero-prompt template builder | Done | claude | 태그 브리프 빌더 + 6종 레이아웃 템플릿 + BriefBuilder 모달, 템플릿 배치 전용 (API 호출 없음) |
+| EXPORT-002 | Multi-format export (ZIP/HTML/card-news) | Done | claude | 4모드: 단일이미지/분할ZIP(JSZip)/카드뉴스1080/HTML인라인, html-exporter 13블록 변환 |
+| GUARD-001 | Design guardrail system | Done | claude | 5종 규칙 엔진 + GuardrailIndicator + "디자인 점검" 버튼, validateBlocks() |
+| MOOD-001 | Moodboard selection | Done | claude | 24종 프리셋 (6카테고리×4스타일) + ThemePalette 자동 매핑 + MoodboardPicker UI |
+| LOCK-001 | Layout lock (lockLayout) | Done | claude | BaseBlock.lockLayout, 잠금 블록 드래그 비활성화 |
+| TEST-002 | Guardrail + template tests | Done | claude | 가드레일 10 + 브리프/템플릿 11 = 21 신규 테스트, 총 89개 |
 | BILL-001 | Billing integration | Deferred | unassigned | after gate pass |
 | TEAM-001 | Team roles and invites | Deferred | unassigned | after gate pass |

@@ -1,4 +1,4 @@
-/** 상세페이지 블록 에디터 타입 정의 — 12종 블록 + BlockDocument */
+/** 상세페이지 블록 에디터 타입 정의 — 13종 블록 + BlockDocument */
 
 // ─── Block Types ───
 
@@ -44,6 +44,7 @@ interface BaseBlock {
   id: string;
   type: BlockType;
   visible: boolean;
+  lockLayout?: boolean;
 }
 
 // ─── Typed Blocks ───

@@ -1,7 +1,7 @@
 /** Compose 에디터 상단 도구바 — 저장, 미리보기, 내보내기, 플랫폼 선택 */
 "use client";
 
-import { Save, Eye, Download, Loader2, ExternalLink } from "lucide-react";
+import { Save, Eye, Download, Loader2, ExternalLink, LayoutTemplate, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PLATFORM_PRESETS } from "@/lib/constants";
 import type { ThemePalette } from "@/types/blocks";
@@ -16,6 +16,8 @@ interface ComposeToolbarProps {
   onSave: () => void;
   onPreview: () => void;
   onExport: () => void;
+  onAiGenerate?: () => void;
+  onDesignCheck?: () => void;
   isSaving: boolean;
   lastSaved: string | null;
   theme?: ThemePalette;
@@ -30,6 +32,8 @@ export function ComposeToolbar({
   onSave,
   onPreview,
   onExport,
+  onAiGenerate,
+  onDesignCheck,
   isSaving,
   lastSaved,
   theme,
@@ -66,6 +70,28 @@ export function ComposeToolbar({
 
       {/* Right: actions */}
       <div className="flex items-center gap-1">
+        {onAiGenerate && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onAiGenerate}
+            className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700"
+          >
+            <LayoutTemplate className="h-3.5 w-3.5" />
+            템플릿
+          </Button>
+        )}
+        {onDesignCheck && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onDesignCheck}
+            className="flex items-center gap-1 text-xs"
+          >
+            <ShieldCheck className="h-3.5 w-3.5" />
+            디자인 점검
+          </Button>
+        )}
         {lastSaved && (
           <span className="mr-2 text-[10px] text-gray-400">저장: {lastSaved}</span>
         )}
