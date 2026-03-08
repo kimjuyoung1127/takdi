@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowUpRight,
+  Clapperboard,
   UserRound,
   Scissors,
   ImageIcon,
@@ -19,6 +20,7 @@ import { formatCreateProjectName } from "@/i18n/format";
 import { useT } from "@/i18n/use-t";
 import { cn } from "@/lib/utils";
 import { createProject } from "@/lib/api-client";
+import type { ProjectMode } from "@/types";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   compose: LayoutPanelTop,
@@ -29,25 +31,31 @@ const ICON_MAP: Record<string, LucideIcon> = {
   freeform: Sparkles,
 };
 
+export function getModeIcon(mode: string): LucideIcon {
+  const iconMap: Record<string, LucideIcon> = {
+    ...ICON_MAP,
+    "shortform-video": Clapperboard,
+  };
+  return iconMap[mode] ?? Sparkles;
+}
+
 const NAVIGATION_FALLBACK_MS = 4000;
 
-const CARD_STYLES: Record<string, { iconWrap: string; icon: string; accent: string; surface: string }> = {
+const CARD_STYLES: Record<string, { iconWrap: string; icon: string; surface: string }> = {
   freeform: {
-    iconWrap: "border-[#D7D3CE] bg-[#2A2522]",
-    icon: "text-white",
-    accent: "text-[#2A2522]",
-    surface: "bg-[#F5F1EC]",
+    iconWrap: "border-[#F1C8BE] bg-[#F8E7E2]",
+    icon: "text-[#D97C67]",
+    surface: "bg-[#F7F1EA]",
   },
   default: {
     iconWrap: "border-[#E6D5CF] bg-[#F8E6E1]",
     icon: "text-[#D97C67]",
-    accent: "text-[#9E5B4D]",
     surface: "bg-white",
   },
 };
 
 interface ModeCardProps {
-  mode: string;
+  mode: ProjectMode;
   label: string;
   description: string;
   editorMode?: "flow" | "compose";
@@ -61,7 +69,7 @@ export function ModeCard({
   editorMode,
   className,
 }: ModeCardProps) {
-  const Icon = ICON_MAP[mode] ?? Sparkles;
+  const Icon = getModeIcon(mode);
   const style = CARD_STYLES[mode] ?? CARD_STYLES.default;
   const router = useRouter();
   const pathname = usePathname();
@@ -156,45 +164,35 @@ export function ModeCard({
       onClick={handleClick}
       disabled={loading}
       className={cn(
-        "group flex min-h-[188px] min-w-45 flex-col justify-between rounded-[28px] border border-[#E3D9CE] p-6",
-        "shadow-[0_16px_45px_rgba(55,40,30,0.05)]",
-        "transition-all duration-300 hover:-translate-y-0.5 hover:border-[#D7C9BC] hover:shadow-[0_22px_55px_rgba(55,40,30,0.07)]",
+        "group flex min-h-[118px] min-w-40 flex-col rounded-[22px] border border-[#E3D9CE] p-4",
+        "shadow-[0_12px_30px_rgba(55,40,30,0.045)]",
+        "transition-all duration-200 hover:-translate-y-0.5 hover:border-[#D7C9BC] hover:shadow-[0_16px_36px_rgba(55,40,30,0.06)]",
         style.surface,
         "text-left",
-        className
+        className,
       )}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start gap-3">
         <div
           className={cn(
-            "flex h-12 w-12 items-center justify-center rounded-2xl border transition-colors",
-            style.iconWrap
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border transition-colors",
+            style.iconWrap,
           )}
         >
           {loading ? (
-            <Loader2 className={cn("h-5 w-5 animate-spin", style.icon)} />
+            <Loader2 className={cn("h-4 w-4 animate-spin", style.icon)} />
           ) : (
-            <Icon className={cn("h-5 w-5", style.icon)} />
+            <Icon className={cn("h-4 w-4", style.icon)} />
           )}
         </div>
-        <span className="rounded-full border border-[#E8DED4] bg-white/70 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-[#9F8F81]">
-          {mode === "freeform" ? "Experimental" : "Guided"}
-        </span>
-      </div>
 
-      <div className="mt-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#A08E7E]">Workflow</p>
-        <p className="mt-3 text-xl font-semibold tracking-[-0.02em] text-[#201A17]">{label}</p>
-        <p className="mt-2 text-sm leading-6 text-[#6F655D]">{description}</p>
-      </div>
-
-      <div className="mt-7 flex items-center justify-between border-t border-[#EFE8DF] pt-4">
-        <span className={cn("text-sm font-medium transition-colors group-hover:text-[#201A17]", style.accent)}>
-          바로 시작
-        </span>
-        <span className="rounded-full bg-white/80 p-2 text-[#8D7D70] transition group-hover:bg-[#F8E6E1] group-hover:text-[#D97C67]">
-          <ArrowUpRight className="h-4 w-4" />
-        </span>
+        <div className="min-w-0 flex-1 pt-0.5">
+          <div className="flex items-center justify-between gap-3">
+            <p className="truncate text-[15px] font-semibold tracking-[-0.02em] text-[#201A17]">{label}</p>
+            <ArrowUpRight className="h-4 w-4 shrink-0 text-[#9F8F81] transition group-hover:text-[#D97C67]" />
+          </div>
+          <p className="mt-1 line-clamp-1 text-xs leading-5 text-[#6F655D]">{description}</p>
+        </div>
       </div>
     </button>
   );

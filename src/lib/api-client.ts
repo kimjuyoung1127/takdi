@@ -1,4 +1,5 @@
 /** Client-side typed fetch wrappers for all Takdi API endpoints. */
+import type { ExportArtifactType, MarketingScript, ProjectMode } from "@/types";
 
 type JsonBody = Record<string, unknown> | object;
 
@@ -45,7 +46,7 @@ export class ApiError extends Error {
 
 export interface CreateProjectData {
   name?: string;
-  mode?: string;
+  mode?: ProjectMode;
   briefText?: string;
   templateKey?: string;
 }
@@ -60,7 +61,7 @@ export interface UpdateContentData {
   name?: string;
   content?: string;
   briefText?: string;
-  mode?: string;
+  mode?: ProjectMode;
   templateKey?: string;
 }
 
@@ -300,4 +301,46 @@ export interface UsageSummary {
 
 export function fetchUsage() {
   return get<UsageSummary>("/api/usage/me");
+}
+
+// --- Shortform Artifacts ---
+
+export interface ExportArtifactRecord {
+  id: string;
+  type: ExportArtifactType;
+  filePath: string;
+  metadata: string | null;
+  createdAt: string;
+}
+
+export function startGenerateThumbnail(projectId: string, opts?: { templateKey?: string }) {
+  return post<AsyncJobResponse>(`/api/projects/${projectId}/thumbnail`, opts);
+}
+
+export function pollGenerateThumbnail(projectId: string, jobId: string) {
+  return get<JobPollResponse>(`/api/projects/${projectId}/thumbnail?jobId=${jobId}`);
+}
+
+export function startGenerateMarketingScript(projectId: string, opts?: { templateKey?: string }) {
+  return post<AsyncJobResponse>(`/api/projects/${projectId}/marketing-script`, opts);
+}
+
+export function pollGenerateMarketingScript(projectId: string, jobId: string) {
+  return get<JobPollResponse>(`/api/projects/${projectId}/marketing-script?jobId=${jobId}`);
+}
+
+export function parseArtifactMetadata<T>(artifact: Pick<ExportArtifactRecord, "metadata">): T | null {
+  if (!artifact.metadata) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(artifact.metadata) as T;
+  } catch {
+    return null;
+  }
+}
+
+export interface MarketingScriptArtifactPayload {
+  script: MarketingScript;
 }

@@ -8,6 +8,7 @@ import type { BlockType } from "@/types/blocks";
 const VALID_TYPES = new Set<BlockType>([
   "hero", "selling-point", "image-full", "image-grid", "text-block", "image-text",
   "spec-table", "comparison", "review", "divider", "video", "cta", "usage-steps",
+  "faq", "notice", "banner-strip", "price-promo", "trust-badge",
 ]);
 
 describe("brief-assembler", () => {

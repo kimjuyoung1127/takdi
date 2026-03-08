@@ -13,6 +13,10 @@ export interface ModeNodeConfig {
 
 /** 모드→노드 매핑 */
 export const MODE_NODE_CONFIG: Record<string, ModeNodeConfig> = {
+  "shortform-video": {
+    allowedNodes: ["prompt", "generate-images", "bgm", "cuts", "render", "export"],
+    initialPipeline: ["prompt", "generate-images", "bgm", "cuts", "render", "export"],
+  },
   "brand-image": {
     allowedNodes: ["prompt", "generate-images", "export"],
     initialPipeline: ["prompt", "generate-images", "export"],
@@ -66,6 +70,7 @@ export const NODE_TYPE_DESCS: Record<FlowNodeType, string> = {
 /** 프로젝트 모드 → 한글 라벨 */
 export const MODE_LABELS: Record<string, string> = {
   compose: "상세페이지",
+  "shortform-video": "숏폼 영상",
   "model-shot": "모델 촬영",
   cutout: "누끼",
   "brand-image": "브랜드 이미지",

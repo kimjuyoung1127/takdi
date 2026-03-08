@@ -9,6 +9,7 @@ export interface KieGenerateOptions {
   apiKey?: string;
   aspectRatio?: string;
   resolution?: "1K" | "2K" | "4K";
+  imageInput?: string[];
 }
 
 export interface KieGeneratedResult {
@@ -45,7 +46,7 @@ export async function generateImageWithKie(
         resolution: options?.resolution ?? "1K",
         output_format: "jpg",
         google_search: false,
-        image_input: [],
+        image_input: options?.imageInput ?? [],
       },
     }),
   });

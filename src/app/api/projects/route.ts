@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getWorkspaceId } from "@/lib/workspace-guard";
 import { jsonOk, jsonError } from "@/lib/api-response";
+import { isProjectMode } from "@/lib/project-contract";
 
 export async function POST(request: Request) {
   try {
@@ -8,6 +9,9 @@ export async function POST(request: Request) {
     const workspaceId = getWorkspaceId();
 
     const name = body.name || `Project-${Date.now()}`;
+    if (body.mode !== undefined && !isProjectMode(body.mode)) {
+      return jsonError("Invalid project mode", 400);
+    }
 
     const project = await prisma.project.create({
       data: {

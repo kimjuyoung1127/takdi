@@ -1,12 +1,12 @@
-# workspace-hub
-
-Shared workspace home, projects, and settings data helpers.
+# workspace-hub/
+Shared data and configuration for home, projects, and settings.
 
 ## Files
-- `home-feed.ts`: server queries for home, projects, and settings pages
-- `project-filters.ts`: shared list item types and client-side filter helpers
-- `template-instantiation.ts`: create a new compose project from a saved template
+- `home-feed.ts`: server queries for dashboard pages
+- `project-filters.ts`: shared list item and filter helpers
+- `start-modes.ts`: shared start-mode definitions and start destinations
+- `template-instantiation.ts`: saved template instantiation
 
-## Notes
+## Convention
 - Keep home as a quick-entry hub and `/projects` as the full explorer.
-- Saved templates stay separate from recent projects.
+- Start-mode labels used by home and header should stay centralized here.

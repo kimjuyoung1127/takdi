@@ -3,9 +3,25 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PreviewShell } from "@/components/preview/preview-shell";
 import { Button } from "@/components/ui/button";
+import { listProjectArtifacts, resolveProjectImagePaths, resolveProjectSections } from "@/lib/project-media";
 import { prisma } from "@/lib/prisma";
 import { TEMPLATE_TO_COMPOSITION } from "@/components/preview/remotion-preview-config";
-import type { GenerationResultSection } from "@/types";
+import type { ExportArtifactRecord } from "@/lib/api-client";
+import type { ExportArtifactType } from "@/types";
+
+function toClientArtifact(artifact: {
+  id: string;
+  type: string;
+  filePath: string;
+  metadata: string | null;
+  createdAt: Date;
+}): ExportArtifactRecord {
+  return {
+    ...artifact,
+    type: artifact.type as ExportArtifactType,
+    createdAt: artifact.createdAt.toISOString(),
+  };
+}
 
 export async function generateMetadata({
   params,
@@ -36,7 +52,7 @@ export default async function PreviewPage({
 
   const project = await prisma.project.findUnique({
     where: { id },
-    select: { id: true, name: true, content: true, status: true },
+    select: { id: true, name: true, content: true, status: true, mode: true, briefText: true },
   });
 
   if (!project) {
@@ -61,22 +77,17 @@ export default async function PreviewPage({
     );
   }
 
-  let sections: GenerationResultSection[] = [];
-  try {
-    const content = JSON.parse(project.content ?? "{}");
-    sections = content.sections ?? [];
-  } catch {
-    // ignore invalid content
-  }
-
-  const assets = await prisma.asset.findMany({
-    where: { projectId: id, sourceType: "generated" },
-    select: { filePath: true },
-  });
+  const [resolvedSections, imagePaths, artifacts] = await Promise.all([
+    resolveProjectSections(project.id, project.content),
+    resolveProjectImagePaths(project.id),
+    listProjectArtifacts(project.id, ["thumbnail", "marketing-script"]),
+  ]);
 
   const templateKey = rawTemplateKey ?? "9:16";
   const compositionId = TEMPLATE_TO_COMPOSITION[templateKey] ?? "TakdiVideo_916";
-  const selectedImages = assets.map((asset) => asset.filePath);
+  const selectedImages = imagePaths;
+  const thumbnailArtifact = artifacts.find((artifact) => artifact.type === "thumbnail");
+  const marketingScriptArtifact = artifacts.find((artifact) => artifact.type === "marketing-script");
 
   return (
     <main className="p-8">
@@ -90,23 +101,27 @@ export default async function PreviewPage({
       </div>
 
       <PreviewShell
+        projectId={project.id}
         initialCompositionId={compositionId}
         inputProps={{
           title: project.name,
-          sections,
+          sections: resolvedSections.sections,
           selectedImages,
           bgmMetadata: { src: "" },
           templateKey,
         }}
         projectName={project.name}
+        projectMode={project.mode}
         projectStatus={project.status}
-        sectionCount={sections.length}
-        imageCount={assets.length}
+        sectionCount={resolvedSections.sections.length}
+        imageCount={selectedImages.length}
         posterSrc={selectedImages[0]}
+        initialThumbnail={thumbnailArtifact ? toClientArtifact(thumbnailArtifact) : null}
+        initialMarketingScript={marketingScriptArtifact ? toClientArtifact(marketingScriptArtifact) : null}
       />
 
       <p className="mt-6 text-sm text-gray-400">
-        Sections: {sections.length} | Images: {assets.length} | Status: {project.status}
+        Sections: {resolvedSections.sections.length} | Images: {selectedImages.length} | Status: {project.status}
       </p>
     </main>
   );

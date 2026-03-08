@@ -36,6 +36,24 @@ export interface SurfaceNodeDataLike {
 }
 
 export const MODE_SURFACE_CONFIG: Record<string, ModeSurfaceConfig> = {
+  "shortform-video": {
+    defaultViewMode: "simple",
+    allowSimpleMode: true,
+    stepOrder: ["prompt", "generate-images", "bgm", "cuts", "render", "export"],
+    editingPolicy: "guided-readonly",
+    cardinality: {
+      prompt: 1,
+      "generate-images": 1,
+      bgm: 1,
+      cuts: 1,
+      render: 1,
+      export: 1,
+    },
+    allowDuplicateTypes: false,
+    allowEdgeEditing: false,
+    allowNodeDuplication: false,
+    allowNodeInsertion: false,
+  },
   "model-shot": {
     defaultViewMode: "simple",
     allowSimpleMode: true,
@@ -113,6 +131,45 @@ const DEFAULT_SURFACE_CONFIG: ModeSurfaceConfig = {
 };
 
 const MODE_STEP_CONFIGS: Partial<Record<string, StepPresentationConfig[]>> = {
+  "shortform-video": [
+    {
+      nodeType: "prompt",
+      title: "기획 정리",
+      description: "제품명, 타깃, 셀링포인트, CTA를 기준으로 영상 카피를 정리합니다.",
+      helpItems: [
+        "브리프 TXT를 올렸다면 내용을 다듬어 핵심 문장을 확인하세요.",
+        "첫 문장은 후킹, 마지막 문장은 CTA가 되도록 적는 편이 안정적입니다.",
+      ],
+    },
+    {
+      nodeType: "generate-images",
+      title: "장면 이미지 생성",
+      description: "정리된 카피를 바탕으로 장면용 이미지를 생성합니다.",
+      helpItems: [
+        "대표 컷이 있다면 직접 업로드 후 참고 이미지로 활용할 수 있습니다.",
+      ],
+    },
+    {
+      nodeType: "bgm",
+      title: "배경음악 준비",
+      description: "영상에 사용할 BGM을 업로드하거나 선택합니다.",
+    },
+    {
+      nodeType: "cuts",
+      title: "장면 편집",
+      description: "장면 순서와 전환 타이밍을 확인합니다.",
+    },
+    {
+      nodeType: "render",
+      title: "영상 렌더",
+      description: "선택한 비율 기준으로 숏폼 영상을 렌더링합니다.",
+    },
+    {
+      nodeType: "export",
+      title: "산출물 저장",
+      description: "영상 결과를 저장하고 미리보기/결과 화면으로 이어집니다.",
+    },
+  ],
   "model-shot": [
     {
       nodeType: "upload-image",
@@ -311,6 +368,20 @@ export function getUserFacingNodeStatus(nodeData?: SurfaceNodeDataLike | null): 
       return { label: "오류", tone: "error" };
     }
     return { label: "실행 전", tone: "idle" };
+  }
+
+  if (nodeType === "bgm") {
+    const bgmValue = (nodeData as { filePath?: unknown } | undefined)?.filePath;
+    return typeof bgmValue === "string" && bgmValue.length > 0
+      ? { label: "설정 완료", tone: "done" }
+      : { label: "설정 전", tone: "idle" };
+  }
+
+  if (nodeType === "cuts") {
+    if (rawStatus === "generated" || rawStatus === "done") {
+      return { label: "편집 완료", tone: "done" };
+    }
+    return { label: "확인 전", tone: "idle" };
   }
 
   if (rawStatus === "failed" || rawStatus === "error") {

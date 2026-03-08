@@ -2,13 +2,13 @@
 Preview-specific components for the browser Remotion experience.
 
 ## Files
-- `preview-shell.tsx` - lightweight ratio selector and preview shell shown on route entry
-- `preview-player-loader.tsx` - click boundary that imports the runtime only after explicit user intent
-- `remotion-player-runtime.tsx` - the only browser runtime file allowed to import `@remotion/player`
-- `remotion-preview-config.ts` - shared composition metadata and template mapping
-- `remotion-preview.tsx` - compatibility wrapper that re-exports `PreviewShell`
+- `preview-shell.tsx`: ratio selector and preview shell
+- `preview-player-loader.tsx`: delayed runtime import boundary
+- `remotion-player-runtime.tsx`: the only file allowed to import `@remotion/player`
+- `remotion-preview-config.ts`: composition metadata and template mapping
+- `shortform-artifact-panel.tsx`: shortform-only preview artifact actions
 
 ## Convention
-- Keep the shell/runtime split intact.
+- Keep shell/runtime split intact.
 - Do not import `@remotion/player` outside `remotion-player-runtime.tsx`.
-- Preview route entry must remain useful even when the runtime has not been loaded yet.
+- Preview owns shortform artifact generation; result only shows saved outputs.

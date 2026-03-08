@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ensureWorkspaceScope } from "@/lib/workspace-guard";
 import { jsonOk, jsonError, jsonNotFound } from "@/lib/api-response";
+import { resolveProjectImagePaths, resolveProjectSections } from "@/lib/project-media";
 import type { CompositionId } from "@/types";
 
 const TEMPLATE_TO_COMPOSITION: Record<string, CompositionId> = {
@@ -23,6 +24,7 @@ export async function POST(
         workspaceId: true,
         name: true,
         content: true,
+        id: true,
       },
     });
     if (!project) return jsonNotFound("Project");
@@ -41,26 +43,18 @@ export async function POST(
     const compositionId = TEMPLATE_TO_COMPOSITION[templateKey];
 
     // Build complete RemotionInputProps
-    let sections = [];
-    try {
-      const content = JSON.parse(project.content ?? "{}");
-      sections = content.sections ?? [];
-    } catch {
-      // Invalid content — empty sections
-    }
-
-    const assets = await prisma.asset.findMany({
-      where: { projectId: id, sourceType: "generated" },
-      select: { filePath: true },
-    });
+    const [resolvedSections, imagePaths] = await Promise.all([
+      resolveProjectSections(project.id, project.content),
+      resolveProjectImagePaths(project.id),
+    ]);
 
     return jsonOk({
       compositionId,
       templateKey,
       inputProps: {
         title: project.name,
-        sections,
-        selectedImages: assets.map((a: { filePath: string }) => a.filePath),
+        sections: resolvedSections.sections,
+        selectedImages: imagePaths,
         bgmMetadata: { src: "" },
         templateKey,
       },

@@ -49,6 +49,7 @@ export const koMessages: MessageSchema = {
     },
     mode: {
       compose: "상세페이지",
+      shortformVideo: "숏폼 영상",
       modelShot: "모델 촬영",
       cutout: "누끼",
       brandImage: "브랜드 이미지",
@@ -78,6 +79,7 @@ export const koMessages: MessageSchema = {
     savedTemplatesDescription: "최근 작업과는 분리해 두고, 저장한 레이아웃으로 새 컴포즈 프로젝트를 시작하세요.",
     modeDescriptions: {
       compose: "블록 기반 에디터로 상세페이지 시작",
+      shortformVideo: "가이드형 파이프라인으로 숏폼 영상 시작",
       modelShot: "AI 모델 촬영 이미지 생성",
       cutout: "이미지 배경 제거",
       brandImage: "브랜드 이미지 제작",

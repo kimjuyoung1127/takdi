@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ensureWorkspaceScope } from "@/lib/workspace-guard";
 import { jsonOk, jsonError, jsonNotFound } from "@/lib/api-response";
+import { isProjectMode } from "@/lib/project-contract";
 
 export async function PATCH(
   request: Request,
@@ -23,7 +24,12 @@ export async function PATCH(
     if (body.name !== undefined) updateData.name = body.name;
     if (body.content !== undefined) updateData.content = body.content;
     if (body.briefText !== undefined) updateData.briefText = body.briefText;
-    if (body.mode !== undefined) updateData.mode = body.mode;
+    if (body.mode !== undefined) {
+      if (!isProjectMode(body.mode)) {
+        return jsonError("Invalid project mode", 400);
+      }
+      updateData.mode = body.mode;
+    }
     if (body.templateKey !== undefined) updateData.templateKey = body.templateKey;
 
     if (Object.keys(updateData).length === 0) {

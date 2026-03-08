@@ -1,8 +1,32 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-08 (KST, dashboard simplification pass)
+Last Updated: 2026-03-08 (KST, shortform mode + preview artifacts pass)
 
 ## Latest Update
+- Shortform mode + preview artifact pass completed.
+- Verified with final `npm run typecheck`, `npm run test`, and `npm run build` on 2026-03-08.
+- Self-review follow-up completed in the same pass:
+  - added server-side `ProjectMode` validation to `POST /api/projects`
+  - added server-side `ProjectMode` validation to `PATCH /api/projects/:id/content`
+- Key shipped changes in this pass:
+  - added a shared start-mode registry reused by home cards, the global launcher, and the direct upload hub
+  - added a new guided mode `shortform-video` surfaced to users as `숏폼 영상`
+  - kept `GIF` and `freeform` as separate start paths
+  - unified home/header `직접 업로드` into one staged upload flow before project creation
+  - added shortform-only preview artifacts: `thumbnail` and `marketing-script`
+  - added `POST/GET /api/projects/:id/thumbnail` for Kie-backed thumbnail generation
+  - added `POST/GET /api/projects/:id/marketing-script` for Gemini-backed marketing script generation
+  - split `/projects/[id]/result` into compose block-result vs shortform media-result rendering
+
+- Header action refactor pass completed for concrete top-level navigation.
+- Verified with final `npm run build` on 2026-03-08.
+- Key shipped changes in this pass:
+  - replaced the ambiguous home-linked header CTA with a global `작업 시작` launcher
+  - turned the header search field into a real global search overlay for projects, templates, and workspace shortcuts
+  - changed the bell icon into an in-context activity panel backed by recent activity data
+  - added `/workspace` as a workspace hub for summary, usage, cost, and future B2B/team expansion
+  - aligned the main logo and `freeform` accent color with the coral CTA axis used on home
+
 - Home dashboard simplification pass completed for first-screen clarity.
 - Verified with final `npm run build` on 2026-03-08.
 - Key shipped changes in this pass:
@@ -85,7 +109,7 @@ Last Updated: 2026-03-08 (KST, dashboard simplification pass)
 - Browser preview implemented (VID-002): @remotion/player + preview page + ratio toggle.
 - Async conversion completed (ASYNC-001): generate, render, export routes → fire-and-forget + polling.
 - UI screens implemented (UI-001): Tailwind v4 + shadcn/ui + React Flow.
-  - Home: mode cards, BYOI CTA, recent projects list.
+  - Home: mode cards, shared direct upload hub, recent projects list.
   - Editor: 3-panel layout (palette + canvas + properties), floating toolbar, bottom logger.
   - Preview: Tailwind migration from inline styles.
   - 8 folder CLAUDE.md files, code-conventions skill.
@@ -303,6 +327,7 @@ Last Updated: 2026-03-08 (KST, dashboard simplification pass)
 
 ## Contract Snapshot
 - `ProjectStatus`: `draft | generating | generated | failed | exported`
+- `ProjectMode`: `compose | shortform-video | model-shot | cutout | brand-image | gif-source | freeform`
 - `PlanTier`: `solo_free`
 - Core APIs (async endpoints return 202 + jobId):
   - `POST /api/projects`
@@ -317,6 +342,10 @@ Last Updated: 2026-03-08 (KST, dashboard simplification pass)
   - `GET /api/projects/:id/remove-bg?jobId=xxx` (poll)
   - `POST /api/projects/:id/model-compose` → 202 (모델 합성)
   - `GET /api/projects/:id/model-compose?jobId=xxx` (poll)
+  - `POST /api/projects/:id/thumbnail` → 202 (shortform preview artifact)
+  - `GET /api/projects/:id/thumbnail?jobId=xxx` (poll)
+  - `POST /api/projects/:id/marketing-script` → 202 (shortform preview artifact)
+  - `GET /api/projects/:id/marketing-script?jobId=xxx` (poll)
   - `POST /api/projects/:id/export` → 202
   - `GET /api/projects/:id/export?jobId=xxx` (poll)
   - `POST /api/projects/:id/remotion/render` → 202

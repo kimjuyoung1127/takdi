@@ -2,31 +2,43 @@
 
 import { useState } from "react";
 import { PREVIEW_TEMPLATE_OPTIONS } from "@/components/preview/remotion-preview-config";
+import type { ExportArtifactRecord } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { CompositionId, RemotionInputProps } from "@/types";
 import { PreviewPlayerLoader } from "./preview-player-loader";
+import { COMPOSITION_TO_TEMPLATE } from "./remotion-preview-config";
+import { ShortformArtifactPanel } from "./shortform-artifact-panel";
 
 export interface PreviewShellProps {
+  projectId: string;
   initialCompositionId: CompositionId;
   inputProps: RemotionInputProps;
   projectName: string;
+  projectMode: string | null;
   projectStatus: string;
   sectionCount: number;
   imageCount: number;
   posterSrc?: string;
+  initialThumbnail: ExportArtifactRecord | null;
+  initialMarketingScript: ExportArtifactRecord | null;
 }
 
 export function PreviewShell({
+  projectId,
   initialCompositionId,
   inputProps,
   projectName,
+  projectMode,
   projectStatus,
   sectionCount,
   imageCount,
   posterSrc,
+  initialThumbnail,
+  initialMarketingScript,
 }: PreviewShellProps) {
   const [compositionId, setCompositionId] = useState<CompositionId>(initialCompositionId);
+  const currentTemplateKey = COMPOSITION_TO_TEMPLATE[compositionId];
 
   return (
     <div className="space-y-6">
@@ -66,6 +78,15 @@ export function PreviewShell({
         imageCount={imageCount}
         posterSrc={posterSrc}
       />
+
+      {projectMode === "shortform-video" ? (
+        <ShortformArtifactPanel
+          projectId={projectId}
+          templateKey={currentTemplateKey}
+          initialThumbnail={initialThumbnail}
+          initialMarketingScript={initialMarketingScript}
+        />
+      ) : null}
     </div>
   );
 }

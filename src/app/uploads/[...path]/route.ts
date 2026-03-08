@@ -13,6 +13,7 @@ const MIME_MAP: Record<string, string> = {
   ".mp4": "video/mp4",
   ".webm": "video/webm",
   ".mov": "video/quicktime",
+  ".txt": "text/plain; charset=utf-8",
 };
 
 export async function GET(

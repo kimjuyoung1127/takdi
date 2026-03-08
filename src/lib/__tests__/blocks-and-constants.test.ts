@@ -38,6 +38,11 @@ describe("BlockType 상수 정합성", () => {
     "video",
     "cta",
     "usage-steps",
+    "faq",
+    "notice",
+    "banner-strip",
+    "price-promo",
+    "trust-badge",
   ];
 
   it("1. BLOCK_TYPE_LABELS에 13종 블록 모두 존재", () => {
@@ -47,8 +52,8 @@ describe("BlockType 상수 정합성", () => {
     }
   });
 
-  it("2. BLOCK_TYPE_LABELS 키 개수 = 13", () => {
-    expect(Object.keys(BLOCK_TYPE_LABELS)).toHaveLength(13);
+  it("2. BLOCK_TYPE_LABELS 키 개수 = 18", () => {
+    expect(Object.keys(BLOCK_TYPE_LABELS)).toHaveLength(18);
   });
 
   it("3. usage-steps 라벨 = '사용 방법'", () => {
@@ -220,26 +225,31 @@ describe("테마 프리셋", () => {
 // ══════════════════════════════════════
 
 describe("모드 설정", () => {
-  it("22. MODE_NODE_CONFIG 5종 모드", () => {
-    expect(Object.keys(MODE_NODE_CONFIG)).toHaveLength(5);
+  it("22. MODE_NODE_CONFIG 6종 모드", () => {
+    expect(Object.keys(MODE_NODE_CONFIG)).toHaveLength(6);
   });
 
-  it("23. brand-image 모드: prompt→generate-images→export", () => {
+  it("23. shortform-video 모드: prompt→generate-images→bgm→cuts→render→export", () => {
+    const cfg = MODE_NODE_CONFIG["shortform-video"];
+    expect(cfg.initialPipeline).toEqual(["prompt", "generate-images", "bgm", "cuts", "render", "export"]);
+  });
+
+  it("24. brand-image 모드: prompt→generate-images→export", () => {
     const cfg = MODE_NODE_CONFIG["brand-image"];
     expect(cfg.initialPipeline).toEqual(["prompt", "generate-images", "export"]);
   });
 
-  it("24. cutout 모드: upload-image→remove-bg→export", () => {
+  it("25. cutout 모드: upload-image→remove-bg→export", () => {
     const cfg = MODE_NODE_CONFIG["cutout"];
     expect(cfg.initialPipeline).toEqual(["upload-image", "remove-bg", "export"]);
   });
 
-  it("25. model-shot 모드: upload-image→prompt→model-compose→export", () => {
+  it("26. model-shot 모드: upload-image→prompt→model-compose→export", () => {
     const cfg = MODE_NODE_CONFIG["model-shot"];
     expect(cfg.initialPipeline).toEqual(["upload-image", "prompt", "model-compose", "export"]);
   });
 
-  it("26. MODE_LABELS에 compose 포함", () => {
+  it("27. MODE_LABELS에 compose 포함", () => {
     expect(MODE_LABELS["compose"]).toBe("상세페이지");
   });
 });

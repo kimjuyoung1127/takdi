@@ -39,6 +39,10 @@ export const TEMPLATE_TO_COMPOSITION: Record<string, CompositionId> = {
   "16:9": "TakdiVideo_169",
 };
 
+export const COMPOSITION_TO_TEMPLATE = Object.fromEntries(
+  Object.entries(TEMPLATE_TO_COMPOSITION).map(([templateKey, compositionId]) => [compositionId, templateKey]),
+) as Record<CompositionId, string>;
+
 export const PREVIEW_TEMPLATE_OPTIONS = Object.entries(TEMPLATE_TO_COMPOSITION).map(
   ([label, compositionId]) => ({
     label,

@@ -1,10 +1,11 @@
 # home/
-Home 화면(`/`) 전용 컴포넌트.
+Home dashboard components for `/`.
 
 ## Files
-- `mode-card.tsx` — 모드 선택 카드 (클릭 시 프로젝트 생성 → 에디터 이동)
-- `recent-projects.tsx` — 최근 프로젝트 목록 + 빈 상태 처리
+- `home-start-grid.tsx`: shared start-mode grid plus direct upload trigger
+- `mode-card.tsx`: project-start card that creates a project and routes onward
+- `recent-projects.tsx`: recent project list and state handling
 
 ## Convention
-- `mode-card`는 클라이언트 컴포넌트 (onClick 핸들러)
-- `recent-projects`는 서버 컴포넌트 (props로 데이터 수신)
+- Home start cards must reuse `workspace-hub/start-modes.ts`.
+- Keep direct upload entry wired to `DirectUploadLauncher`.

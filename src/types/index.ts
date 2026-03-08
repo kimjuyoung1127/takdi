@@ -1,10 +1,27 @@
 // Project status lifecycle: draft -> generating -> generated -> exported
 // Fail path: draft -> generating -> failed
 export type ProjectStatus = "draft" | "generating" | "generated" | "failed" | "exported";
+export type ProjectMode =
+  | "compose"
+  | "shortform-video"
+  | "model-shot"
+  | "cutout"
+  | "brand-image"
+  | "gif-source"
+  | "freeform";
 
 export type PlanTier = "solo_free" | "starter" | "pro" | "agency";
 
 export type AssetSourceType = "uploaded" | "generated" | "byoi_edited";
+export type ExportArtifactType =
+  | "html"
+  | "single"
+  | "split"
+  | "card-news"
+  | "video"
+  | "gif"
+  | "thumbnail"
+  | "marketing-script";
 
 export type JobStatus = "queued" | "running" | "done" | "failed";
 
@@ -17,6 +34,12 @@ export interface GenerationResultSection {
 
 export interface GenerationResult {
   sections: GenerationResultSection[];
+}
+
+export interface MarketingScript {
+  hook: string;
+  body: string;
+  hashtags: string[];
 }
 
 export interface CutHandoffPayload {

@@ -47,6 +47,7 @@ export interface MessageSchema {
     };
     mode: {
       compose: string;
+      shortformVideo: string;
       modelShot: string;
       cutout: string;
       brandImage: string;
@@ -76,6 +77,7 @@ export interface MessageSchema {
     savedTemplatesDescription: string;
     modeDescriptions: {
       compose: string;
+      shortformVideo: string;
       modelShot: string;
       cutout: string;
       brandImage: string;
