@@ -1,7 +1,7 @@
 # Takdi User Flow
 
-Version: 1.3.0
-Last Updated: 2026-03-05 (KST)
+Version: 1.4.0
+Last Updated: 2026-03-08 (KST)
 
 Related spec:
 - `docs/ref/WIREFRAME-NODE-BYOI.md`
@@ -88,3 +88,8 @@ flowchart TD
 - `model-shot`, `cutout`, and `brand-image` default to a simple step-based editor for non-technical operators.
 - `freeform` remains graph-first.
 - Cost and run history are reviewed from `/settings`, not the main editor surface.
+
+## Home Dashboard Note
+- `/` opens directly into `새 작업 시작` without a hero summary card.
+- The home screen prioritizes action selection first, then recent projects and saved templates.
+- On home, `compose` is surfaced with a user-facing label (`상세페이지 제작`) instead of internal editor terminology.

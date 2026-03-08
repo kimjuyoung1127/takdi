@@ -1,8 +1,16 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-08 (KST, editor surface redesign + settings ops summary)
+Last Updated: 2026-03-08 (KST, dashboard simplification pass)
 
 ## Latest Update
+- Home dashboard simplification pass completed for first-screen clarity.
+- Verified with final `npm run build` on 2026-03-08.
+- Key shipped changes in this pass:
+  - removed the top hero summary card from `/` so the first visible section is `새 작업 시작`
+  - removed redundant pulse/note/summary cards that repeated information already visible in recent projects and saved templates
+  - kept the new warm-gray + muted-coral dashboard tone while simplifying the top information hierarchy
+  - replaced home-facing `compose` wording with the user-facing label `상세페이지 제작`
+
 - Editor surface redesign completed for operator-first workflow.
 - Verified with final `npm run typecheck` and `npm run build` on 2026-03-08.
 - Key shipped changes in this pass:

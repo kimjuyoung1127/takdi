@@ -1,6 +1,6 @@
 /** Workspace home with mode shortcuts, recent projects, and saved templates. */
 import Link from "next/link";
-import { Upload } from "lucide-react";
+import { ArrowRight, Upload } from "lucide-react";
 import { AppLayout } from "@/components/layout/app-layout";
 import { ModeCard } from "@/components/home/mode-card";
 import { RecentProjects } from "@/components/home/recent-projects";
@@ -16,8 +16,8 @@ export default async function HomePage() {
   const modes = [
     {
       mode: "compose",
-      label: messages.common.mode.compose,
-      description: messages.home.modeDescriptions.compose,
+      label: "상세페이지 제작",
+      description: "상품 소개와 판매 구조를 정리하는 상세페이지 작업",
       editorMode: "compose" as const,
     },
     { mode: "model-shot", label: messages.common.mode.modelShot, description: messages.home.modeDescriptions.modelShot },
@@ -29,45 +29,75 @@ export default async function HomePage() {
 
   return (
     <AppLayout>
-      <section>
-        <h1 className="mb-2 text-2xl font-bold text-gray-900">{messages.home.title}</h1>
-        <p className="mb-6 text-sm text-gray-400">{messages.home.description}</p>
-
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {modes.map((mode) => (
-            <ModeCard key={mode.mode} {...mode} />
-          ))}
-
-          <Link
-            href="/?action=byoi"
-            className="flex min-w-45 flex-col items-center gap-3 rounded-3xl border-2 border-dashed border-gray-200 bg-white/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-indigo-300 hover:shadow-md"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-50 text-gray-400">
-              <Upload className="h-6 w-6" />
+      <div className="space-y-10">
+        <section id="start-new-work">
+          <div className="mb-5 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#A08E7E]">Start new work</p>
+              <h2 className="mt-3 text-[28px] font-semibold tracking-[-0.03em] text-[#201A17]">
+                새 작업 시작
+              </h2>
             </div>
-            <div className="text-center">
-              <p className="text-sm font-semibold text-gray-600">{messages.home.directUploadTitle}</p>
-              <p className="mt-1 text-xs text-gray-400">{messages.home.directUploadDescription}</p>
+            <Link
+              href="/projects"
+              className="inline-flex items-center gap-2 rounded-full px-1 text-sm font-medium text-[#5E544E] transition hover:text-[#201A17]"
+            >
+              전체 프로젝트 보기
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+            {modes.map((mode) => (
+              <ModeCard key={mode.mode} {...mode} />
+            ))}
+
+            <Link
+              href="/?action=byoi"
+              className="group flex min-h-[188px] flex-col justify-between rounded-[28px] border border-dashed border-[#D9CDC0] bg-[#F8F5F0] p-6 text-left transition duration-300 hover:-translate-y-0.5 hover:border-[#D97C67] hover:bg-white"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#E6D8CB] bg-white text-[#8D7D70] transition group-hover:border-[#F1C5BA] group-hover:bg-[#F9E7E2] group-hover:text-[#D97C67]">
+                <Upload className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#A08E7E]">Bring your own</p>
+                <p className="mt-3 text-xl font-semibold tracking-[-0.02em] text-[#201A17]">
+                  {messages.home.directUploadTitle}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[#6F655D]">{messages.home.directUploadDescription}</p>
+                <div className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[#5E544E] transition group-hover:text-[#201A17]">
+                  바로 업로드
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </div>
+            </Link>
+          </div>
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
+          <div>
+            <div className="mb-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#A08E7E]">Recent queue</p>
+              <h2 className="mt-3 text-[28px] font-semibold tracking-[-0.03em] text-[#201A17]">
+                {messages.home.recentProjectsTitle}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-[#6F655D]">{messages.home.recentProjectsDescription}</p>
             </div>
-          </Link>
-        </div>
-      </section>
+            <RecentProjects projects={projects} />
+          </div>
 
-      <section className="mt-10">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">{messages.home.recentProjectsTitle}</h2>
-          <p className="mt-1 text-sm text-gray-400">{messages.home.recentProjectsDescription}</p>
-        </div>
-        <RecentProjects projects={projects} />
-      </section>
-
-      <section className="mt-10">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">{messages.home.savedTemplatesTitle}</h2>
-          <p className="mt-1 text-sm text-gray-400">{messages.home.savedTemplatesDescription}</p>
-        </div>
-        <SavedTemplates templates={templates} />
-      </section>
+          <div>
+            <div className="mb-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#A08E7E]">Saved references</p>
+              <h2 className="mt-3 text-[28px] font-semibold tracking-[-0.03em] text-[#201A17]">
+                {messages.home.savedTemplatesTitle}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-[#6F655D]">{messages.home.savedTemplatesDescription}</p>
+            </div>
+            <SavedTemplates templates={templates} />
+          </div>
+        </section>
+      </div>
     </AppLayout>
   );
 }

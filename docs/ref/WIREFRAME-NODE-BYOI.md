@@ -1,6 +1,6 @@
 # Takdi Wireframe Spec (Editor Surface + BYOI)
 
-Version: 1.1.0
+Version: 1.2.0
 Last Updated: 2026-03-08 (KST)
 Owner: Product/Platform
 
@@ -11,15 +11,16 @@ Owner: Product/Platform
 
 ## Screen Wireframes
 ### 1) Home
-- Primary CTA: `Start New Project`
-- Secondary CTA: `Use My Edited Image (BYOI)`
-- Recent projects list (name, stage, updated time, resume action)
-- Quick mode cards:
-  - model-shot
-  - cutout
-  - brand-image
-  - gif-source
-  - freeform
+- Top starts immediately with `새 작업 시작`
+- No hero intro card, no pulse/summary cards, no dashboard note card
+- Primary CTA group:
+  - mode cards for new work
+  - `직접 업로드 (BYOI)`
+- Home-only user-facing mode label:
+  - `compose` is presented as `상세페이지 제작`
+- Lower section:
+  - recent projects queue on the left
+  - saved templates panel on the right
 
 ### 2) Editor (`/projects/:id/editor`)
 - Shared top global actions:
@@ -154,6 +155,10 @@ flowchart TD
 - `freeform` and `gif-source` open in expert mode only.
 - Editor view mode selection persists in localStorage per mode.
 - In expert mode, the top-right mode toggle must stay clear of the centered action toolbar.
+- Home dashboard should stay minimal:
+  - no explanatory hero copy before the first work cards
+  - no redundant summary cards that repeat project/template counts already visible below
+  - no technical wording such as `compose` on the first screen
 
 ## Node Gate Rules
 - `Intermediate Confirm` must be completed before `Cut Edit`.

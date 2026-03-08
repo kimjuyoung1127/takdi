@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { FolderOpen, Search } from "lucide-react";
+import { ArrowUpRight, FolderOpen, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatShowingProjects } from "@/i18n/format";
@@ -55,19 +55,19 @@ export function RecentProjects({ projects }: RecentProjectsProps) {
 
   if (projects.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-3xl bg-white p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        <FolderOpen className="mb-3 h-10 w-10 text-gray-300" />
-        <p className="text-sm text-gray-500">{messages.home.emptyProjectsTitle}</p>
-        <p className="mt-1 text-xs text-gray-400">{messages.home.emptyProjectsDescription}</p>
+      <div className="flex flex-col items-center justify-center rounded-[28px] border border-[#E5DDD3] bg-white/90 p-12 shadow-[0_18px_45px_rgba(55,40,30,0.05)]">
+        <FolderOpen className="mb-3 h-10 w-10 text-[#C2B8AE]" />
+        <p className="text-sm font-medium text-[#4D433D]">{messages.home.emptyProjectsTitle}</p>
+        <p className="mt-1 text-xs text-[#8D7D70]">{messages.home.emptyProjectsDescription}</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-3xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-      <div className="border-b border-gray-100 px-6 py-5">
+    <div className="rounded-[30px] border border-[#E5DDD3] bg-white/92 shadow-[0_18px_45px_rgba(55,40,30,0.05)]">
+      <div className="border-b border-[#EEE5DC] px-6 py-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="inline-flex w-fit rounded-full border border-gray-200 bg-gray-50 p-1">
+          <div className="inline-flex w-fit rounded-full border border-[#E5DDD3] bg-[#F6F1EB] p-1">
             {PROJECT_KIND_TABS.map((item) => (
               <button
                 key={item}
@@ -75,8 +75,8 @@ export function RecentProjects({ projects }: RecentProjectsProps) {
                 onClick={() => setTab(item)}
                 className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                   tab === item
-                    ? "bg-white text-indigo-600 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "bg-white text-[#201A17] shadow-sm"
+                    : "text-[#7A6F67] hover:text-[#4D433D]"
                 }`}
               >
                 {item === "all"
@@ -89,20 +89,20 @@ export function RecentProjects({ projects }: RecentProjectsProps) {
           </div>
 
           <div className="flex flex-1 flex-col gap-3 lg:flex-row lg:justify-end">
-            <label className="flex w-full items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 lg:max-w-xs">
+            <label className="flex w-full items-center gap-2 rounded-2xl border border-[#E3D9CE] bg-[#F7F3EE] px-3 py-2.5 text-sm text-[#8D7D70] lg:max-w-xs">
               <Search className="h-4 w-4" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={messages.common.filters.searchProjectName}
-                className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
+                className="w-full bg-transparent text-sm text-[#4D433D] outline-none placeholder:text-[#A08E7E]"
               />
             </label>
 
             <select
               value={status}
               onChange={(event) => setStatus(event.target.value as ProjectStatusFilter)}
-              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600"
+              className="rounded-2xl border border-[#E3D9CE] bg-white px-3 py-2.5 text-sm text-[#5E544E]"
             >
               {statusOptions.map((value) => (
                 <option key={value} value={value}>
@@ -114,7 +114,7 @@ export function RecentProjects({ projects }: RecentProjectsProps) {
             <select
               value={dateRange}
               onChange={(event) => setDateRange(event.target.value as ProjectDateFilter)}
-              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600"
+              className="rounded-2xl border border-[#E3D9CE] bg-white px-3 py-2.5 text-sm text-[#5E544E]"
             >
               {PROJECT_DATE_FILTERS.map((item) => (
                 <option key={item} value={item}>
@@ -131,46 +131,47 @@ export function RecentProjects({ projects }: RecentProjectsProps) {
           </div>
         </div>
 
-        <p className="mt-3 text-xs text-gray-400">
+        <p className="mt-3 text-xs text-[#95867A]">
           {formatShowingProjects(messages, filteredProjects.length, projects.length)}
         </p>
       </div>
 
       {filteredProjects.length === 0 ? (
         <div className="px-6 py-12 text-center">
-          <p className="text-sm font-medium text-gray-700">{messages.home.noProjectsMatchTitle}</p>
-          <p className="mt-1 text-xs text-gray-400">{messages.home.noProjectsMatchDescription}</p>
+          <p className="text-sm font-medium text-[#4D433D]">{messages.home.noProjectsMatchTitle}</p>
+          <p className="mt-1 text-xs text-[#8D7D70]">{messages.home.noProjectsMatchDescription}</p>
         </div>
       ) : (
-        <div className="divide-y divide-gray-50">
+        <div className="space-y-3 p-4">
           {filteredProjects.map((project) => (
             <div
               key={project.id}
-              className="flex flex-col gap-4 px-6 py-4 transition-colors hover:bg-gray-50/50 md:flex-row md:items-center md:justify-between"
+              className="flex flex-col gap-4 rounded-[24px] border border-[#EEE5DC] bg-[#FCFAF7] px-5 py-4 transition-colors hover:bg-white md:flex-row md:items-center md:justify-between"
             >
               <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 text-gray-400">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#ECE3D9] bg-white text-[#9D8E81]">
                   <FolderOpen className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{project.name}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-sm font-medium text-[#201A17]">{project.name}</p>
+                  <p className="mt-1 text-xs text-[#8D7D70]">
                     {modeLabels[project.mode ?? "freeform"] ?? project.mode ?? messages.common.mode.editorFallback} &middot;{" "}
                     {new Date(project.updatedAt).toLocaleDateString("ko-KR")}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <StatusBadge status={project.status} />
+              <div className="flex items-center gap-3 self-end md:self-auto">
+                <StatusBadge status={project.status} className="rounded-full" />
                 <Link href={getProjectDestination(project)}>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    className="rounded-xl text-xs text-gray-500 hover:text-gray-900"
+                    className="rounded-2xl border-[#E2D7CB] bg-white text-xs font-medium text-[#4D433D] shadow-none hover:bg-[#F8F2EC]"
                   >
+                    <ArrowUpRight className="h-3.5 w-3.5" />
                     {project.mode === "compose"
-                      ? messages.common.actions.openCompose
+                      ? `${messages.common.mode.compose} 열기`
                       : messages.common.actions.openEditor}
                   </Button>
                 </Link>

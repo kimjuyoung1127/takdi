@@ -2,11 +2,11 @@
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<string, string> = {
-  draft: "bg-gray-100 text-gray-600",
-  generating: "bg-amber-50 text-amber-500 animate-pulse",
-  generated: "bg-emerald-50 text-emerald-500",
-  exported: "bg-indigo-50 text-indigo-600",
-  failed: "bg-rose-50 text-rose-500",
+  draft: "bg-[#EEE7DE] text-[#7D7168]",
+  generating: "bg-[#FAE5DE] text-[#C76F58]",
+  generated: "bg-[#E6F0E8] text-[#5D7D66]",
+  exported: "bg-[#E8ECEF] text-[#55646F]",
+  failed: "bg-[#F7E2E2] text-[#AD5C5C]",
 };
 
 export const STATUS_LABELS: Record<string, string> = {
@@ -28,10 +28,10 @@ interface StatusBadgeProps {
 }
 
 const TONE_STYLES: Record<NonNullable<StatusBadgeProps["tone"]>, string> = {
-  idle: "bg-gray-100 text-gray-600",
-  working: "bg-amber-50 text-amber-500",
-  done: "bg-emerald-50 text-emerald-500",
-  error: "bg-rose-50 text-rose-500",
+  idle: "bg-[#EEE7DE] text-[#7D7168]",
+  working: "bg-[#FAE5DE] text-[#C76F58]",
+  done: "bg-[#E6F0E8] text-[#5D7D66]",
+  error: "bg-[#F7E2E2] text-[#AD5C5C]",
 };
 
 export function StatusBadge({ status, label, tone, className }: StatusBadgeProps) {
