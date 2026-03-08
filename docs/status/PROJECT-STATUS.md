@@ -1,8 +1,28 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-08 (KST, project management drawers + terminology pass)
+Last Updated: 2026-03-09 (KST, shortform 0-cost smoke validation + next roadmap)
 
 ## Latest Update
+- Shortform C-plan MVP runtime validation completed.
+- Verified on 2026-03-09 with final `npm run test`, `npm run build`, and `npm run typecheck`.
+- Zero-cost local smoke path verified end-to-end:
+  - disabled Gemini/Kie keys and forced the `brief-parser` fallback path for brief generation
+  - created a `shortform-video` project with local brief text, 3 uploaded scene images, and 1 uploaded WAV BGM
+  - confirmed `/api/projects/:id/remotion/preview` builds scene-aware input props with manual scene assignments and BGM source
+  - confirmed `/api/projects/:id/remotion/render` creates 3 real MP4 artifacts (`9:16`, `1:1`, `16:9`)
+  - confirmed `/api/projects/:id/export` completes after render and `/projects/[id]/result` returns HTTP 200
+- Bugs fixed during validation:
+  - fixed Windows Remotion CLI spawning in `POST /api/projects/:id/remotion/render`
+  - renamed Remotion composition ids from underscore form to dash form so CLI render no longer fails validation
+  - persisted shortform render artifact metadata back into `Project.content.shortform.renderPresets`
+- Current validated shortform MVP scope:
+  - `brief -> sections -> manual scene assignment -> BGM -> cuts -> preview -> render -> export -> result`
+  - AI image generation remains optional, not required for completion
+- Next planned milestone is documented in `docs/ref/SHORTFORM-ROADMAP.md`:
+  - advanced timeline editor
+  - multi-reference role tuning
+  - thumbnail/script quality optimization
+
 - Project management drawer pass completed.
 - Verified with final `npm run typecheck`, `npm run test`, and `npm run build` on 2026-03-08.
 - Key shipped changes in this pass:

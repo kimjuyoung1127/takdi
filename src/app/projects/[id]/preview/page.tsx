@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PreviewShell } from "@/components/preview/preview-shell";
 import { Button } from "@/components/ui/button";
-import { listProjectArtifacts, resolveProjectImagePaths, resolveProjectSections } from "@/lib/project-media";
+import { listProjectArtifacts, resolveProjectSections, resolveShortformInputProps } from "@/lib/project-media";
 import { prisma } from "@/lib/prisma";
 import { TEMPLATE_TO_COMPOSITION } from "@/components/preview/remotion-preview-config";
 import type { ExportArtifactRecord } from "@/lib/api-client";
@@ -77,15 +77,17 @@ export default async function PreviewPage({
     );
   }
 
-  const [resolvedSections, imagePaths, artifacts] = await Promise.all([
+  const templateKey =
+    rawTemplateKey === "1:1" || rawTemplateKey === "16:9" ? rawTemplateKey : "9:16";
+
+  const [resolvedSections, inputProps, artifacts] = await Promise.all([
     resolveProjectSections(project.id, project.content),
-    resolveProjectImagePaths(project.id),
+    resolveShortformInputProps(project.id, project.name, project.content, templateKey),
     listProjectArtifacts(project.id, ["thumbnail", "marketing-script"]),
   ]);
 
-  const templateKey = rawTemplateKey ?? "9:16";
   const compositionId = TEMPLATE_TO_COMPOSITION[templateKey] ?? "TakdiVideo_916";
-  const selectedImages = imagePaths;
+  const selectedImages = inputProps.selectedImages;
   const thumbnailArtifact = artifacts.find((artifact) => artifact.type === "thumbnail");
   const marketingScriptArtifact = artifacts.find((artifact) => artifact.type === "marketing-script");
 
@@ -103,13 +105,7 @@ export default async function PreviewPage({
       <PreviewShell
         projectId={project.id}
         initialCompositionId={compositionId}
-        inputProps={{
-          title: project.name,
-          sections: resolvedSections.sections,
-          selectedImages,
-          bgmMetadata: { src: "" },
-          templateKey,
-        }}
+        inputProps={inputProps}
         projectName={project.name}
         projectMode={project.mode}
         projectStatus={project.status}

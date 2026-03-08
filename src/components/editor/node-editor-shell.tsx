@@ -29,8 +29,15 @@ import {
   isGuidedMode,
   type EditorViewMode,
 } from "@/lib/editor-surface";
+import {
+  applyShortformRenderArtifacts,
+  hasSceneAssignmentsForAllSections,
+  serializeProjectContent,
+  upsertShortformSections,
+} from "@/lib/shortform-state";
 import { executePipeline } from "@/lib/pipeline-executor";
 import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
+import type { ShortformProjectState } from "@/types";
 
 interface NodeEditorShellProps {
   projectId: string;
@@ -41,6 +48,7 @@ interface NodeEditorShellProps {
     nodes: Node[];
     edges: Edge[];
   } | null;
+  initialShortformState?: ShortformProjectState | null;
 }
 
 type PipelineStep = "idle" | "running" | "generating" | "imaging" | "done" | "error";
@@ -122,6 +130,7 @@ export function NodeEditorShell({
   mode,
   initialBriefText,
   initialGraph,
+  initialShortformState,
 }: NodeEditorShellProps) {
   const surfaceConfig = getModeSurfaceConfig(mode);
   const guidedMode = isGuidedMode(mode);
@@ -138,12 +147,14 @@ export function NodeEditorShell({
   const [projectBriefText, setProjectBriefText] = useState(initialBriefText);
   const [viewMode, setViewMode] = useState<EditorViewMode>(surfaceConfig.defaultViewMode);
   const [canvasSnapshot, setCanvasSnapshot] = useState<CanvasSnapshot>(initialGraph ?? EMPTY_SNAPSHOT);
+  const [shortformState, setShortformState] = useState<ShortformProjectState | null>(initialShortformState ?? null);
 
   const canvasRef = useRef<NodeCanvasHandle>(null);
   const canvasStateRef = useRef<CanvasSnapshot>(initialGraph ?? EMPTY_SNAPSHOT);
   const briefTextRef = useRef(initialBriefText);
   const abortRef = useRef(false);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedShortformRef = useRef(false);
 
   const effectiveViewMode: EditorViewMode = allowSimpleMode ? viewMode : "expert";
   const graphValidation = useMemo(
@@ -175,7 +186,11 @@ export function NodeEditorShell({
       content: string;
       briefText: string;
     } = {
-      content: JSON.stringify(canvasStateRef.current),
+      content: serializeProjectContent({
+        nodes: canvasStateRef.current.nodes,
+        edges: canvasStateRef.current.edges,
+        shortform: mode === "shortform-video" ? shortformState : null,
+      }),
       briefText: briefTextRef.current,
     };
 
@@ -185,7 +200,7 @@ export function NodeEditorShell({
 
     await updateContent(projectId, payload);
     setLastSaved(new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }));
-  }, [projectId]);
+  }, [mode, projectId, shortformState]);
 
   const handleStateChange = useCallback((nodes: Node[], edges: Edge[]) => {
     const nextSnapshot = { nodes, edges };
@@ -221,6 +236,38 @@ export function NodeEditorShell({
   const handleNodeDataChange = useCallback((nodeId: string, patch: Partial<NodeData>) => {
     canvasRef.current?.updateNodeData(nodeId, patch);
   }, []);
+
+  const handleShortformStateChange = useCallback(
+    (
+      updater:
+        | ShortformProjectState
+        | null
+        | ((prev: ShortformProjectState | null) => ShortformProjectState | null),
+    ) => {
+      setShortformState((current) => (typeof updater === "function" ? updater(current) : updater));
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (mode !== "shortform-video") {
+      return;
+    }
+    if (!mountedShortformRef.current) {
+      mountedShortformRef.current = true;
+      return;
+    }
+    if (autoSaveTimer.current) {
+      clearTimeout(autoSaveTimer.current);
+    }
+    autoSaveTimer.current = setTimeout(async () => {
+      try {
+        await syncProjectState();
+      } catch {
+        // Best-effort auto-save.
+      }
+    }, 30_000);
+  }, [mode, shortformState, syncProjectState]);
 
   const pollUntilDone = useCallback(async (pollFn: () => Promise<JobPollResponse>, label: string) => {
     const interval = 2000;
@@ -272,6 +319,7 @@ export function NodeEditorShell({
       const uploadedAssetId = (uploadNode?.data as NodeData | undefined)?.uploadedAssetId as string | undefined;
       const promptNode = nodes.find((node) => (node.data as NodeData).nodeType === "prompt");
       const category = (promptNode?.data as NodeData | undefined)?.category as string | undefined;
+      const manualSceneReady = mode === "shortform-video" && hasSceneAssignmentsForAllSections(shortformState);
 
       await executePipeline(
         projectId,
@@ -288,19 +336,108 @@ export function NodeEditorShell({
 
             if (nodeType === "prompt") {
               patch.previewText = briefTextRef.current.trim().slice(0, 90);
+              if (mode === "shortform-video") {
+                const project = (result as Record<string, unknown>).project as { content?: string } | undefined;
+                if (project?.content) {
+                  try {
+                    const parsed = JSON.parse(project.content) as { sections?: ShortformProjectState["sections"] };
+                    const sections = Array.isArray(parsed.sections) ? parsed.sections : [];
+                    if (sections.length > 0) {
+                      setShortformState((current) => upsertShortformSections(current, sections));
+                    }
+                  } catch {
+                    // Best-effort hydrate from generation response.
+                  }
+                }
+              }
             }
 
             if (nodeType === "generate-images" || nodeType === "remove-bg" || nodeType === "model-compose") {
-              const assets = (result as Record<string, unknown>).assets as { filePath?: string }[] | undefined;
+              const assets = (result as Record<string, unknown>).assets as
+                | { id?: string; filePath?: string; imageSlot?: string; sourceType?: string }[]
+                | undefined;
               if (assets?.length) {
                 patch.previewImages = assets
                   .map((asset) => asset.filePath)
                   .filter((path): path is string => Boolean(path));
               }
+
+              if (nodeType === "generate-images" && mode === "shortform-video" && assets?.length) {
+                setShortformState((current) => {
+                  if (!current) {
+                    return current;
+                  }
+
+                  const replacements = new Map(
+                    assets
+                      .filter(
+                        (
+                          asset,
+                        ): asset is { id: string; filePath: string; imageSlot: string; sourceType?: string } =>
+                          Boolean(asset.id && asset.filePath && asset.imageSlot),
+                      )
+                      .map((asset) => [
+                        asset.imageSlot,
+                        {
+                          imageSlot: asset.imageSlot,
+                          assetId: asset.id,
+                          filePath: asset.filePath,
+                          source: (asset.sourceType === "generated" ? "generated" : "manual") as "generated" | "manual",
+                        },
+                      ]),
+                  );
+
+                  if (replacements.size === 0) {
+                    return current;
+                  }
+
+                  return {
+                    ...current,
+                    generationMode: "ai",
+                    sceneAssignments: [
+                      ...current.sceneAssignments.filter((assignment) => !replacements.has(assignment.imageSlot)),
+                      ...Array.from(replacements.values()),
+                    ],
+                  };
+                });
+              }
             }
 
             if (nodeType === "export") {
               patch.status = "exported";
+            }
+
+            if (nodeType === "render" && mode === "shortform-video") {
+              const artifacts = (result as Record<string, unknown>).artifacts as
+                | { id?: string; filePath?: string; metadata?: string | null }[]
+                | undefined;
+              if (artifacts?.length) {
+                setShortformState((current) => {
+                  const normalized = artifacts.flatMap((artifact) => {
+                    if (!artifact.id || !artifact.filePath) {
+                      return [];
+                    }
+
+                    let templateKey: "9:16" | "1:1" | "16:9" | null = null;
+                    if (artifact.metadata) {
+                      try {
+                        const parsed = JSON.parse(artifact.metadata) as { templateKey?: string };
+                        if (parsed.templateKey === "9:16" || parsed.templateKey === "1:1" || parsed.templateKey === "16:9") {
+                          templateKey = parsed.templateKey;
+                        }
+                      } catch {
+                        // ignore malformed metadata
+                      }
+                    }
+
+                    return templateKey
+                      ? [{ templateKey, artifactId: artifact.id, filePath: artifact.filePath }]
+                      : [];
+                  });
+
+                  return applyShortformRenderArtifacts(current, normalized);
+                });
+              }
             }
 
             canvasRef.current?.updateNodeData(nodeId, patch);
@@ -314,7 +451,13 @@ export function NodeEditorShell({
           shouldAbort: () => abortRef.current,
           addLog: () => {},
         },
-        { ratio: globalRatio, uploadedAssetId, category },
+        {
+          ratio: globalRatio,
+          uploadedAssetId,
+          category,
+          manualSceneReady,
+          referenceAssetIds: shortformState?.referenceAssetIds,
+        },
       );
 
       if (!abortRef.current) {
@@ -329,7 +472,7 @@ export function NodeEditorShell({
         toast.error(`실행 실패: ${message}`);
       }
     }
-  }, [ensureRunnableGraph, globalRatio, pipelineStep, projectId, syncProjectState]);
+  }, [ensureRunnableGraph, globalRatio, mode, pipelineStep, projectId, shortformState, syncProjectState]);
 
   const handleStop = useCallback(() => {
     abortRef.current = true;
@@ -660,6 +803,7 @@ export function NodeEditorShell({
                 nodes={canvasSnapshot.nodes}
                 selectedNodeId={selectedNodeId}
                 onSelectStep={handleNodeSelect}
+                shortformState={shortformState}
               />
             ) : (
               <div className={`flex h-full items-center justify-center rounded-[32px] ${WORKSPACE_SURFACE.panelStrong}`}>
@@ -685,6 +829,8 @@ export function NodeEditorShell({
         projectBriefText={projectBriefText}
         onProjectBriefTextChange={setProjectBriefTextWithRef}
         allowBgm={(MODE_NODE_CONFIG[mode] ?? MODE_NODE_CONFIG.freeform).allowedNodes.includes("bgm")}
+        shortformState={shortformState}
+        onShortformStateChange={handleShortformStateChange}
       />
     </div>
   );

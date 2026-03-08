@@ -1,13 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { ensureWorkspaceScope } from "@/lib/workspace-guard";
 import { jsonOk, jsonError, jsonNotFound } from "@/lib/api-response";
-import { resolveProjectImagePaths, resolveProjectSections } from "@/lib/project-media";
+import { resolveShortformInputProps } from "@/lib/project-media";
 import type { CompositionId } from "@/types";
 
 const TEMPLATE_TO_COMPOSITION: Record<string, CompositionId> = {
-  "9:16": "TakdiVideo_916",
-  "1:1": "TakdiVideo_1x1",
-  "16:9": "TakdiVideo_169",
+  "9:16": "TakdiVideo-916",
+  "1:1": "TakdiVideo-1x1",
+  "16:9": "TakdiVideo-169",
 };
 
 export async function POST(
@@ -42,22 +42,17 @@ export async function POST(
 
     const compositionId = TEMPLATE_TO_COMPOSITION[templateKey];
 
-    // Build complete RemotionInputProps
-    const [resolvedSections, imagePaths] = await Promise.all([
-      resolveProjectSections(project.id, project.content),
-      resolveProjectImagePaths(project.id),
-    ]);
+    const inputProps = await resolveShortformInputProps(
+      project.id,
+      project.name,
+      project.content,
+      templateKey,
+    );
 
     return jsonOk({
       compositionId,
       templateKey,
-      inputProps: {
-        title: project.name,
-        sections: resolvedSections.sections,
-        selectedImages: imagePaths,
-        bgmMetadata: { src: "" },
-        templateKey,
-      },
+      inputProps,
       previewReady: true,
     });
   } catch (error) {

@@ -3,6 +3,12 @@ import { getWorkspaceId, ensureWorkspaceScope } from "@/lib/workspace-guard";
 import { jsonOk, jsonError, jsonNotFound } from "@/lib/api-response";
 import type { GenerationResult } from "@/types";
 import type { BlockDocument } from "@/types/blocks";
+import {
+  parseEditorGraph,
+  serializeProjectContent,
+  upsertShortformSections,
+  getShortformStateFromContent,
+} from "@/lib/shortform-state";
 import { generateWithGemini } from "@/services/gemini-generator";
 import { parseBrief } from "@/services/brief-parser";
 import { sectionsToBlocks } from "@/services/section-to-blocks";
@@ -24,13 +30,14 @@ export async function POST(
     const project = await prisma.project.findUnique({
       where: { id },
       select: {
-        workspaceId: true,
-        status: true,
-        briefText: true,
-        mode: true,
-        editorMode: true,
-      },
-    });
+          workspaceId: true,
+          status: true,
+          briefText: true,
+          mode: true,
+          editorMode: true,
+          content: true,
+        },
+      });
     if (!project) return jsonNotFound("Project");
 
     try {
@@ -80,6 +87,7 @@ export async function POST(
       mode: project.mode ?? "freeform",
       editorMode: project.editorMode ?? "flow",
       category: body.category,
+      existingContent: project.content,
     }).catch((err) => {
       console.error("Background generation error:", err);
     });
@@ -167,7 +175,7 @@ async function processGeneration(
   jobId: string,
   projectId: string,
   briefText: string,
-  options: { apiKey?: string; mode: string; editorMode?: string; category?: string }
+  options: { apiKey?: string; mode: string; editorMode?: string; category?: string; existingContent?: string | null }
 ) {
   try {
     // job → running
@@ -213,7 +221,21 @@ async function processGeneration(
       };
       contentToSave = JSON.stringify(blockDoc);
     } else {
-      contentToSave = JSON.stringify(generationOutput);
+      const savedGraph = parseEditorGraph(options.existingContent);
+      const nextShortform = upsertShortformSections(
+        getShortformStateFromContent(options.existingContent),
+        generationOutput.sections,
+      );
+      contentToSave = savedGraph
+        ? serializeProjectContent({
+            nodes: savedGraph.nodes,
+            edges: savedGraph.edges,
+            shortform: nextShortform,
+          })
+        : JSON.stringify({
+            sections: generationOutput.sections,
+            shortform: nextShortform,
+          });
     }
 
     // project content save + job done

@@ -11,9 +11,9 @@ const COMPOSITION_LOADERS: Record<
   CompositionId,
   () => Promise<ComponentType<RemotionInputProps>>
 > = {
-  TakdiVideo_916: async () => (await import("@/remotion/TakdiVideo916")).TakdiVideo916,
-  TakdiVideo_1x1: async () => (await import("@/remotion/TakdiVideo1x1")).TakdiVideo1x1,
-  TakdiVideo_169: async () => (await import("@/remotion/TakdiVideo169")).TakdiVideo169,
+  "TakdiVideo-916": async () => (await import("@/remotion/TakdiVideo916")).TakdiVideo916,
+  "TakdiVideo-1x1": async () => (await import("@/remotion/TakdiVideo1x1")).TakdiVideo1x1,
+  "TakdiVideo-169": async () => (await import("@/remotion/TakdiVideo169")).TakdiVideo169,
 };
 
 export interface RemotionPlayerRuntimeProps {
@@ -125,7 +125,7 @@ export function RemotionPlayerRuntime({
           ...inputProps,
           templateKey: composition.label,
         }}
-        durationInFrames={150}
+        durationInFrames={inputProps.totalDurationFrames ?? 150}
         compositionWidth={composition.width}
         compositionHeight={composition.height}
         fps={30}

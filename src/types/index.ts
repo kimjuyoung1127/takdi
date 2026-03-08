@@ -42,6 +42,59 @@ export interface MarketingScript {
   hashtags: string[];
 }
 
+export type ShortformSceneSource = "manual" | "generated" | "reference";
+export type ShortformGenerationMode = "demo" | "ai";
+export type ShortformTransitionType = "cut" | "fade";
+
+export interface ShortformSceneAssignment {
+  imageSlot: string;
+  assetId: string;
+  filePath: string;
+  source: ShortformSceneSource;
+}
+
+export interface ShortformBgm {
+  assetId: string;
+  filePath: string;
+  durationMs?: number | null;
+  bpm?: number | null;
+}
+
+export interface ShortformCut {
+  imageSlot: string;
+  order: number;
+  durationMs: number;
+  enabled: boolean;
+  transition: ShortformTransitionType;
+}
+
+export interface ShortformRenderPreset {
+  templateKey: "9:16" | "1:1" | "16:9";
+  enabled: boolean;
+  artifactId?: string;
+  filePath?: string;
+}
+
+export interface ShortformProjectState {
+  sections: GenerationResultSection[];
+  sceneAssignments: ShortformSceneAssignment[];
+  referenceAssetIds: string[];
+  bgm: ShortformBgm | null;
+  cuts: ShortformCut[];
+  renderPresets: ShortformRenderPreset[];
+  generationMode: ShortformGenerationMode;
+}
+
+export interface ShortformRenderScene {
+  imageSlot: string;
+  headline: string;
+  body: string;
+  imageSrc?: string;
+  durationMs: number;
+  enabled: boolean;
+  transition: ShortformTransitionType;
+}
+
 export interface CutHandoffPayload {
   projectId: string;
   selectedImageId: string;
@@ -66,16 +119,18 @@ export type {
 } from "./blocks";
 
 // Remotion composition IDs — keep stable for automation
-export type CompositionId = "TakdiVideo_916" | "TakdiVideo_1x1" | "TakdiVideo_169";
+export type CompositionId = "TakdiVideo-916" | "TakdiVideo-1x1" | "TakdiVideo-169";
 
 export interface RemotionInputProps {
   title: string;
   sections: GenerationResultSection[];
   selectedImages: string[];
+  scenes: ShortformRenderScene[];
   bgmMetadata: {
     src: string;
     bpm?: number;
     durationMs?: number;
   };
   templateKey: string;
+  totalDurationFrames?: number;
 }

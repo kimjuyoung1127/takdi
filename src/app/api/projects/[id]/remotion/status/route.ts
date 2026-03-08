@@ -28,18 +28,19 @@ export async function GET(
       return jsonOk({ jobId: null, status: "none", artifact: null });
     }
 
-    // Find associated export artifact
-    const artifact = latestJob.status === "done"
-      ? await prisma.exportArtifact.findFirst({
+    const artifacts = latestJob.status === "done"
+      ? await prisma.exportArtifact.findMany({
           where: { projectId: id, type: "video" },
           orderBy: { createdAt: "desc" },
+          take: 10,
         })
-      : null;
+      : [];
 
     return jsonOk({
       jobId: latestJob.id,
       status: latestJob.status,
-      artifact,
+      artifact: artifacts[0] ?? null,
+      artifacts,
     });
   } catch (error) {
     console.error("GET /api/projects/[id]/remotion/status error:", error);

@@ -2,13 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { getWorkspaceId, ensureWorkspaceScope } from "@/lib/workspace-guard";
 import { jsonOk, jsonError, jsonNotFound } from "@/lib/api-response";
 
-/**
- * POST /api/projects/:id/export
- * Start async export job. Returns 202 with jobId; client polls GET for status.
- */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -17,10 +13,7 @@ export async function POST(
 
     const project = await prisma.project.findUnique({
       where: { id },
-      select: {
-        workspaceId: true,
-        status: true,
-      },
+      select: { workspaceId: true, status: true, mode: true },
     });
     if (!project) return jsonNotFound("Project");
 
@@ -30,21 +23,17 @@ export async function POST(
       return jsonError("Forbidden: workspace scope violation", 403);
     }
 
-    // Status guard: only generated or exported can export
     if (project.status !== "generated" && project.status !== "exported") {
       return jsonError("Project must be in 'generated' or 'exported' status to export", 409);
     }
 
-    const exportType = body.type ?? "html";
-
-    // Create export job + usage record
     const job = await prisma.$transaction(async (tx) => {
       const exportJob = await tx.generationJob.create({
         data: {
           projectId: id,
           status: "queued",
           provider: "export",
-          input: JSON.stringify({ type: exportType }),
+          input: JSON.stringify({ type: body.type ?? "result" }),
         },
       });
 
@@ -52,20 +41,15 @@ export async function POST(
         data: {
           workspaceId,
           eventType: "export_start",
-          detail: JSON.stringify({
-            projectId: id,
-            jobId: exportJob.id,
-            type: exportType,
-          }),
+          detail: JSON.stringify({ projectId: id, jobId: exportJob.id }),
         },
       });
 
       return exportJob;
     });
 
-    // Fire-and-forget: start background export
-    processExport(job.id, id, workspaceId, exportType).catch((err) => {
-      console.error("Background export error:", err);
+    processExport(job.id, id, workspaceId).catch((error) => {
+      console.error("Background export error:", error);
     });
 
     return jsonOk({ jobId: job.id, status: "queued" }, 202);
@@ -75,13 +59,9 @@ export async function POST(
   }
 }
 
-/**
- * GET /api/projects/:id/export?jobId=xxx
- * Poll export job status.
- */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   const { searchParams } = new URL(request.url);
@@ -94,9 +74,7 @@ export async function GET(
   try {
     const project = await prisma.project.findUnique({
       where: { id },
-      select: {
-        workspaceId: true,
-      },
+      select: { workspaceId: true },
     });
     if (!project) return jsonNotFound("Project");
 
@@ -124,14 +102,20 @@ export async function GET(
       return jsonNotFound("GenerationJob");
     }
 
-    // If done, include artifact
-    let artifact = null;
+    let artifacts: Array<{
+      id: string;
+      projectId: string;
+      type: string;
+      filePath: string;
+      metadata: string | null;
+      createdAt: Date;
+    }> = [];
     if (job.status === "done" && job.output) {
       try {
-        const output = JSON.parse(job.output);
-        if (output.artifactId) {
-          artifact = await prisma.exportArtifact.findUnique({
-            where: { id: output.artifactId },
+        const output = JSON.parse(job.output) as { artifactIds?: string[] };
+        if (output.artifactIds?.length) {
+          artifacts = await prisma.exportArtifact.findMany({
+            where: { id: { in: output.artifactIds } },
             select: {
               id: true,
               projectId: true,
@@ -140,10 +124,11 @@ export async function GET(
               metadata: true,
               createdAt: true,
             },
+            orderBy: { createdAt: "desc" },
           });
         }
       } catch {
-        // Best-effort
+        // best effort
       }
     }
 
@@ -156,7 +141,7 @@ export async function GET(
         startedAt: job.startedAt,
         doneAt: job.doneAt,
       },
-      ...(artifact ? { artifact } : {}),
+      artifacts,
     });
   } catch (error) {
     console.error("GET /api/projects/[id]/export error:", error);
@@ -164,33 +149,26 @@ export async function GET(
   }
 }
 
-/**
- * Background processing: export project artifacts.
- */
-async function processExport(
-  jobId: string,
-  projectId: string,
-  workspaceId: string,
-  exportType: string
-) {
+async function processExport(jobId: string, projectId: string, workspaceId: string) {
   try {
     await prisma.generationJob.update({
       where: { id: jobId },
       data: { status: "running", startedAt: new Date() },
     });
 
-    // TODO: 실제 export 로직이 들어올 자리
-    // 현재는 stub: 즉시 완료
-    await prisma.$transaction(async (tx) => {
-      const artifact = await tx.exportArtifact.create({
-        data: {
-          projectId,
-          type: exportType,
-          filePath: `/exports/${projectId}/${Date.now()}.${exportType}`,
-          metadata: JSON.stringify({ stub: true }),
-        },
-      });
+    const artifacts = await prisma.exportArtifact.findMany({
+      where: {
+        projectId,
+        type: { in: ["video", "gif", "thumbnail", "marketing-script"] },
+      },
+      select: { id: true },
+    });
 
+    if (artifacts.length === 0) {
+      throw new Error("No rendered artifacts found. Run render first.");
+    }
+
+    await prisma.$transaction(async (tx) => {
       await tx.project.update({
         where: { id: projectId },
         data: { status: "exported" },
@@ -200,11 +178,7 @@ async function processExport(
         data: {
           workspaceId,
           eventType: "export_complete",
-          detail: JSON.stringify({
-            projectId,
-            artifactId: artifact.id,
-            type: exportType,
-          }),
+          detail: JSON.stringify({ projectId, artifactIds: artifacts.map((artifact) => artifact.id) }),
         },
       });
 
@@ -212,7 +186,7 @@ async function processExport(
         where: { id: jobId },
         data: {
           status: "done",
-          output: JSON.stringify({ artifactId: artifact.id }),
+          output: JSON.stringify({ artifactIds: artifacts.map((artifact) => artifact.id) }),
           doneAt: new Date(),
         },
       });

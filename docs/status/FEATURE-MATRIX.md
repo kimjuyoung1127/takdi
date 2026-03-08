@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-08 (KST, project management drawers + terminology pass)
+Last Updated: 2026-03-09 (KST, shortform smoke validation + roadmap)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -44,7 +44,11 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | PERF-001 | Page loading performance | Done | claude | 5개 loading.tsx 스켈레톤, dynamic import, lazy html2canvas, API 쿼리 최적화 |
 | MODE-001 | Mode-based node filtering + prompt rename | Done | claude | 모드별 허용 노드 필터링, generate→prompt 리네이밍, 초기 파이프라인 자동 생성 |
 | SHORTFORM-001 | Guided shortform video mode | Done | codex | `shortform-video` mode, shared home/launcher definitions, fixed simple-mode pipeline |
+| SHORTFORM-002 | Zero-cost shortform completion path | Done | codex | Validated on 2026-03-09: brief-parser fallback + manual scene assignment + BGM + preview + render + export + result |
+| SHORTFORM-003 | Advanced timeline editor | Not Started | codex | Next milestone: trim, transition duration, BGM in/out, beat-snap timeline UX |
+| SHORTFORM-004 | Multi-reference role tuning | Not Started | codex | Next milestone: product/mood/composition roles + scene-level overrides for Kie inputs |
 | OUT-003 | Shortform preview artifacts | Done | codex | `thumbnail` + `marketing-script` APIs, preview actions, result artifact view |
+| OUT-004 | Thumbnail/script quality optimization | Not Started | codex | Next milestone: channel presets, copy guardrails, multi-variation compare in preview |
 | UX-012 | Unified direct upload hub | Done | codex | Home and global launcher now open the same staged upload flow before project creation |
 | CORE-004 | Project delete API | Done | codex | `DELETE /api/projects/:id`, workspace validation, relational cleanup, best-effort upload folder removal |
 | UX-013 | Drawer-based project/template management | Done | codex | Home recent projects and saved templates now share the same collapsible drawer pattern |

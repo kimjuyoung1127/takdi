@@ -22,6 +22,8 @@ export interface PipelineContext {
   ratio?: string;
   uploadedAssetId?: string;
   category?: string;
+  manualSceneReady?: boolean;
+  referenceAssetIds?: string[];
 }
 
 export interface NodeExecutor {
@@ -32,6 +34,14 @@ export interface NodeExecutor {
 
 export type NodeExecutorMap = Record<string, NodeExecutor | null>;
 
+function createImmediateExecutor(label: string): NodeExecutor {
+  return {
+    start: async () => ({ jobId: `local-${label.replace(/\s+/g, "-")}`, status: "queued" }),
+    poll: async (_projectId, jobId) => ({ job: { id: jobId, status: "done" } }),
+    label,
+  };
+}
+
 /** 노드 타입 → 실행 함수 매핑 (null = skip) */
 export const NODE_EXECUTORS: NodeExecutorMap = {
   prompt: {
@@ -40,7 +50,13 @@ export const NODE_EXECUTORS: NodeExecutorMap = {
     label: "프롬프트 처리",
   },
   "generate-images": {
-    start: (pid, ctx) => startGenerateImages(pid, { aspectRatio: ctx?.ratio }),
+    start: (pid, ctx) =>
+      ctx?.manualSceneReady
+        ? createImmediateExecutor("장면 준비 확인").start(pid, ctx)
+        : startGenerateImages(pid, {
+            aspectRatio: ctx?.ratio,
+            referenceAssetIds: ctx?.referenceAssetIds,
+          }),
     poll: pollGenerateImages,
     label: "이미지 생성",
   },
@@ -54,8 +70,8 @@ export const NODE_EXECUTORS: NodeExecutorMap = {
     poll: pollExport,
     label: "내보내기",
   },
-  bgm: null,
-  cuts: null,
+  bgm: createImmediateExecutor("배경음악 확인"),
+  cuts: createImmediateExecutor("장면 편집 확인"),
   "upload-image": null,
   "remove-bg": {
     start: (pid, ctx) => startRemoveBg(pid, { assetId: ctx?.uploadedAssetId }),
@@ -74,6 +90,7 @@ function pollRender(projectId: string, _jobId: string): Promise<JobPollResponse>
   return pollRenderStatus(projectId).then((res) => ({
     job: { id: res.jobId, status: res.status },
     artifact: res.artifact,
+    artifacts: res.artifacts,
   }));
 }
 

@@ -10,21 +10,21 @@ export const COMPOSITIONS: Record<
     maxWidthClassName: string;
   }
 > = {
-  TakdiVideo_916: {
+  "TakdiVideo-916": {
     width: 1080,
     height: 1920,
     label: "9:16",
     aspectClassName: "aspect-[9/16]",
     maxWidthClassName: "max-w-sm",
   },
-  TakdiVideo_1x1: {
+  "TakdiVideo-1x1": {
     width: 1080,
     height: 1080,
     label: "1:1",
     aspectClassName: "aspect-square",
     maxWidthClassName: "max-w-xl",
   },
-  TakdiVideo_169: {
+  "TakdiVideo-169": {
     width: 1920,
     height: 1080,
     label: "16:9",
@@ -34,9 +34,9 @@ export const COMPOSITIONS: Record<
 };
 
 export const TEMPLATE_TO_COMPOSITION: Record<string, CompositionId> = {
-  "9:16": "TakdiVideo_916",
-  "1:1": "TakdiVideo_1x1",
-  "16:9": "TakdiVideo_169",
+  "9:16": "TakdiVideo-916",
+  "1:1": "TakdiVideo-1x1",
+  "16:9": "TakdiVideo-169",
 };
 
 export const COMPOSITION_TO_TEMPLATE = Object.fromEntries(

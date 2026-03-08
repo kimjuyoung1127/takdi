@@ -9,8 +9,10 @@ const defaultProps: RemotionInputProps = {
   title: "",
   sections: [],
   selectedImages: [],
+  scenes: [],
   bgmMetadata: { src: "" },
   templateKey: "9:16",
+  totalDurationFrames: 150,
 };
 
 // Remotion Composition expects LooseComponentType — cast needed without zod schema
@@ -21,7 +23,7 @@ export const Root: React.FC = () => {
   return (
     <>
       <Composition
-        id="TakdiVideo_916"
+        id="TakdiVideo-916"
         component={asComp(TakdiVideo916)}
         width={1080}
         height={1920}
@@ -30,7 +32,7 @@ export const Root: React.FC = () => {
         defaultProps={{ ...defaultProps, templateKey: "9:16" }}
       />
       <Composition
-        id="TakdiVideo_1x1"
+        id="TakdiVideo-1x1"
         component={asComp(TakdiVideo1x1)}
         width={1080}
         height={1080}
@@ -39,7 +41,7 @@ export const Root: React.FC = () => {
         defaultProps={{ ...defaultProps, templateKey: "1:1" }}
       />
       <Composition
-        id="TakdiVideo_169"
+        id="TakdiVideo-169"
         component={asComp(TakdiVideo169)}
         width={1920}
         height={1080}

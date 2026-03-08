@@ -230,7 +230,7 @@ describe("모드별 실행", () => {
     expect(cb.steps).toEqual(["1", "2", "3", "4"]);
   });
 
-  it("11. freeform + bgm/cuts → bgm/cuts skip", async () => {
+  it("11. freeform + bgm/cuts → bgm/cuts 확인 단계 실행", async () => {
     const nodes = [
       makeNode("1", "prompt"),
       makeNode("2", "bgm"),
@@ -246,11 +246,11 @@ describe("모드별 실행", () => {
       makeEdge("4", "5"),
     ];
     const cb = await runPipeline(nodes, edges);
-    expect(cb.steps).toEqual(["1", "4", "5"]);
-    expect(cb.skips).toEqual(["2", "3"]);
+    expect(cb.steps).toEqual(["1", "2", "3", "4", "5"]);
+    expect(cb.skips).toEqual([]);
   });
 
-  it("12. freeform 다이아몬드 → skip 후 render 실행", async () => {
+  it("12. freeform 다이아몬드 → bgm 확인 후 render 실행", async () => {
     const nodes = [
       makeNode("1", "prompt"),
       makeNode("2", "bgm"),
@@ -265,7 +265,7 @@ describe("모드별 실행", () => {
     ];
     const cb = await runPipeline(nodes, edges);
     expect(cb.steps).toContain("4");
-    expect(cb.skips).toContain("2");
+    expect(cb.steps).toContain("2");
   });
 
   it("36. cutout (upload→remove-bg→export) → upload skip, remove-bg+export 실행", async () => {

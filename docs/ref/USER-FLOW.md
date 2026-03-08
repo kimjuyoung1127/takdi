@@ -1,7 +1,7 @@
 # Takdi User Flow
 
-Version: 1.7.0
-Last Updated: 2026-03-08 (KST)
+Version: 1.8.0
+Last Updated: 2026-03-09 (KST)
 
 Related spec:
 - `docs/ref/WIREFRAME-NODE-BYOI.md`
@@ -11,10 +11,11 @@ Related spec:
 2. Optionally open the shared direct upload hub, stage local assets first, and choose the target mode after staging.
 3. Select a mode and enter the matching editor surface.
 4. Run generation or upload flow depending on the selected mode.
-5. For `shortform-video`, generate preview-only artifacts (`thumbnail`, `marketing-script`) from `/preview` when needed.
-6. Preview, render, and export the final artifact.
-7. Review usage and recent activity from workspace/settings summaries.
-8. Manage recent projects and saved templates from home or `/projects`, including confirmed deletion when needed.
+5. For `shortform-video`, complete the required operator path first: `brief -> scene preparation -> preview`.
+6. Optionally add BGM and scene edits, then render/export the final artifact.
+7. For `shortform-video`, generate preview-only artifacts (`thumbnail`, `marketing-script`) from `/preview` when needed.
+8. Review usage and recent activity from workspace/settings summaries.
+9. Manage recent projects and saved templates from home or `/projects`, including confirmed deletion when needed.
 
 ## Flow Diagram
 ```mermaid
@@ -75,6 +76,23 @@ flowchart TD
 - `model-shot`, `cutout`, `brand-image`, and `shortform-video` default to a simple step-based editor for non-technical operators.
 - `freeform` remains graph-first.
 - Cost and run history are reviewed from `/settings`, not the main editor surface.
+- `shortform-video` simple mode is grouped into:
+  - required: `기획 및 장면 준비`
+  - optional: `편집 보강`
+  - output: `렌더 및 저장`
+- `shortform-video` no longer assumes AI is mandatory; manual scene assignment is a supported primary path.
+
+## Shortform Validation Note
+- On 2026-03-09, the zero-cost local shortform path was validated end-to-end.
+- Verified path:
+  - brief text
+  - `brief-parser` fallback section generation
+  - manual scene image upload and assignment
+  - WAV BGM upload
+  - preview generation
+  - Remotion local render for `9:16`, `1:1`, `16:9`
+  - export completion
+  - result page load
 
 ## Home Dashboard Note
 - `/` opens directly into `새 작업 시작` without a hero summary card.

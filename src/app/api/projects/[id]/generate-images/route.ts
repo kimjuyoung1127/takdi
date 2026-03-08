@@ -71,6 +71,7 @@ export async function POST(
             slots: targetSections.map((s) => s.imageSlot),
             aspectRatio: body.aspectRatio ?? "1:1",
             styleParams: body.styleParams ?? {},
+            referenceAssetIds: Array.isArray(body.referenceAssetIds) ? body.referenceAssetIds.slice(0, 3) : [],
           }),
         },
       });
@@ -95,6 +96,7 @@ export async function POST(
       apiKey: body.apiKey,
       aspectRatio: body.aspectRatio,
       styleParams: body.styleParams,
+      referenceAssetIds: Array.isArray(body.referenceAssetIds) ? body.referenceAssetIds.slice(0, 3) : [],
     }).catch((err) => {
       console.error("Background image generation error:", err);
     });
@@ -148,7 +150,7 @@ export async function GET(
         const assetIds = (output.assets ?? []).map(
           (a: { assetId: string }) => a.assetId
         );
-        assets = await prisma.asset.findMany({
+        const foundAssets = await prisma.asset.findMany({
           where: { id: { in: assetIds } },
           select: {
             id: true,
@@ -157,6 +159,19 @@ export async function GET(
             sourceType: true,
           },
         });
+        const byId = new Map(foundAssets.map((asset) => [asset.id, asset]));
+        assets = (output.assets ?? [])
+          .map((asset: { assetId: string; imageSlot?: string; filePath?: string }) => {
+            const found = byId.get(asset.assetId);
+            if (!found) {
+              return null;
+            }
+            return {
+              ...found,
+              imageSlot: asset.imageSlot,
+            };
+          })
+          .filter(Boolean);
       } catch {
         // Best-effort: return job without assets
       }
@@ -191,6 +206,7 @@ async function processImageGeneration(
     apiKey?: string;
     aspectRatio?: string;
     styleParams?: Record<string, string>;
+    referenceAssetIds?: string[];
   }
 ) {
   try {
@@ -200,12 +216,17 @@ async function processImageGeneration(
       data: { status: "running", startedAt: new Date() },
     });
 
-    const assets: { assetId: string; filePath: string }[] = [];
+    const referenceInputs = options.referenceAssetIds?.length
+      ? await resolveReferenceInputs(projectId, options.referenceAssetIds)
+      : [];
+
+    const assets: { assetId: string; filePath: string; imageSlot: string }[] = [];
     for (const section of sections) {
       const prompt = `${section.headline}. ${section.body}`;
       const kieResult = await generateImageWithKie(prompt, {
         apiKey: options.apiKey,
         aspectRatio: options.aspectRatio,
+        imageInput: referenceInputs,
       });
       // Download the first result URL and save as base64
       const img = await downloadImageAsBase64(kieResult.imageUrls[0]);
@@ -215,7 +236,7 @@ async function processImageGeneration(
         img.mimeType,
         section.imageSlot,
       );
-      assets.push(saved);
+      assets.push({ ...saved, imageSlot: section.imageSlot });
     }
 
     // job → done
@@ -234,4 +255,24 @@ async function processImageGeneration(
       data: { status: "failed", error: String(error), doneAt: new Date() },
     });
   }
+}
+
+async function resolveReferenceInputs(projectId: string, referenceAssetIds: string[]) {
+  const assets = await prisma.asset.findMany({
+    where: {
+      projectId,
+      id: { in: referenceAssetIds },
+      mimeType: { startsWith: "image/" },
+    },
+    select: {
+      filePath: true,
+    },
+  });
+
+  return assets.map((asset) => toAbsoluteUrl(asset.filePath));
+}
+
+function toAbsoluteUrl(filePath: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  return `${baseUrl}${filePath.replace(/\\/g, "/")}`;
 }

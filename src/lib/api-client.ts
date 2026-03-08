@@ -166,7 +166,13 @@ export function pollGenerate(projectId: string, jobId: string) {
 
 export function startGenerateImages(
   projectId: string,
-  opts?: { slots?: string[]; apiKey?: string; aspectRatio?: string; styleParams?: Record<string, string> },
+  opts?: {
+    slots?: string[];
+    apiKey?: string;
+    aspectRatio?: string;
+    styleParams?: Record<string, string>;
+    referenceAssetIds?: string[];
+  },
 ) {
   return post<AsyncJobResponse>(`/api/projects/${projectId}/generate-images`, opts);
 }
@@ -182,7 +188,7 @@ export function startRender(projectId: string, opts?: { compositionId?: string; 
 }
 
 export function pollRenderStatus(projectId: string) {
-  return get<{ jobId: string; status: string; artifact?: unknown }>(
+  return get<{ jobId: string; status: string; artifact?: unknown; artifacts?: unknown[] }>(
     `/api/projects/${projectId}/remotion/status`,
   );
 }

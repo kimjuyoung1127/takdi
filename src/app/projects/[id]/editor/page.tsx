@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
-import type { Edge, Node } from "@xyflow/react";
 import { prisma } from "@/lib/prisma";
+import { getShortformStateFromContent, parseEditorGraph } from "@/lib/shortform-state";
 import Loading from "./loading";
 
 const NodeEditorShell = dynamic(
@@ -43,17 +43,8 @@ export default async function EditorPage({
     notFound();
   }
 
-  let initialGraph: { nodes: Node[]; edges: Edge[] } | null = null;
-  if (project.content) {
-    try {
-      const parsed = JSON.parse(project.content) as { nodes?: Node[]; edges?: Edge[] };
-      if (Array.isArray(parsed.nodes) && Array.isArray(parsed.edges)) {
-        initialGraph = { nodes: parsed.nodes, edges: parsed.edges };
-      }
-    } catch {
-      // Ignore malformed saved graph and fall back to the mode defaults.
-    }
-  }
+  const initialGraph = parseEditorGraph(project.content);
+  const initialShortformState = getShortformStateFromContent(project.content);
 
   return (
     <NodeEditorShell
@@ -62,6 +53,7 @@ export default async function EditorPage({
       mode={project.mode ?? "freeform"}
       initialBriefText={project.briefText ?? ""}
       initialGraph={initialGraph}
+      initialShortformState={initialShortformState}
     />
   );
 }
