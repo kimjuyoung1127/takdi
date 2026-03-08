@@ -24,7 +24,7 @@ export async function instantiateTemplateProject(templateId: string, customName?
 
   const parsedSnapshot = JSON.parse(template.snapshot) as BlockDocument;
   const snapshot = createTemplateSnapshot(parsedSnapshot);
-  const projectName = customName?.trim() || `${template.name} project`;
+  const projectName = customName?.trim() || `${template.name} 상세페이지`;
 
   const project = await prisma.project.create({
     data: {

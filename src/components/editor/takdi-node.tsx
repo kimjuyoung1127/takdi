@@ -18,6 +18,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { AppImage } from "@/components/ui/app-image";
 import { InlineLightbox } from "./inline-lightbox";
 import { getUserFacingNodeStatus } from "@/lib/editor-surface";
+import { WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 const ICONS: Record<string, React.ElementType> = {
   prompt: Sparkles,
@@ -49,17 +50,17 @@ function TakdiNodeComponent({ data, selected }: NodeProps & { data: TakdiNodeDat
   return (
     <>
       <div
-        className={`min-w-50 rounded-2xl bg-white p-4 shadow-sm transition-shadow ${
-          selected ? "ring-2 ring-indigo-300" : ""
+        className={`min-w-50 rounded-[24px] border border-[#E5DDD3] bg-white p-4 shadow-[0_12px_28px_rgba(55,40,30,0.08)] transition-shadow ${
+          selected ? "ring-2 ring-[#F1C8BE]" : ""
         }`}
       >
         <Handle type="target" position={Position.Left} className="!bg-gray-300" />
 
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+          <div className="flex h-7 w-7 items-center justify-center rounded-2xl bg-[#F8E7E2] text-[#D97C67]">
             <Icon className="h-3.5 w-3.5" />
           </div>
-          <span className="text-sm font-medium text-gray-900">{data.label}</span>
+          <span className={`text-sm font-medium ${WORKSPACE_TEXT.title}`}>{data.label}</span>
         </div>
 
         {data.status && (
@@ -70,7 +71,7 @@ function TakdiNodeComponent({ data, selected }: NodeProps & { data: TakdiNodeDat
 
         {/* Inline preview: text */}
         {data.previewText && (
-          <p className="mt-2 max-w-[180px] text-xs leading-relaxed text-gray-500 line-clamp-2">
+          <p className={`mt-2 max-w-[180px] text-xs leading-relaxed line-clamp-2 ${WORKSPACE_TEXT.body}`}>
             {data.previewText}
           </p>
         )}

@@ -29,7 +29,7 @@ export default async function ProjectsPage() {
           <h2 className="text-lg font-semibold text-gray-900">{messages.projectsPage.explorerTitle}</h2>
           <p className="mt-1 text-sm text-gray-400">{messages.projectsPage.explorerDescription}</p>
         </div>
-        <RecentProjects projects={projects} />
+        <RecentProjects projects={projects} collapsible managementMode="bulk" />
       </section>
 
       <section className="mt-10">
@@ -37,7 +37,7 @@ export default async function ProjectsPage() {
           <h2 className="text-lg font-semibold text-gray-900">{messages.projectsPage.savedTemplatesTitle}</h2>
           <p className="mt-1 text-sm text-gray-400">{messages.projectsPage.savedTemplatesDescription}</p>
         </div>
-        <SavedTemplates templates={templates} searchable />
+        <SavedTemplates templates={templates} searchable collapsible managementMode="bulk" />
       </section>
     </AppLayout>
   );

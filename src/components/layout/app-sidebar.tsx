@@ -21,7 +21,7 @@ export function AppSidebar() {
       <div className="flex flex-col items-center gap-2">
         <Link
           href="/"
-          className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#201A17] text-sm font-semibold text-white shadow-[0_16px_30px_rgba(32,26,23,0.18)]"
+          className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D97C67] text-sm font-semibold text-white shadow-[0_16px_30px_rgba(217,124,103,0.22)]"
           title={messages.layout.logoTitle}
         >
           T
@@ -51,9 +51,13 @@ export function AppSidebar() {
         })}
       </div>
 
-      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5DDD3] bg-white/80 text-[#8E8176]">
+      <Link
+        href="/workspace"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5DDD3] bg-white/80 text-[#8E8176] transition-colors hover:bg-white hover:text-[#4D433D]"
+        title="워크스페이스 허브"
+      >
         <User className="h-4 w-4" />
-      </div>
+      </Link>
     </aside>
   );
 }

@@ -1,9 +1,9 @@
-/** 에디터 캔버스 상단 플로팅 액션 툴바 — 단계별 가이드 + 툴팁 */
+/** Editor top floating action toolbar for run/save/preview/export controls. */
 "use client";
 
-import { Play, Square, Save, Eye, Download, Loader2, CircleCheck, LayoutPanelTop } from "lucide-react";
+import { Play, Square, Save, Eye, Download, Loader2, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 interface RunningState {
   isRunning?: boolean;
@@ -13,15 +13,13 @@ interface RunningState {
 
 type PipelineStep = "idle" | "running" | "generating" | "imaging" | "done" | "error";
 
-/** 영상/GIF 파이프라인이 없는 이미지 전용 모드 */
 const IMAGE_ONLY_MODES = new Set(["brand-image", "cutout", "model-shot"]);
-
 const RATIO_OPTIONS = ["9:16", "1:1", "16:9"];
 
 interface FloatingToolbarProps {
-  projectId?: string;
   mode?: string;
   ratio?: string;
+  helperText?: string | null;
   onRatioChange?: (ratio: string) => void;
   onRunAll?: () => void;
   onStop?: () => void;
@@ -45,48 +43,62 @@ const STEP_LABELS: Record<PipelineStep, string> = {
 
 const STEP_COLORS: Record<PipelineStep, string> = {
   idle: "",
-  running: "text-indigo-600 bg-indigo-50",
-  generating: "text-amber-600 bg-amber-50",
-  imaging: "text-blue-600 bg-blue-50",
-  done: "text-emerald-600 bg-emerald-50",
-  error: "text-rose-600 bg-rose-50",
+  running: "bg-[#F8E7E2] text-[#D97C67]",
+  generating: "bg-[#F7EFE5] text-[#B8794E]",
+  imaging: "bg-[#EEF3ED] text-[#627B69]",
+  done: "bg-[#EEF3ED] text-[#627B69]",
+  error: "bg-[#F8E3E0] text-[#B45A52]",
 };
 
 function Tooltip({ text, children }: { text: string; children: React.ReactNode }) {
   return (
     <div className="group relative">
       {children}
-      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-2xl bg-[#2A2522] px-3 py-1.5 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
         {text}
-        <div className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-gray-900" />
+        <div className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-[#2A2522]" />
       </div>
     </div>
   );
 }
 
-export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAll, onStop, onSave, onPreview, onExport, runningState, pipelineStep = "idle", lastSaved, actionsDisabled = false }: FloatingToolbarProps) {
+export function FloatingToolbar({
+  mode,
+  ratio,
+  helperText,
+  onRatioChange,
+  onRunAll,
+  onStop,
+  onSave,
+  onPreview,
+  onExport,
+  runningState,
+  pipelineStep = "idle",
+  lastSaved,
+  actionsDisabled = false,
+}: FloatingToolbarProps) {
   const { isRunning, isSaving, isExporting } = runningState ?? {};
   const stepLabel = STEP_LABELS[pipelineStep];
   const isImageOnly = IMAGE_ONLY_MODES.has(mode ?? "");
 
   return (
     <div className="absolute left-1/2 top-6 z-10 flex -translate-x-1/2 flex-col items-center gap-2">
-      {/* Pipeline status indicator */}
-      {stepLabel && (
+      {stepLabel ? (
         <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${STEP_COLORS[pipelineStep]}`}>
-          {pipelineStep === "done" && <CircleCheck className="h-3.5 w-3.5" />}
-          {(pipelineStep === "running" || pipelineStep === "generating" || pipelineStep === "imaging") && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          {pipelineStep === "done" ? <CircleCheck className="h-3.5 w-3.5" /> : null}
+          {pipelineStep === "running" || pipelineStep === "generating" || pipelineStep === "imaging" ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : null}
           {stepLabel}
         </div>
-      )}
+      ) : null}
 
-      {/* Toolbar buttons */}
-      <div className="flex items-center gap-1 rounded-full bg-white px-4 py-2 shadow-md">
+      <div className={`flex items-center gap-1 rounded-full px-4 py-2 ${WORKSPACE_SURFACE.floating}`}>
         <Tooltip text="텍스트와 이미지를 자동 생성합니다 (Ctrl+Enter)">
           <Button
             variant="ghost"
             size="sm"
-            className="flex items-center gap-1.5 rounded-full px-3 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            className={`flex items-center gap-1.5 rounded-full px-3 text-xs ${WORKSPACE_CONTROL.ghostButton}`}
             onClick={onRunAll}
             disabled={isRunning || actionsDisabled}
           >
@@ -99,7 +111,7 @@ export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAl
           <Button
             variant="ghost"
             size="sm"
-            className="flex items-center gap-1.5 rounded-full px-3 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            className={`flex items-center gap-1.5 rounded-full px-3 text-xs ${WORKSPACE_CONTROL.ghostButton}`}
             onClick={onStop}
             disabled={!isRunning}
           >
@@ -108,13 +120,13 @@ export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAl
           </Button>
         </Tooltip>
 
-        <div className="mx-1 h-4 w-px bg-gray-200" />
+        <div className="mx-1 h-4 w-px bg-[#E5DDD3]" />
 
         <Tooltip text="현재 작업 상태를 저장합니다 (Ctrl+S)">
           <Button
             variant="ghost"
             size="sm"
-            className="flex items-center gap-1.5 rounded-full px-3 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            className={`flex items-center gap-1.5 rounded-full px-3 text-xs ${WORKSPACE_CONTROL.ghostButton}`}
             onClick={onSave}
             disabled={isSaving || actionsDisabled}
           >
@@ -123,12 +135,12 @@ export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAl
           </Button>
         </Tooltip>
 
-        {!isImageOnly && (
+        {!isImageOnly ? (
           <Tooltip text="생성된 영상을 미리 확인합니다 (2단계)">
             <Button
               variant="ghost"
               size="sm"
-              className="flex items-center gap-1.5 rounded-full px-3 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              className={`flex items-center gap-1.5 rounded-full px-3 text-xs ${WORKSPACE_CONTROL.ghostButton}`}
               onClick={onPreview}
               disabled={actionsDisabled}
             >
@@ -136,13 +148,13 @@ export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAl
               미리보기
             </Button>
           </Tooltip>
-        )}
+        ) : null}
 
-        <Tooltip text="최종 파일을 내보냅니다 (3단계)">
+        <Tooltip text="최종 파일을 내보냅니다">
           <Button
             variant="ghost"
             size="sm"
-            className="flex items-center gap-1.5 rounded-full px-3 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            className={`flex items-center gap-1.5 rounded-full px-3 text-xs ${WORKSPACE_CONTROL.ghostButton}`}
             onClick={onExport}
             disabled={isExporting || actionsDisabled}
           >
@@ -150,47 +162,37 @@ export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAl
             내보내기
           </Button>
         </Tooltip>
-
-        {projectId && (
-          <>
-            <div className="mx-1 h-4 w-px bg-gray-200" />
-            <Tooltip text="상세페이지 편집기로 이동">
-              <Link
-                href={`/projects/${projectId}/compose`}
-                className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              >
-                <LayoutPanelTop className="h-4 w-4" />
-                상세페이지
-              </Link>
-            </Tooltip>
-          </>
-        )}
       </div>
 
-      {/* Ratio toggle */}
-      <div className="flex items-center gap-1 rounded-full bg-white px-3 py-1.5 shadow-md">
-        {RATIO_OPTIONS.map((r) => (
-          <button
-            key={r}
-            onClick={() => onRatioChange?.(r)}
-            disabled={actionsDisabled}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              ratio === r
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            {r}
-          </button>
-        ))}
+      <div className="flex items-center gap-3">
+        {helperText ? (
+          <p className={`max-w-[240px] whitespace-pre-line text-right text-[11px] leading-4 ${WORKSPACE_TEXT.muted}`}>
+            {helperText}
+          </p>
+        ) : null}
+
+        <div className={`flex items-center gap-1 rounded-full px-3 py-1.5 ${WORKSPACE_SURFACE.floating}`}>
+          {RATIO_OPTIONS.map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onRatioChange?.(value)}
+              disabled={actionsDisabled}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                ratio === value
+                  ? WORKSPACE_CONTROL.accentButton
+                  : "bg-white text-[#6F655D] hover:bg-[#F8F4EF]"
+              }`}
+            >
+              {value}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Last saved indicator */}
-      {lastSaved && (
-        <span className="text-[10px] text-gray-400">
-          마지막 저장: {lastSaved}
-        </span>
-      )}
+      {lastSaved ? (
+        <span className={`text-[10px] ${WORKSPACE_TEXT.muted}`}>마지막 저장: {lastSaved}</span>
+      ) : null}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { buildDefaultFilename, captureBlocksAsImage, captureBlocksAsSplitImages,
 import { blocksToHtml } from "@/services/html-exporter";
 import { toast } from "sonner";
 import type { Block } from "@/types/blocks";
+import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 interface ExportDialogProps {
   open: boolean;
@@ -115,27 +116,27 @@ export function ExportDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#201A17]/35 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-96 rounded-lg bg-white p-6 shadow-xl"
+        className={`w-96 rounded-[28px] p-6 ${WORKSPACE_SURFACE.panelStrong}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-900">내보내기</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <h2 className={`text-sm font-semibold ${WORKSPACE_TEXT.title}`}>내보내기</h2>
+          <button onClick={onClose} className={`${WORKSPACE_TEXT.muted} hover:text-[#4D433D]`}>
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* 내보내기 모드 */}
-        <label className="mb-1 block text-xs text-gray-500">내보내기 방식</label>
+        <label className={`mb-1 block text-xs ${WORKSPACE_TEXT.body}`}>내보내기 방식</label>
         <div className="mb-4 flex gap-2">
           <button
             onClick={() => { setMode("single"); setHtmlMode(false); }}
             className={`flex items-center gap-1.5 rounded border px-3 py-1.5 text-xs font-medium transition ${
               mode === "single" && !htmlMode
-                ? "border-indigo-500 bg-indigo-50 text-indigo-600"
-                : "border-gray-200 text-gray-500 hover:border-gray-300"
+                ? WORKSPACE_CONTROL.accentTint
+                : `${WORKSPACE_CONTROL.subtleButton} shadow-none`
             }`}
           >
             <Image className="h-3.5 w-3.5" />
@@ -145,8 +146,8 @@ export function ExportDialog({
             onClick={() => { setMode("split"); setHtmlMode(false); }}
             className={`flex items-center gap-1.5 rounded border px-3 py-1.5 text-xs font-medium transition ${
               mode === "split" && !htmlMode
-                ? "border-indigo-500 bg-indigo-50 text-indigo-600"
-                : "border-gray-200 text-gray-500 hover:border-gray-300"
+                ? WORKSPACE_CONTROL.accentTint
+                : `${WORKSPACE_CONTROL.subtleButton} shadow-none`
             }`}
           >
             <FileArchive className="h-3.5 w-3.5" />
@@ -156,8 +157,8 @@ export function ExportDialog({
             onClick={() => { setMode("card-news"); setHtmlMode(false); }}
             className={`flex items-center gap-1.5 rounded border px-3 py-1.5 text-xs font-medium transition ${
               mode === "card-news" && !htmlMode
-                ? "border-indigo-500 bg-indigo-50 text-indigo-600"
-                : "border-gray-200 text-gray-500 hover:border-gray-300"
+                ? WORKSPACE_CONTROL.accentTint
+                : `${WORKSPACE_CONTROL.subtleButton} shadow-none`
             }`}
           >
             <LayoutGrid className="h-3.5 w-3.5" />
@@ -167,8 +168,8 @@ export function ExportDialog({
             onClick={() => setHtmlMode(true)}
             className={`flex items-center gap-1.5 rounded border px-3 py-1.5 text-xs font-medium transition ${
               htmlMode
-                ? "border-indigo-500 bg-indigo-50 text-indigo-600"
-                : "border-gray-200 text-gray-500 hover:border-gray-300"
+                ? WORKSPACE_CONTROL.accentTint
+                : `${WORKSPACE_CONTROL.subtleButton} shadow-none`
             }`}
           >
             <Code className="h-3.5 w-3.5" />
@@ -177,15 +178,15 @@ export function ExportDialog({
         </div>
 
         {/* 파일명 */}
-        <label className="mb-1 block text-xs text-gray-500">파일명</label>
+        <label className={`mb-1 block text-xs ${WORKSPACE_TEXT.body}`}>파일명</label>
         <div className="mb-4 flex items-center gap-1">
           <input
             ref={inputRef}
             value={filename}
             onChange={(e) => setFilename(e.target.value)}
-            className="flex-1 rounded border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-indigo-400"
+            className={`flex-1 rounded-2xl px-3 py-2 text-sm ${WORKSPACE_CONTROL.input}`}
           />
-          <span className="text-sm text-gray-400">
+          <span className={`text-sm ${WORKSPACE_TEXT.muted}`}>
             .{htmlMode ? "html" : (mode === "split" || mode === "card-news") ? "zip" : format}
           </span>
         </div>
@@ -193,7 +194,7 @@ export function ExportDialog({
         {/* 포맷 선택 (이미지 모드만) */}
         {!htmlMode && (
           <>
-            <label className="mb-1 block text-xs text-gray-500">포맷</label>
+            <label className={`mb-1 block text-xs ${WORKSPACE_TEXT.body}`}>포맷</label>
             <div className="mb-6 flex gap-2">
               {(["png", "jpg"] as const).map((f) => (
                 <button
@@ -201,8 +202,8 @@ export function ExportDialog({
                   onClick={() => setFormat(f)}
                   className={`rounded border px-3 py-1.5 text-xs font-medium transition ${
                     format === f
-                      ? "border-indigo-500 bg-indigo-50 text-indigo-600"
-                      : "border-gray-200 text-gray-500 hover:border-gray-300"
+                      ? WORKSPACE_CONTROL.accentTint
+                      : `${WORKSPACE_CONTROL.subtleButton} shadow-none`
                   }`}
                 >
                   {f.toUpperCase()}
@@ -213,13 +214,13 @@ export function ExportDialog({
         )}
 
         {htmlMode && (
-          <p className="mb-6 text-xs text-gray-400">
+          <p className={`mb-6 text-xs ${WORKSPACE_TEXT.muted}`}>
             인라인 스타일 HTML로 변환합니다. 쿠팡/네이버 상세페이지에 바로 붙여넣기 가능합니다.
           </p>
         )}
 
         {mode === "card-news" && !htmlMode && (
-          <p className="mb-6 text-xs text-gray-400">
+          <p className={`mb-6 text-xs ${WORKSPACE_TEXT.muted}`}>
             각 블록을 1080×1080 정방형 슬라이드로 변환합니다. 인스타그램/SNS 카드뉴스에 적합합니다.
           </p>
         )}
@@ -228,7 +229,7 @@ export function ExportDialog({
         <Button
           onClick={handleExport}
           disabled={exporting || !filename.trim()}
-          className="flex w-full items-center justify-center gap-2"
+          className={`flex w-full items-center justify-center gap-2 rounded-2xl ${WORKSPACE_CONTROL.accentButton}`}
         >
           {exporting ? (
             <Loader2 className="h-4 w-4 animate-spin" />

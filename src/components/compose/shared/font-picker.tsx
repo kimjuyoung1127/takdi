@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Type } from "lucide-react";
 import { FONT_PRESETS, type FontPreset } from "@/lib/constants";
 import { loadEditorFonts } from "@/lib/font-loader";
+import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 type Category = "all" | "gothic" | "serif" | "display";
 
@@ -54,25 +55,25 @@ export function FontPicker({ value, onChange }: FontPickerProps) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between rounded border border-gray-200 px-2 py-1.5 text-sm hover:border-gray-300"
+        className={`flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm ${WORKSPACE_CONTROL.input}`}
       >
         <span className="flex items-center gap-1.5">
-          <Type className="h-3.5 w-3.5 text-gray-400" />
+          <Type className={`h-3.5 w-3.5 ${WORKSPACE_TEXT.muted}`} />
           <span style={{ fontFamily: current.family }}>{current.label}</span>
         </span>
-        <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`h-3.5 w-3.5 ${WORKSPACE_TEXT.muted} transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open ? (
-        <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border border-gray-200 bg-white shadow-lg">
-          <div className="flex border-b border-gray-100 px-1 pt-1">
+        <div className={`absolute left-0 top-full z-50 mt-2 w-64 rounded-[24px] ${WORKSPACE_SURFACE.panelStrong}`}>
+          <div className="flex border-b border-[#EEE6DC] px-1 pt-1">
             {(Object.keys(CATEGORY_LABELS) as Category[]).map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setCategory(cat)}
                 className={`rounded-t px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                  category === cat ? "bg-indigo-50 text-indigo-600" : "text-gray-500 hover:text-gray-700"
+                  category === cat ? WORKSPACE_CONTROL.accentTint : `${WORKSPACE_TEXT.body} hover:text-[#201A17]`
                 }`}
               >
                 {CATEGORY_LABELS[cat]}
@@ -80,7 +81,7 @@ export function FontPicker({ value, onChange }: FontPickerProps) {
             ))}
           </div>
 
-          <div className="max-h-56 overflow-y-auto p-1">
+        <div className="max-h-56 overflow-y-auto p-1.5">
             {filtered.map((preset) => (
               <FontOption
                 key={preset.value}
@@ -112,17 +113,17 @@ function FontOption({
     <button
       type="button"
       onClick={onSelect}
-      className={`flex w-full items-center justify-between rounded px-2.5 py-2 text-left transition-colors ${
-        selected ? "bg-indigo-50 text-indigo-700" : "hover:bg-gray-50"
+      className={`flex w-full items-center justify-between rounded-2xl px-2.5 py-2 text-left transition-colors ${
+        selected ? WORKSPACE_CONTROL.accentTint : "hover:bg-[#F8F4EF]"
       }`}
     >
       <div>
-        <div className="text-xs text-gray-500">{preset.label}</div>
+        <div className={`text-xs ${WORKSPACE_TEXT.body}`}>{preset.label}</div>
         <div className="mt-0.5 text-sm" style={{ fontFamily: `${preset.family}, sans-serif` }}>
           Sample text ABC 123
         </div>
       </div>
-      {selected ? <div className="h-2 w-2 rounded-full bg-indigo-500" /> : null}
+      {selected ? <div className="h-2 w-2 rounded-full bg-[#D97C67]" /> : null}
     </button>
   );
 }

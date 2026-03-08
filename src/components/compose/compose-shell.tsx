@@ -37,6 +37,7 @@ import { LeaveComposeDialog } from "./leave-compose-dialog";
 import { SaveTemplateDialog } from "./save-template-dialog";
 import { validateBlocks, autoFixAllBlocks } from "@/lib/design-guardrails";
 import { BLOCK_TEMPLATES } from "./block-palette";
+import { WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 const UNDO_COALESCE_MS = 400;
 
@@ -487,7 +488,7 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex h-screen flex-col bg-gray-50">
+        <div className={`flex h-screen flex-col ${WORKSPACE_SURFACE.page}`}>
           <ComposeToolbar
             projectId={projectId}
             projectName={projectName}
@@ -537,8 +538,8 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
 
         <DragOverlay>
           {draggingLabel ? (
-            <div className="flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-4 py-2 shadow-lg">
-              <span className="text-sm font-medium text-indigo-600">{draggingLabel}</span>
+            <div className={`flex items-center gap-2 rounded-2xl px-4 py-2 ${WORKSPACE_SURFACE.panelStrong}`}>
+              <span className={`text-sm font-medium ${WORKSPACE_TEXT.accent}`}>{draggingLabel}</span>
             </div>
           ) : null}
         </DragOverlay>

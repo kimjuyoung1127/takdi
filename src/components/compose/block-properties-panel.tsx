@@ -3,6 +3,7 @@
 
 import type { Block, TextOverlay } from "@/types/blocks";
 import { BLOCK_TYPE_LABELS } from "@/lib/constants";
+import { WORKSPACE_TEXT } from "@/lib/workspace-surface";
 import { useCompose } from "./compose-context";
 import { ImagePicker } from "./image-picker";
 import { ColorStylePicker, ImageFilterControls, SceneComposeAction, FontPicker } from "./shared";
@@ -44,11 +45,11 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
 
   if (!block) {
     return (
-      <div className="flex w-72 flex-col border-l border-gray-200 bg-white">
-        <div className="border-b border-gray-100 px-4 py-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500">설정</h2>
+      <div className="flex w-72 flex-col border-l border-[#E5DDD3] bg-[#FBF8F4] text-[#201A17] [&_input:not([type='checkbox']):not([type='color'])]:rounded-2xl [&_input:not([type='checkbox']):not([type='color'])]:border-[#E4D9CD] [&_input:not([type='checkbox']):not([type='color'])]:bg-white [&_input:not([type='checkbox']):not([type='color'])]:text-[#201A17] [&_input:not([type='checkbox']):not([type='color'])]:outline-none [&_input:not([type='checkbox']):not([type='color'])]:focus:border-[#D6A99C] [&_select]:rounded-2xl [&_select]:border-[#E4D9CD] [&_select]:bg-white [&_select]:text-[#201A17] [&_select]:outline-none [&_select]:focus:border-[#D6A99C]">
+        <div className="border-b border-[#E5DDD3] px-4 py-3">
+          <h2 className={`text-xs font-semibold uppercase tracking-wider ${WORKSPACE_TEXT.muted}`}>설정</h2>
         </div>
-        <div className="flex flex-1 items-center justify-center p-4 text-center text-sm text-gray-400">
+        <div className={`flex flex-1 items-center justify-center p-4 text-center text-sm ${WORKSPACE_TEXT.muted}`}>
           <div>
             <p className="mb-2">블록을 선택하면</p>
             <p>설정을 변경할 수 있습니다</p>
@@ -59,9 +60,9 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
   }
 
   return (
-    <div className="flex w-72 flex-col border-l border-gray-200 bg-white">
-      <div className="border-b border-gray-100 px-4 py-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+    <div className="flex w-72 flex-col border-l border-[#E5DDD3] bg-[#FBF8F4] text-[#201A17] [&_input:not([type='checkbox']):not([type='color'])]:rounded-2xl [&_input:not([type='checkbox']):not([type='color'])]:border-[#E4D9CD] [&_input:not([type='checkbox']):not([type='color'])]:bg-white [&_input:not([type='checkbox']):not([type='color'])]:text-[#201A17] [&_input:not([type='checkbox']):not([type='color'])]:outline-none [&_input:not([type='checkbox']):not([type='color'])]:focus:border-[#D6A99C] [&_select]:rounded-2xl [&_select]:border-[#E4D9CD] [&_select]:bg-white [&_select]:text-[#201A17] [&_select]:outline-none [&_select]:focus:border-[#D6A99C]">
+      <div className="border-b border-[#E5DDD3] px-4 py-3">
+        <h2 className={`text-xs font-semibold uppercase tracking-wider ${WORKSPACE_TEXT.muted}`}>
           {BLOCK_TYPE_LABELS[block.type]} 설정
         </h2>
       </div>
@@ -645,7 +646,7 @@ export function BlockPropertiesPanel({ block, onUpdate }: BlockPropertiesPanelPr
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-gray-500">{label}</label>
+      <label className="mb-1 block text-xs font-medium text-[#8E8176]">{label}</label>
       {children}
     </div>
   );

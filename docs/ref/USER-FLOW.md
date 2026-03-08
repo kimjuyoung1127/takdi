@@ -1,6 +1,6 @@
 # Takdi User Flow
 
-Version: 1.6.0
+Version: 1.7.0
 Last Updated: 2026-03-08 (KST)
 
 Related spec:
@@ -14,6 +14,7 @@ Related spec:
 5. For `shortform-video`, generate preview-only artifacts (`thumbnail`, `marketing-script`) from `/preview` when needed.
 6. Preview, render, and export the final artifact.
 7. Review usage and recent activity from workspace/settings summaries.
+8. Manage recent projects and saved templates from home or `/projects`, including confirmed deletion when needed.
 
 ## Flow Diagram
 ```mermaid
@@ -78,6 +79,8 @@ flowchart TD
 ## Home Dashboard Note
 - `/` opens directly into `새 작업 시작` without a hero summary card.
 - The home screen prioritizes action selection first, then recent projects and saved templates.
+- Home recent projects and saved templates are both managed as collapsible drawers.
+- Home supports single-item delete from overflow actions only; `/projects` extends this into bulk selection with confirmation.
 - On home, `compose` is surfaced with a user-facing label `상세페이지 제작`.
 - Home and the header launcher share the same mode definitions and the same `직접 업로드` staging hub.
 

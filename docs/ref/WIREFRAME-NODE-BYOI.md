@@ -1,13 +1,15 @@
 # Takdi Wireframe Spec (Editor Surface + BYOI)
 
-Version: 1.2.0
+Version: 1.3.0
 Last Updated: 2026-03-08 (KST)
 Owner: Product/Platform
 
 ## IA Summary
 - Screen 1: Home (`/`)
 - Screen 2: Node Editor (`/projects/:id/editor`)
-- Screen 3: Result (`/projects/:id/result`)
+- Screen 3: Compose (`/projects/:id/compose`)
+- Screen 4: Result (`/projects/:id/result`)
+- Screen 5: Workspace Hub (`/workspace`)
 
 ## Screen Wireframes
 ### 1) Home
@@ -19,10 +21,20 @@ Owner: Product/Platform
 - Home-only user-facing mode label:
   - `compose` is presented as `상세페이지 제작`
 - Lower section:
-  - recent projects queue on the left
-  - saved templates panel on the right
+  - recent projects drawer
+  - saved templates panel
 
-### 2) Editor (`/projects/:id/editor`)
+### 2) Global Header
+- Left:
+  - coral brand mark
+- Center:
+  - search trigger styled as an input
+- Right:
+  - `작업 시작` global launcher CTA
+  - notification bell opens activity panel
+  - profile button routes to `/workspace`
+
+### 3) Editor (`/projects/:id/editor`)
 - Shared top global actions:
   - Run All
   - Stop
@@ -32,15 +44,15 @@ Owner: Product/Platform
   - Open Compose
 - Shared top controls:
   - project name edit button on the left
-  - `간단 모드 / 전문가 모드` toggle on the right for `model-shot`, `cutout`, `brand-image`
+  - `간단 모드 / 구조 보기` toggle on the right for `model-shot`, `cutout`, `brand-image`
 
-#### 2-A) Simple Mode (default for fixed pipeline modes)
+#### 3-A) Simple Mode
 - Applies to:
   - `model-shot`
   - `cutout`
   - `brand-image`
 - Left panel:
-  - 없음
+  - hidden
 - Center:
   - step cards only
   - no node drag, edges, minimap, context menu
@@ -53,21 +65,10 @@ Owner: Product/Platform
   - history tab
   - cost tab
   - bottom live log panel
-- `model-shot` step order:
-  - 원본 이미지 업로드
-  - 촬영 지시 입력
-  - 모델 합성
-  - 내보내기
-- `model-shot` upload panel:
-  - upload CTA
-  - current thumbnail + filename
-  - static help text for recommended count, composition guide, supported formats
-  - no BGM upload
-  - no free-form “간단 설명” input
 
-#### 2-B) Expert Mode
+#### 3-B) Structure View
 - Left panel:
-  - node palette
+  - node palette or guided read-only structure
 - Center:
   - node canvas and edges
 - Right panel tabs:
@@ -76,10 +77,17 @@ Owner: Product/Platform
 - Advanced metadata:
   - node id shown only inside `고급 정보`
   - raw node type shown only as secondary/internal text
-- Bottom panel:
-  - 없음
 
-### 3) Result
+### 4) Compose (`/projects/:id/compose`)
+- Keeps the current layout ratio:
+  - top toolbar
+  - left block palette
+  - center canvas
+  - right properties panel
+- Uses the same warm-gray surface system as home/editor
+- Home-facing labels avoid technical `compose` wording where possible
+
+### 5) Result
 - Artifact groups:
   - Images
   - GIF
@@ -89,82 +97,32 @@ Owner: Product/Platform
   - Copy share link
   - Re-open editor
   - Start new project
-- Usage summary:
-  - model/provider
-  - image count
-  - cost estimate
-  - render duration
 
-### 4) Settings
+### 6) Workspace Hub (`/workspace`)
+- Workspace summary
+- Usage and cost summary
+- Recent activity
+- Placeholder sections for members, permissions, brand settings, and plan/B2B expansion
+
+### 7) Settings
 - Runtime/storage summary remains read-only
-- Admin-style operations summary moved here from the editor:
-  - monthly event count
-  - export count
-  - estimated total cost
-  - recent activity list
-
-## Integrated Flow
-```mermaid
-flowchart TD
-  A["Project Create"] --> B["Mode Select"]
-  A --> M0["BGM Select or Upload (video modes only)"]
-
-  B --> B1["Model Generate"]
-  B --> B2["Cutout Generate"]
-  B --> B3["Brand Image Generate"]
-  B --> B4["GIF Generate"]
-  B --> B5["Freeform Generate"]
-  B --> B6["BYOI Upload"]
-
-  B1 --> C["Gemini Generate"]
-  B2 --> C
-  B3 --> C
-  B5 --> C
-  C --> CQ{"Quality Check"}
-  CQ -->|"pass"| D["Image Results"]
-  CQ -->|"fail"| C2["Imagen Fallback"]
-  C2 --> D
-
-  B4 --> G0["GIF Source Pick"] --> G1["GIF Build"] --> D
-  B6 --> V0["BYOI Validate"] --> D
-
-  D --> E["Intermediate Confirm"]
-  E -->|"regenerate"| B
-  E -->|"confirm"| F["Cut Edit Handoff"]
-
-  F --> F1["Auto Mask or Crop Draft"] --> F2["Manual Adjustment"] --> F3["Cut Edit Save"]
-
-  M0 --> M1["BGM Analyze"] --> M2{"Valid?"}
-  M2 -->|"no"| M0
-  M2 -->|"yes"| R0["Template Ratio Select"]
-
-  F3 --> R0
-  R0 --> R1["Remotion Preview"]
-  R1 --> R2{"Render?"}
-  R2 -->|"no"| F2
-  R2 -->|"yes"| R3["Render with Audio Mix"]
-
-  R3 --> R4{"Render Result"}
-  R4 -->|"ok"| X["ExportArtifact Save"]
-  R4 -->|"retry"| R3
-  X --> U["UsageLedger Record"] --> Z["Done"]
-```
+- Technical and operations settings stay here
+- Admin-style metrics remain visible here in addition to the workspace summary surface
 
 ## Surface Rules
 - `model-shot`, `cutout`, `brand-image` open in simple mode first.
-- `freeform` and `gif-source` open in expert mode only.
+- `freeform` and `gif-source` open in structure-first mode.
 - Editor view mode selection persists in localStorage per mode.
-- In expert mode, the top-right mode toggle must stay clear of the centered action toolbar.
+- In guided modes, `간단 모드 / 구조 보기` must not imply unrestricted graph editing.
 - Home dashboard should stay minimal:
   - no explanatory hero copy before the first work cards
   - no redundant summary cards that repeat project/template counts already visible below
   - no technical wording such as `compose` on the first screen
-
-## Node Gate Rules
-- `Intermediate Confirm` must be completed before `Cut Edit`.
-- `BGM Analyze` should be valid before `Render` (warning or block policy).
-- If `preserveOriginal=true`, BYOI source cannot be overwritten by auto edits.
-- `BYOI Validate` checks format, EXIF orientation, color profile normalization, and ratio constraints.
+- Header controls should always map to a concrete action:
+  - `작업 시작` -> launcher
+  - search -> overlay
+  - bell -> activity panel
+  - profile -> workspace hub
 
 ## API and Type Contract Summary
 ### API
@@ -183,14 +141,3 @@ flowchart TD
 - `ProjectStatus = draft | generating | generated | failed | exported`
 - `Asset.sourceType = uploaded | generated | byoi_edited`
 - `CutHandoffPayload.preserveOriginal: boolean`
-
-## Implementation Priority
-1. MVP
-  - Home CTA and recent work
-  - Node editor shell
-  - AI image generation and intermediate confirm
-  - BGM analyze and Remotion preview/render
-2. Expansion
-  - BYOI lock policy hardening
-  - provider routing controls
-  - advanced node templates

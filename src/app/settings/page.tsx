@@ -30,13 +30,13 @@ function SummaryCard({
   );
 }
 
-function formatDateTime(date: Date) {
+function formatDateTime(date: string | Date) {
   return new Intl.DateTimeFormat("ko-KR", {
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(date);
+  }).format(new Date(date));
 }
 
 export default async function SettingsPage() {

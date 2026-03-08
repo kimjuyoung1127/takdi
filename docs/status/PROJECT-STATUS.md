@@ -1,8 +1,18 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-08 (KST, shortform mode + preview artifacts pass)
+Last Updated: 2026-03-08 (KST, project management drawers + terminology pass)
 
 ## Latest Update
+- Project management drawer pass completed.
+- Verified with final `npm run typecheck`, `npm run test`, and `npm run build` on 2026-03-08.
+- Key shipped changes in this pass:
+  - added `DELETE /api/projects/:id` with workspace guard, relational cleanup, and best-effort upload folder removal
+  - upgraded home recent projects to a collapsible management drawer with per-item overflow actions
+  - upgraded saved templates to the same drawer pattern on home and `/projects`
+  - added `/projects` bulk-selection delete flow for both projects and saved templates with confirmation modal
+  - kept global search read-only for open/start actions and excluded destructive controls from that overlay
+  - replaced user-facing `compose` wording with `상세페이지`-first Korean labels across the app dictionary
+
 - Shortform mode + preview artifact pass completed.
 - Verified with final `npm run typecheck`, `npm run test`, and `npm run build` on 2026-03-08.
 - Self-review follow-up completed in the same pass:

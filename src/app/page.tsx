@@ -46,7 +46,7 @@ export default async function HomePage() {
                 {messages.home.savedTemplatesTitle}
               </h2>
             </div>
-            <SavedTemplates templates={templates} compact />
+            <SavedTemplates templates={templates} collapsible defaultCollapsed />
           </div>
         </section>
       </div>

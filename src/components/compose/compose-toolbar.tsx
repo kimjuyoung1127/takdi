@@ -20,6 +20,7 @@ import { useT } from "@/i18n/use-t";
 import { PLATFORM_PRESETS } from "@/lib/constants";
 import type { ThemePalette } from "@/types/blocks";
 import { ThemePicker } from "./theme-picker";
+import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 interface ComposeToolbarProps {
   projectId: string;
@@ -69,36 +70,38 @@ export function ComposeToolbar({
   const { messages } = useT();
 
   return (
-    <div className="flex h-12 items-center justify-between border-b border-gray-200 bg-white px-4">
+    <div className={`flex h-12 items-center justify-between border-b px-4 ${WORKSPACE_SURFACE.page}`}>
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onGoHome}
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-900 text-sm font-bold text-white transition hover:bg-gray-800"
+          className={`flex h-9 w-9 items-center justify-center rounded-2xl border text-sm font-bold transition ${WORKSPACE_CONTROL.darkChip}`}
           title={isDirty ? messages.composeShared.backHomeWithUnsaved : messages.composeShared.backHome}
         >
           T
         </button>
         <div className="min-w-0">
-          <h1 className="truncate text-sm font-semibold text-gray-900">{projectName}</h1>
-          <p className="text-[10px] text-gray-400">{isDirty ? messages.composeShared.unsavedChanges : messages.composeShared.allChangesSaved}</p>
+          <h1 className={`truncate text-sm font-semibold ${WORKSPACE_TEXT.title}`}>{projectName}</h1>
+          <p className={`text-[10px] ${WORKSPACE_TEXT.muted}`}>
+            {isDirty ? messages.composeShared.unsavedChanges : messages.composeShared.allChangesSaved}
+          </p>
         </div>
         <Link
           href={`/projects/${projectId}/editor`}
-          className="flex items-center gap-1 text-xs text-gray-400 hover:text-indigo-500"
+          className={`flex items-center gap-1 text-xs ${WORKSPACE_TEXT.muted} hover:text-[#D97C67]`}
         >
           <ExternalLink className="h-3 w-3" />
-          {messages.composeShared.editor}
+          작업 자동화
         </Link>
       </div>
 
       <div className="relative flex items-center gap-3">
         <ThemePicker currentTheme={theme} onThemeChange={onThemeChange} />
-        <label className="text-xs text-gray-500">{messages.composeShared.platform}</label>
+        <label className={`text-xs ${WORKSPACE_TEXT.body}`}>{messages.composeShared.platform}</label>
         <select
           value={platformName}
           onChange={(event) => onPlatformChange(event.target.value)}
-          className="rounded border border-gray-200 px-2 py-1 text-xs"
+          className={`rounded-2xl px-3 py-1.5 text-xs ${WORKSPACE_CONTROL.input}`}
         >
           {PLATFORM_PRESETS.map((preset) => (
             <option key={preset.value} value={preset.value}>
@@ -114,7 +117,7 @@ export function ComposeToolbar({
             variant="ghost"
             size="sm"
             onClick={onAiGenerate}
-            className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700"
+            className={`flex items-center gap-1 rounded-2xl text-xs ${WORKSPACE_TEXT.accent} hover:text-[#CF705A]`}
           >
             <LayoutTemplate className="h-3.5 w-3.5" />
             {messages.common.actions.templates}
@@ -125,7 +128,7 @@ export function ComposeToolbar({
             variant="ghost"
             size="sm"
             onClick={onDesignCheck}
-            className="flex items-center gap-1 text-xs"
+            className={`flex items-center gap-1 rounded-2xl text-xs ${WORKSPACE_CONTROL.ghostButton}`}
           >
             <ShieldCheck className="h-3.5 w-3.5" />
             {messages.common.actions.check}
@@ -136,7 +139,7 @@ export function ComposeToolbar({
             variant="ghost"
             size="sm"
             onClick={onAutoFixAll}
-            className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700"
+            className="flex items-center gap-1 rounded-2xl text-xs text-[#B8794E] hover:bg-[#F8F0E6] hover:text-[#9D6640]"
           >
             <Wrench className="h-3.5 w-3.5" />
             {messages.common.actions.autoFix}
@@ -147,7 +150,11 @@ export function ComposeToolbar({
             variant="ghost"
             size="sm"
             onClick={onMobilePreviewToggle}
-            className={`flex items-center gap-1 text-xs ${mobilePreview ? "bg-indigo-50 text-indigo-600" : ""}`}
+            className={`flex items-center gap-1 rounded-2xl text-xs ${
+              mobilePreview
+                ? `${WORKSPACE_CONTROL.accentTint}`
+                : WORKSPACE_CONTROL.ghostButton
+            }`}
           >
             {mobilePreview ? (
               <>
@@ -162,13 +169,13 @@ export function ComposeToolbar({
             )}
           </Button>
         )}
-        {lastSaved && <span className="mr-2 text-[10px] text-gray-400">{formatSavedAt(messages, lastSaved)}</span>}
+        {lastSaved && <span className={`mr-2 text-[10px] ${WORKSPACE_TEXT.muted}`}>{formatSavedAt(messages, lastSaved)}</span>}
         <Button
           variant="ghost"
           size="sm"
           onClick={onSaveTemplate}
           disabled={Boolean(isTemplateSaving)}
-          className="flex items-center gap-1 text-xs text-amber-700 hover:text-amber-800"
+          className="flex items-center gap-1 rounded-2xl text-xs text-[#8E6C4C] hover:bg-[#F7EFE5] hover:text-[#6F5136]"
         >
           {isTemplateSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bookmark className="h-3.5 w-3.5" />}
           {messages.composeShared.favorite}
@@ -178,7 +185,7 @@ export function ComposeToolbar({
           size="sm"
           onClick={onSave}
           disabled={isSaving}
-          className="flex items-center gap-1 text-xs"
+          className={`flex items-center gap-1 rounded-2xl text-xs ${WORKSPACE_CONTROL.ghostButton}`}
         >
           {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
           {messages.common.actions.save}
@@ -187,7 +194,7 @@ export function ComposeToolbar({
           variant="ghost"
           size="sm"
           onClick={onPreview}
-          className="flex items-center gap-1 text-xs"
+          className={`flex items-center gap-1 rounded-2xl text-xs ${WORKSPACE_CONTROL.ghostButton}`}
         >
           <Eye className="h-3.5 w-3.5" />
           {messages.common.actions.preview}
@@ -196,7 +203,7 @@ export function ComposeToolbar({
           variant="ghost"
           size="sm"
           onClick={onExport}
-          className="flex items-center gap-1 text-xs"
+          className={`flex items-center gap-1 rounded-2xl text-xs ${WORKSPACE_CONTROL.ghostButton}`}
         >
           <Download className="h-3.5 w-3.5" />
           {messages.common.actions.export}

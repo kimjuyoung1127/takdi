@@ -9,6 +9,7 @@ import { AssetUpload } from "./asset-upload";
 import type { EditorViewMode } from "@/lib/editor-surface";
 import { getStepPresentation, getUserFacingNodeStatus } from "@/lib/editor-surface";
 import { PRODUCT_CATEGORIES, NODE_TYPE_LABELS } from "@/lib/constants";
+import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 import type { NodeData } from "./node-canvas";
 
 interface UploadedAsset {
@@ -41,19 +42,19 @@ function FilePreview({
   const fileName = filePath.split("/").pop() ?? filePath.split("\\").pop() ?? filePath;
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
-      <p className="text-xs font-medium text-gray-500">{label}</p>
+    <div className={`rounded-2xl p-3 ${WORKSPACE_SURFACE.softInset}`}>
+      <p className={`text-xs font-medium ${WORKSPACE_TEXT.body}`}>{label}</p>
       <div className="mt-3 flex items-center gap-3">
         <AppImage
           src={filePath}
           alt={fileName}
           width={72}
           height={72}
-          className="h-20 w-20 rounded-2xl border border-white object-cover shadow-sm"
+          className="h-20 w-20 rounded-2xl border border-white object-cover shadow-[0_10px_24px_rgba(55,40,30,0.08)]"
         />
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-gray-900">{fileName}</p>
-          <p className="mt-1 truncate text-xs text-gray-400">{filePath}</p>
+          <p className={`truncate text-sm font-medium ${WORKSPACE_TEXT.title}`}>{fileName}</p>
+          <p className={`mt-1 truncate text-xs ${WORKSPACE_TEXT.muted}`}>{filePath}</p>
         </div>
       </div>
     </div>
@@ -62,15 +63,15 @@ function FilePreview({
 
 function EmptyPanel({ projectName, nodeCount }: { projectName?: string; nodeCount?: number }) {
   return (
-    <aside className="flex w-96 flex-col border-l border-gray-100 bg-white">
+    <aside className="flex w-96 flex-col border-l border-[#E5DDD3] bg-[#FBF8F4]">
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-10">
-        <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-indigo-50 text-indigo-500">
+        <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-[#F8E7E2] text-[#D97C67]">
           <LayoutGrid className="h-7 w-7" />
         </div>
         <div className="text-center">
-          <p className="text-base font-semibold text-gray-900">{projectName ?? "프로젝트"}</p>
-          <p className="mt-2 text-sm text-gray-500">작업 단계 {nodeCount ?? 0}개</p>
-          <p className="mt-4 text-sm leading-6 text-gray-400">
+          <p className={`text-base font-semibold ${WORKSPACE_TEXT.title}`}>{projectName ?? "프로젝트"}</p>
+          <p className={`mt-2 text-sm ${WORKSPACE_TEXT.body}`}>작업 단계 {nodeCount ?? 0}개</p>
+          <p className={`mt-4 text-sm leading-6 ${WORKSPACE_TEXT.muted}`}>
             단계 카드를 선택하면 필요한 입력과 현재 상태를 확인할 수 있습니다.
           </p>
         </div>
@@ -122,11 +123,11 @@ export function PropertiesPanel({
 
   const settingsBody = (
     <div className="space-y-5">
-      <div className="rounded-3xl bg-gray-50 p-4">
+        <div className={`rounded-3xl p-4 ${WORKSPACE_SURFACE.softInset}`}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-gray-900">{title}</p>
-            <p className="mt-2 text-sm leading-6 text-gray-500">{description}</p>
+            <p className={`text-sm font-semibold ${WORKSPACE_TEXT.title}`}>{title}</p>
+            <p className={`mt-2 text-sm leading-6 ${WORKSPACE_TEXT.body}`}>{description}</p>
           </div>
           <StatusBadge
             status={selectedNodeData.status ?? "draft"}
@@ -139,7 +140,7 @@ export function PropertiesPanel({
       {selectedNodeData.nodeType === "prompt" ? (
         <div className="space-y-4">
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
+            <label className={`mb-2 block text-xs font-semibold uppercase tracking-[0.18em] ${WORKSPACE_TEXT.muted}`}>
               촬영 지시
             </label>
             <textarea
@@ -150,19 +151,19 @@ export function PropertiesPanel({
                 onNodeDataChange?.(selectedNodeId, { briefText: nextValue });
               }}
               rows={8}
-              className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm leading-6 text-gray-900 placeholder:text-gray-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              className={`w-full rounded-2xl px-4 py-3 text-sm leading-6 ${WORKSPACE_CONTROL.input}`}
               placeholder="예: 밝은 스튜디오 조명, 20대 여성 모델, 미니멀 배경, 제품이 잘 보이도록 상반신 중심 구도"
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
+            <label className={`mb-2 block text-xs font-semibold uppercase tracking-[0.18em] ${WORKSPACE_TEXT.muted}`}>
               카테고리
             </label>
             <select
               value={(selectedNodeData.category as string) ?? ""}
               onChange={(event) => onNodeDataChange?.(selectedNodeId, { category: event.target.value || undefined })}
-              className="h-11 w-full rounded-2xl border border-gray-200 px-3 text-sm text-gray-900 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              className={`h-11 w-full rounded-2xl px-3 text-sm ${WORKSPACE_CONTROL.input}`}
             >
               <option value="">자동</option>
               {PRODUCT_CATEGORIES.map((category) => (
@@ -171,7 +172,7 @@ export function PropertiesPanel({
                 </option>
               ))}
             </select>
-            <p className="mt-2 text-xs leading-5 text-gray-400">
+            <p className={`mt-2 text-xs leading-5 ${WORKSPACE_TEXT.muted}`}>
               제품 카테고리를 지정하면 문안과 이미지 방향이 조금 더 안정적으로 맞춰집니다.
             </p>
           </div>
@@ -188,9 +189,9 @@ export function PropertiesPanel({
 
           {uploadedFilePath ? <FilePreview label="현재 업로드" filePath={uploadedFilePath} /> : null}
 
-          <div className="rounded-2xl border border-dashed border-gray-200 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">업로드 가이드</p>
-            <ul className="mt-3 space-y-2 text-sm leading-6 text-gray-500">
+          <div className="rounded-2xl border border-dashed border-[#D5CCC3] p-4">
+            <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${WORKSPACE_TEXT.muted}`}>업로드 가이드</p>
+            <ul className={`mt-3 space-y-2 text-sm leading-6 ${WORKSPACE_TEXT.body}`}>
               {(stepPresentation?.helpItems ?? []).map((item) => (
                 <li key={item}>{item}</li>
               ))}
@@ -201,7 +202,7 @@ export function PropertiesPanel({
 
       {previewImages.length > 0 ? (
         <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">관련 파일</p>
+          <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${WORKSPACE_TEXT.muted}`}>관련 파일</p>
           <div className="grid grid-cols-2 gap-3">
             {previewImages.map((imagePath) => (
               <AppImage
@@ -210,7 +211,7 @@ export function PropertiesPanel({
                 alt={title}
                 width={140}
                 height={140}
-                className="h-32 w-full rounded-2xl border border-gray-200 object-cover"
+                    className="h-32 w-full rounded-2xl border border-[#E5DDD3] object-cover"
               />
             ))}
           </div>
@@ -218,30 +219,30 @@ export function PropertiesPanel({
       ) : null}
 
       {viewMode === "expert" ? (
-        <details className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
-          <summary className="cursor-pointer text-sm font-medium text-gray-700">고급 정보</summary>
+        <details className={`rounded-2xl px-4 py-3 ${WORKSPACE_SURFACE.softInset}`}>
+          <summary className={`cursor-pointer text-sm font-medium ${WORKSPACE_TEXT.body}`}>고급 정보</summary>
           <div className="mt-4 space-y-3 text-sm">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">단계 이름</p>
+              <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${WORKSPACE_TEXT.muted}`}>단계 이름</p>
               <input
                 value={selectedNodeData.label ?? ""}
                 onChange={(event) => onNodeDataChange?.(selectedNodeId, { label: event.target.value })}
-                className="mt-2 h-10 w-full rounded-xl border border-gray-200 px-3 text-sm text-gray-900 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                className={`mt-2 h-10 w-full rounded-2xl px-3 text-sm ${WORKSPACE_CONTROL.input}`}
               />
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">표시 유형</p>
-                <p className="mt-2 text-sm text-gray-700">{title}</p>
+                <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${WORKSPACE_TEXT.muted}`}>표시 유형</p>
+                <p className={`mt-2 text-sm ${WORKSPACE_TEXT.body}`}>{title}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">내부 타입</p>
-                <p className="mt-2 font-mono text-sm text-gray-500">{selectedNodeData.nodeType}</p>
+                <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${WORKSPACE_TEXT.muted}`}>내부 타입</p>
+                <p className={`mt-2 font-mono text-sm ${WORKSPACE_TEXT.body}`}>{selectedNodeData.nodeType}</p>
               </div>
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Node ID</p>
-              <p className="mt-2 font-mono text-sm text-gray-500">{selectedNodeId}</p>
+              <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${WORKSPACE_TEXT.muted}`}>Node ID</p>
+              <p className={`mt-2 font-mono text-sm ${WORKSPACE_TEXT.body}`}>{selectedNodeId}</p>
             </div>
           </div>
         </details>
@@ -250,14 +251,14 @@ export function PropertiesPanel({
   );
 
   return (
-    <aside className="flex w-96 flex-col border-l border-gray-100 bg-white">
-      <div className="border-b border-gray-100 px-6 py-5">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
+    <aside className="flex w-96 flex-col border-l border-[#E5DDD3] bg-[#FBF8F4]">
+      <div className="border-b border-[#E5DDD3] px-6 py-5">
+        <div className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] ${WORKSPACE_TEXT.muted}`}>
           {viewMode === "simple" ? <Sparkles className="h-3.5 w-3.5" /> : <LayoutGrid className="h-3.5 w-3.5" />}
           {viewMode === "simple" ? "현재 단계" : "단계 설정"}
         </div>
-        <h2 className="mt-3 text-lg font-semibold text-gray-950">{title}</h2>
-        <p className="mt-1 text-sm text-gray-500">{projectName ?? "프로젝트"}</p>
+        <h2 className={`mt-3 text-lg font-semibold ${WORKSPACE_TEXT.title}`}>{title}</h2>
+        <p className={`mt-1 text-sm ${WORKSPACE_TEXT.body}`}>{projectName ?? "프로젝트"}</p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -265,12 +266,12 @@ export function PropertiesPanel({
           settingsBody
         ) : (
           <Tabs defaultValue="settings" className="flex-1">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="settings" className="gap-2 text-xs">
+            <TabsList className="grid w-full grid-cols-2 rounded-2xl border border-[#E5DDD3] bg-[#F8F4EF] p-1">
+              <TabsTrigger value="settings" className="gap-2 rounded-2xl text-xs data-[state=active]:border-[#F1C8BE] data-[state=active]:bg-[#F8E7E2] data-[state=active]:text-[#D97C67]">
                 <LayoutGrid className="h-3.5 w-3.5" />
                 작업 내용
               </TabsTrigger>
-              <TabsTrigger value="assets" className="gap-2 text-xs">
+              <TabsTrigger value="assets" className="gap-2 rounded-2xl text-xs data-[state=active]:border-[#F1C8BE] data-[state=active]:bg-[#F8E7E2] data-[state=active]:text-[#D97C67]">
                 <ImageIcon className="h-3.5 w-3.5" />
                 파일
               </TabsTrigger>
@@ -291,11 +292,11 @@ export function PropertiesPanel({
 
                   {assets.length > 0 ? (
                     <div className="space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">최근 업로드</p>
+                      <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${WORKSPACE_TEXT.muted}`}>최근 업로드</p>
                       {assets.map((asset) => (
                         <div
                           key={asset.id}
-                          className="flex items-center gap-3 rounded-2xl border border-gray-200 px-3 py-3 text-sm text-gray-600"
+                          className={`flex items-center gap-3 rounded-2xl px-3 py-3 text-sm ${WORKSPACE_SURFACE.inset} ${WORKSPACE_TEXT.body}`}
                         >
                           {asset.type === "image" ? (
                             <ImageIcon className="h-4 w-4 text-gray-400" />
@@ -307,13 +308,13 @@ export function PropertiesPanel({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm leading-6 text-gray-400">
+                    <p className={`text-sm leading-6 ${WORKSPACE_TEXT.muted}`}>
                       업로드한 파일이 있으면 이곳에서 바로 확인할 수 있습니다.
                     </p>
                   )}
                 </>
               ) : (
-                <p className="text-sm leading-6 text-gray-400">프로젝트를 불러온 뒤 파일을 업로드할 수 있습니다.</p>
+                <p className={`text-sm leading-6 ${WORKSPACE_TEXT.muted}`}>프로젝트를 불러온 뒤 파일을 업로드할 수 있습니다.</p>
               )}
             </TabsContent>
           </Tabs>

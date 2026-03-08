@@ -28,6 +28,7 @@ import type { Block, BlockDocument, BlockType } from "@/types/blocks";
 import { formatBlocksCount } from "@/i18n/format";
 import { instantiateTemplateDocument } from "@/lib/compose-templates";
 import { useT } from "@/i18n/use-t";
+import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 import { BLOCK_TEMPLATES } from "./block-palette";
 import { MoodboardPicker } from "./moodboard-picker";
 
@@ -184,27 +185,27 @@ export function BriefBuilder({
   const hookOptions = category && HOOK_LIBRARY[category] ? HOOK_LIBRARY[category] : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#201A17]/35 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="max-h-[85vh] w-[560px] overflow-y-auto rounded-xl bg-white p-6 shadow-2xl"
+        className={`max-h-[85vh] w-[560px] overflow-y-auto rounded-[28px] p-6 ${WORKSPACE_SURFACE.panelStrong}`}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <LayoutTemplateIcon className="h-5 w-5 text-indigo-500" />
-            <h2 className="text-base font-semibold text-gray-900">{messages.composeShared.composeTemplatesTitle}</h2>
+              <LayoutTemplateIcon className={`h-5 w-5 ${WORKSPACE_TEXT.accent}`} />
+            <h2 className={`text-base font-semibold ${WORKSPACE_TEXT.title}`}>{messages.composeShared.composeTemplatesTitle}</h2>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className={`${WORKSPACE_TEXT.muted} hover:text-[#4D433D]`}>
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="mb-5 inline-flex rounded-full border border-gray-200 bg-gray-50 p-1">
+        <div className="mb-5 inline-flex rounded-full border border-[#E5DDD3] bg-[#F8F4EF] p-1">
           <button
             type="button"
             onClick={() => setActiveTab("guided")}
             className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-              activeTab === "guided" ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500"
+              activeTab === "guided" ? WORKSPACE_CONTROL.accentTint : WORKSPACE_TEXT.body
             }`}
           >
             {messages.composeShared.guided}
@@ -213,7 +214,7 @@ export function BriefBuilder({
             type="button"
             onClick={() => setActiveTab("saved")}
             className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-              activeTab === "saved" ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500"
+              activeTab === "saved" ? WORKSPACE_CONTROL.accentTint : WORKSPACE_TEXT.body
             }`}
           >
             {messages.composeShared.saved}
@@ -223,15 +224,15 @@ export function BriefBuilder({
         {activeTab === "saved" ? (
           <div>
             {savedTemplatesLoading ? (
-              <div className="flex items-center justify-center py-10 text-sm text-gray-500">
+              <div className={`flex items-center justify-center py-10 text-sm ${WORKSPACE_TEXT.body}`}>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 {messages.composeShared.loadingSavedTemplates}
               </div>
             ) : savedTemplates.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center">
-                <Bookmark className="mx-auto mb-2 h-5 w-5 text-gray-400" />
-                <p className="text-sm font-medium text-gray-700">{messages.composeShared.noSavedFavoritesTitle}</p>
-                <p className="mt-1 text-xs text-gray-500">{messages.composeShared.noSavedFavoritesDescription}</p>
+              <div className="rounded-[24px] border border-dashed border-[#D5CCC3] bg-[#F8F4EF] p-6 text-center">
+                <Bookmark className={`mx-auto mb-2 h-5 w-5 ${WORKSPACE_TEXT.muted}`} />
+                <p className={`text-sm font-medium ${WORKSPACE_TEXT.title}`}>{messages.composeShared.noSavedFavoritesTitle}</p>
+                <p className={`mt-1 text-xs ${WORKSPACE_TEXT.body}`}>{messages.composeShared.noSavedFavoritesDescription}</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -240,20 +241,20 @@ export function BriefBuilder({
                     key={template.id}
                     type="button"
                     onClick={() => setSelectedSavedTemplateId(template.id)}
-                    className={`w-full rounded-xl border px-4 py-3 text-left transition ${
+                    className={`w-full rounded-[24px] border px-4 py-3 text-left transition ${
                       selectedSavedTemplateId === template.id
-                        ? "border-indigo-400 bg-indigo-50"
-                        : "border-gray-200 hover:border-gray-300"
+                        ? WORKSPACE_CONTROL.accentTint
+                        : `${WORKSPACE_CONTROL.subtleButton} shadow-none`
                     }`}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-gray-900">{template.name}</p>
-                        <p className="truncate text-xs text-gray-500">
+                        <p className={`truncate text-sm font-semibold ${WORKSPACE_TEXT.title}`}>{template.name}</p>
+                        <p className={`truncate text-xs ${WORKSPACE_TEXT.body}`}>
                           {template.previewTitle ?? messages.composeShared.savedTemplatePreviewFallback}
                         </p>
                       </div>
-                      <div className="text-right text-[11px] text-gray-400">
+                      <div className={`text-right text-[11px] ${WORKSPACE_TEXT.muted}`}>
                         <div>{formatBlocksCount(messages, template.blockCount)}</div>
                         <div>{new Date(template.updatedAt).toLocaleDateString("ko-KR")}</div>
                       </div>
@@ -266,7 +267,7 @@ export function BriefBuilder({
             <Button
               onClick={handleApplySaved}
               disabled={!selectedSavedTemplateId || applyingSavedTemplate}
-              className="mt-5 flex w-full items-center justify-center gap-2"
+              className={`mt-5 flex w-full items-center justify-center gap-2 rounded-2xl ${WORKSPACE_CONTROL.accentButton}`}
             >
               {applyingSavedTemplate ? (
                 <>
@@ -284,7 +285,7 @@ export function BriefBuilder({
         ) : (
           <div>
             <div className="mb-5">
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">{messages.composeShared.category}</label>
+              <label className={`mb-1.5 block text-xs font-medium ${WORKSPACE_TEXT.body}`}>{messages.composeShared.category}</label>
               <div className="flex flex-wrap gap-2">
                 {PRODUCT_CATEGORIES.map((categoryOption) => (
                   <button
@@ -296,8 +297,8 @@ export function BriefBuilder({
                     }}
                     className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                       category === categoryOption.value
-                        ? "bg-indigo-500 text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        ? WORKSPACE_CONTROL.accentButton
+                        : "bg-white text-[#6F655D] hover:bg-[#F8F4EF]"
                     }`}
                   >
                     {categoryOption.label}
@@ -308,7 +309,7 @@ export function BriefBuilder({
 
             {category && (
               <div className="mb-5">
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">{messages.composeShared.framework}</label>
+                <label className={`mb-1.5 block text-xs font-medium ${WORKSPACE_TEXT.body}`}>{messages.composeShared.framework}</label>
                 <div className="space-y-1.5">
                   {PERSUASION_FRAMEWORKS.map((frameworkOption) => (
                     <button
@@ -317,19 +318,19 @@ export function BriefBuilder({
                         setFramework(frameworkOption.value);
                         setSelectedTemplate(null);
                       }}
-                      className={`w-full rounded-lg border-2 px-3 py-2 text-left transition ${
-                        framework === frameworkOption.value
-                          ? "border-indigo-500 bg-indigo-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
+                    className={`w-full rounded-[20px] border px-3 py-2 text-left transition ${
+                      framework === frameworkOption.value
+                        ? WORKSPACE_CONTROL.accentTint
+                        : `${WORKSPACE_CONTROL.subtleButton} shadow-none`
+                    }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-gray-800">{frameworkOption.label}</span>
-                        <span className="text-[10px] text-gray-400">
+                        <span className={`text-xs font-semibold ${WORKSPACE_TEXT.title}`}>{frameworkOption.label}</span>
+                        <span className={`text-[10px] ${WORKSPACE_TEXT.muted}`}>
                           {formatBlocksCount(messages, frameworkOption.sequence.length)}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-[11px] text-gray-500">{frameworkOption.desc}</p>
+                      <p className={`mt-0.5 text-[11px] ${WORKSPACE_TEXT.body}`}>{frameworkOption.desc}</p>
                     </button>
                   ))}
                 </div>
@@ -338,7 +339,7 @@ export function BriefBuilder({
 
             {hookOptions && (
               <div className="mb-5">
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">{messages.composeShared.hook}</label>
+                <label className={`mb-1.5 block text-xs font-medium ${WORKSPACE_TEXT.body}`}>{messages.composeShared.hook}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {HOOK_STYLES.map((hookOption) => {
                     const text = hookOptions[hookOption.value];
@@ -346,14 +347,14 @@ export function BriefBuilder({
                       <button
                         key={hookOption.value}
                         onClick={() => setHookStyle(hookOption.value)}
-                        className={`rounded-lg border-2 px-3 py-2 text-left transition ${
+                        className={`rounded-[20px] border px-3 py-2 text-left transition ${
                           hookStyle === hookOption.value
-                            ? "border-indigo-500 bg-indigo-50"
-                            : "border-gray-200 hover:border-gray-300"
+                            ? WORKSPACE_CONTROL.accentTint
+                            : `${WORKSPACE_CONTROL.subtleButton} shadow-none`
                         }`}
                       >
-                        <span className="text-xs font-semibold text-gray-800">{hookOption.label}</span>
-                        <p className="mt-0.5 line-clamp-2 text-[10px] text-gray-500">&ldquo;{text}&rdquo;</p>
+                        <span className={`text-xs font-semibold ${WORKSPACE_TEXT.title}`}>{hookOption.label}</span>
+                        <p className={`mt-0.5 line-clamp-2 text-[10px] ${WORKSPACE_TEXT.body}`}>&ldquo;{text}&rdquo;</p>
                       </button>
                     );
                   })}
@@ -363,25 +364,25 @@ export function BriefBuilder({
 
             {category && templates.length > 0 && (
               <div className="mb-5">
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">{messages.composeShared.layoutStructure}</label>
+                <label className={`mb-1.5 block text-xs font-medium ${WORKSPACE_TEXT.body}`}>{messages.composeShared.layoutStructure}</label>
                 <div className="space-y-1.5">
                   {templates.map((template) => (
                     <button
                       key={template.id}
                       onClick={() => setSelectedTemplate(template.id)}
-                      className={`w-full rounded-lg border-2 px-3 py-2.5 text-left transition ${
+                      className={`w-full rounded-[20px] border px-3 py-2.5 text-left transition ${
                         selectedTemplate === template.id
-                          ? "border-indigo-500 bg-indigo-50"
-                          : "border-gray-200 hover:border-gray-300"
+                          ? WORKSPACE_CONTROL.accentTint
+                          : `${WORKSPACE_CONTROL.subtleButton} shadow-none`
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-gray-800">{template.label}</span>
-                        <span className="text-[10px] text-gray-400">
+                        <span className={`text-xs font-semibold ${WORKSPACE_TEXT.title}`}>{template.label}</span>
+                        <span className={`text-[10px] ${WORKSPACE_TEXT.muted}`}>
                           {formatBlocksCount(messages, template.sequence.length)}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-[11px] text-gray-500">{template.description}</p>
+                      <p className={`mt-0.5 text-[11px] ${WORKSPACE_TEXT.body}`}>{template.description}</p>
                     </button>
                   ))}
                 </div>
@@ -401,7 +402,7 @@ export function BriefBuilder({
             <Button
               onClick={handleApplyGuided}
               disabled={!category}
-              className="flex w-full items-center justify-center gap-2"
+              className={`flex w-full items-center justify-center gap-2 rounded-2xl ${WORKSPACE_CONTROL.accentButton}`}
             >
               <LayoutTemplateIcon className="h-4 w-4" />
               {messages.common.actions.applyGuidedTemplate}

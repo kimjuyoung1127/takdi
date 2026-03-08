@@ -55,6 +55,12 @@ export function createProject(data: CreateProjectData) {
   return post<{ id: string }>("/api/projects", data);
 }
 
+export function deleteProject(projectId: string) {
+  return request<{ ok: boolean }>(`/api/projects/${projectId}`, {
+    method: "DELETE",
+  });
+}
+
 // --- Content ---
 
 export interface UpdateContentData {

@@ -34,6 +34,7 @@ import {
   PricePromoBlockRenderer,
   TrustBadgeBlockRenderer,
 } from "./block-renderers";
+import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 interface BlockCanvasProps {
   blocks: Block[];
@@ -116,7 +117,7 @@ function SortableBlock({
           {...attributes}
           {...listeners}
           type="button"
-          className={`flex h-7 w-7 items-center justify-center rounded bg-white shadow-sm ${
+          className={`flex h-7 w-7 items-center justify-center rounded-xl ${WORKSPACE_SURFACE.panelStrong} ${
             block.lockLayout ? "cursor-not-allowed text-gray-200" : "cursor-grab text-gray-400 hover:text-gray-600"
           }`}
           title={block.lockLayout ? "Locked block" : "Drag to reorder"}
@@ -130,7 +131,7 @@ function SortableBlock({
             event.stopPropagation();
             handleDelete();
           }}
-          className="flex h-7 w-7 items-center justify-center rounded bg-white text-gray-400 shadow-sm hover:text-red-500"
+          className={`flex h-7 w-7 items-center justify-center rounded-xl ${WORKSPACE_SURFACE.panelStrong} text-gray-400 hover:text-red-500`}
           title="Delete block"
         >
           <X className="h-4 w-4" />
@@ -141,7 +142,7 @@ function SortableBlock({
             event.stopPropagation();
             handleToggleVisibility();
           }}
-          className={`flex h-7 w-7 items-center justify-center rounded bg-white shadow-sm ${
+          className={`flex h-7 w-7 items-center justify-center rounded-xl ${WORKSPACE_SURFACE.panelStrong} ${
             block.visible ? "text-gray-400 hover:text-gray-600" : "text-amber-500"
           }`}
           title={block.visible ? "Hide block" : "Show block"}
@@ -232,9 +233,9 @@ function InsertButton({ index, active, onClick }: { index: number; active: boole
   if (active) {
     return (
       <div className="flex items-center justify-center py-2">
-        <div className="flex w-full animate-pulse items-center justify-center rounded-lg border-2 border-dashed border-indigo-400 bg-indigo-50/50 py-3">
-          <span className="text-xs font-medium text-indigo-500">Insert block here</span>
-        </div>
+          <div className="flex w-full animate-pulse items-center justify-center rounded-2xl border-2 border-dashed border-[#E6B6A9] bg-[#F8E7E2]/70 py-3">
+            <span className={`text-xs font-medium ${WORKSPACE_TEXT.accent}`}>블록을 여기에 넣습니다</span>
+          </div>
       </div>
     );
   }
@@ -243,16 +244,16 @@ function InsertButton({ index, active, onClick }: { index: number; active: boole
     <div ref={setNodeRef} className="group/insert flex items-center justify-center py-1">
       <div className={`w-full transition-all ${isOver ? "py-2" : ""}`}>
         {isOver ? (
-          <div className="flex w-full items-center justify-center rounded-lg border-2 border-dashed border-indigo-400 bg-indigo-50/50 py-3">
-            <span className="text-xs font-medium text-indigo-500">Drop block here</span>
+          <div className="flex w-full items-center justify-center rounded-2xl border-2 border-dashed border-[#E6B6A9] bg-[#F8E7E2]/70 py-3">
+            <span className={`text-xs font-medium ${WORKSPACE_TEXT.accent}`}>여기에 블록을 놓으세요</span>
           </div>
         ) : (
           <div className="flex items-center justify-center">
             <button
               type="button"
               onClick={onClick}
-              className="flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-gray-300 text-gray-400 opacity-0 transition-opacity hover:border-indigo-400 hover:text-indigo-500 group-hover/insert:opacity-100"
-              title="Insert block"
+              className="flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-[#D5CCC3] text-[#9A8B7E] opacity-0 transition-opacity hover:border-[#D97C67] hover:text-[#D97C67] group-hover/insert:opacity-100"
+              title="블록 추가"
             >
               <Plus className="h-3 w-3" />
             </button>
@@ -340,14 +341,14 @@ export const BlockCanvas = forwardRef<HTMLDivElement, BlockCanvasProps>(function
   }, [theme]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-100 p-8" onClick={() => onSelectBlock(null)}>
+    <div className="flex-1 overflow-y-auto bg-[#EFE9E1] p-8" onClick={() => onSelectBlock(null)}>
       {mobilePreview ? (
-        <div className="mx-auto mb-2 text-center text-[10px] font-medium text-gray-400">Mobile preview (375px)</div>
+        <div className={`mx-auto mb-2 text-center text-[10px] font-medium ${WORKSPACE_TEXT.muted}`}>Mobile preview (375px)</div>
       ) : null}
 
       <div
         ref={ref}
-        className={`mx-auto ${mobilePreview ? "overflow-hidden rounded-[2rem] border-[3px] border-gray-300 shadow-xl" : ""}`}
+        className={`mx-auto ${mobilePreview ? "overflow-hidden rounded-[2rem] border-[3px] border-[#D5CCC3] shadow-[0_20px_40px_rgba(55,40,30,0.12)]" : ""}`}
         style={{
           width: canvasWidth,
           maxWidth: "100%",
@@ -389,10 +390,10 @@ export const BlockCanvas = forwardRef<HTMLDivElement, BlockCanvasProps>(function
         </SortableContext>
 
         {blocks.length === 0 ? (
-          <div className="flex h-64 items-center justify-center text-center text-gray-400">
+          <div className={`flex h-64 items-center justify-center text-center ${WORKSPACE_TEXT.muted}`}>
             <div>
-              <p className="mb-2 text-lg font-medium">No blocks yet</p>
-              <p className="text-sm">Add a block from the palette or drag one onto the canvas.</p>
+              <p className="mb-2 text-lg font-medium">아직 블록이 없습니다</p>
+              <p className="text-sm">왼쪽 패널에서 블록을 추가하거나 캔버스로 끌어오세요.</p>
             </div>
           </div>
         ) : null}

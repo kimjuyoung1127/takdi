@@ -18,6 +18,7 @@ import {
   NODE_TYPE_LABELS,
   type FlowNodeType,
 } from "@/lib/constants";
+import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 const NODE_ICONS: Record<FlowNodeType, React.ElementType> = {
   prompt: Sparkles,
@@ -60,10 +61,10 @@ export function NodePalette({ mode, disabled = false }: NodePaletteProps) {
   }
 
   return (
-    <aside className="flex w-64 flex-col border-r border-gray-100 bg-white/80 backdrop-blur">
-      <div className="border-b border-gray-100 px-5 py-4">
-        <h2 className="text-sm font-semibold text-gray-900">작업 단계</h2>
-        <p className="text-xs text-gray-400">
+    <aside className={`flex w-64 flex-col border-r border-[#E5DDD3] bg-[#EFE9E1]`}>
+      <div className="border-b border-[#E5DDD3] px-5 py-4">
+        <h2 className={`text-sm font-semibold ${WORKSPACE_TEXT.title}`}>작업 단계</h2>
+        <p className={`text-xs ${WORKSPACE_TEXT.muted}`}>
           {disabled ? "가이드형 모드에서는 내부 구조만 확인할 수 있습니다." : "필요한 단계를 캔버스로 추가하세요."}
         </p>
       </div>
@@ -85,19 +86,19 @@ export function NodePalette({ mode, disabled = false }: NodePaletteProps) {
                 }
                 onDragStart(event, type, label);
               }}
-              className={`group flex items-center gap-3 rounded-xl p-3 transition-colors ${
+              className={`group flex items-center gap-3 rounded-2xl p-3 transition-colors ${
                 disabled
                   ? "cursor-not-allowed opacity-50"
-                  : "cursor-grab hover:bg-gray-50 active:cursor-grabbing"
+                  : "cursor-grab hover:bg-[#F8F4EF] active:cursor-grabbing"
               }`}
               title={desc}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+              <div className={`flex h-8 w-8 items-center justify-center rounded-2xl ${WORKSPACE_CONTROL.accentTint}`}>
                 <Icon className="h-4 w-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm text-gray-700">{label}</span>
-                <span className="text-[10px] text-gray-400 opacity-0 transition-opacity group-hover:opacity-100">
+                <span className={`text-sm ${WORKSPACE_TEXT.body}`}>{label}</span>
+                <span className={`text-[10px] ${WORKSPACE_TEXT.muted} opacity-0 transition-opacity group-hover:opacity-100`}>
                   {desc}
                 </span>
               </div>

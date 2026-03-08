@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useDraggable } from "@dnd-kit/core";
 import type { Block, BlockType } from "@/types/blocks";
+import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 interface BlockPaletteProps {
   onAddBlock: (block: Block) => void;
@@ -322,7 +323,7 @@ function DraggablePaletteItem({ tmpl, onAddBlock }: { tmpl: BlockTemplate; onAdd
       {...attributes}
       {...listeners}
       onClick={() => onAddBlock(tmpl.create())}
-      className={`flex flex-col items-center gap-1 rounded-lg p-2.5 text-gray-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600 ${isDragging ? "opacity-40" : ""}`}
+      className={`flex flex-col items-center gap-1 rounded-2xl p-2.5 transition-colors ${WORKSPACE_CONTROL.ghostButton} hover:bg-[#F8E7E2] hover:text-[#D97C67] ${isDragging ? "opacity-40" : ""}`}
       title={tmpl.desc}
     >
       <Icon className="h-5 w-5" />
@@ -333,9 +334,9 @@ function DraggablePaletteItem({ tmpl, onAddBlock }: { tmpl: BlockTemplate; onAdd
 
 export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
   return (
-    <div className="flex w-56 flex-col border-r border-gray-200 bg-white">
-      <div className="border-b border-gray-100 px-4 py-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500">콘텐츠 블록</h2>
+    <div className={`flex w-56 flex-col border-r ${WORKSPACE_SURFACE.page}`}>
+      <div className="border-b border-[#E5DDD3] px-4 py-3">
+        <h2 className={`text-xs font-semibold uppercase tracking-wider ${WORKSPACE_TEXT.muted}`}>콘텐츠 블록</h2>
       </div>
       <div className="flex-1 overflow-y-auto p-2">
         <div className="grid grid-cols-2 gap-1.5">

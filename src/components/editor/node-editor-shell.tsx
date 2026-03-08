@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import type { Edge, Node } from "@xyflow/react";
-import { AlertTriangle, Loader2, RefreshCcw } from "lucide-react";
+import { AlertTriangle, Home, LayoutPanelTop, Loader2, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
 import { FloatingToolbar } from "./floating-toolbar";
 import { NodeCanvas, type NodeCanvasHandle, type NodeData } from "./node-canvas";
@@ -29,6 +30,7 @@ import {
   type EditorViewMode,
 } from "@/lib/editor-surface";
 import { executePipeline } from "@/lib/pipeline-executor";
+import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 interface NodeEditorShellProps {
   projectId: string;
@@ -63,17 +65,17 @@ function GuidedGraphRecoveryPanel({
 }) {
   return (
     <div className="flex h-full items-center justify-center px-6 pb-6 pt-28">
-      <div className="w-full max-w-3xl rounded-[32px] border border-amber-200 bg-white p-8 shadow-[0_16px_60px_rgba(15,23,42,0.08)]">
+      <div className={`w-full max-w-3xl rounded-[32px] p-8 ${WORKSPACE_SURFACE.panelStrong}`}>
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#F7EFE5] text-[#B8794E]">
             <AlertTriangle className="h-6 w-6" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-amber-700">구조 복구 필요</p>
-            <h2 className="mt-2 text-2xl font-semibold text-gray-950">
+            <p className="text-sm font-semibold text-[#B8794E]">구조 복구 필요</p>
+            <h2 className={`mt-2 text-2xl font-semibold ${WORKSPACE_TEXT.title}`}>
               {mode} 모드의 저장된 그래프가 가이드형 규칙과 맞지 않습니다.
             </h2>
-            <p className="mt-3 text-sm leading-6 text-gray-500">
+            <p className={`mt-3 text-sm leading-6 ${WORKSPACE_TEXT.body}`}>
               이 모드는 단계형 자동화 편집기입니다. 단계 중복이나 임의 연결이 포함되면 결과가 불명확해질 수 있어
               편집과 실행을 잠시 막고 복구를 먼저 안내합니다.
             </p>
@@ -81,18 +83,18 @@ function GuidedGraphRecoveryPanel({
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-3xl border border-gray-200 bg-gray-50 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">감지된 문제</p>
-            <ul className="mt-4 space-y-3 text-sm leading-6 text-gray-600">
+          <div className={`rounded-3xl p-5 ${WORKSPACE_SURFACE.softInset}`}>
+            <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${WORKSPACE_TEXT.muted}`}>감지된 문제</p>
+            <ul className={`mt-4 space-y-3 text-sm leading-6 ${WORKSPACE_TEXT.body}`}>
               {issueMessages.map((message, index) => (
                 <li key={`${index}-${message}`}>{message}</li>
               ))}
             </ul>
           </div>
 
-          <div className="rounded-3xl border border-gray-200 bg-gray-50 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">복구 후 구조</p>
-            <ol className="mt-4 space-y-2 text-sm text-gray-700">
+          <div className={`rounded-3xl p-5 ${WORKSPACE_SURFACE.softInset}`}>
+            <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${WORKSPACE_TEXT.muted}`}>복구 후 구조</p>
+            <ol className={`mt-4 space-y-2 text-sm ${WORKSPACE_TEXT.body}`}>
               {repairStepLabels.map((label, index) => (
                 <li key={label}>
                   {index + 1}. {label}
@@ -102,9 +104,9 @@ function GuidedGraphRecoveryPanel({
           </div>
         </div>
 
-        <div className="mt-8 flex items-center justify-between gap-4 rounded-3xl bg-indigo-50 px-5 py-4">
-          <p className="text-sm text-indigo-800">기본 구조로 되돌리되, 각 단계의 첫 번째 유효 데이터는 최대한 보존합니다.</p>
-          <Button type="button" onClick={onRepair} className="gap-2 rounded-full">
+        <div className="mt-8 flex items-center justify-between gap-4 rounded-3xl bg-[#F8E7E2] px-5 py-4">
+          <p className="text-sm text-[#8C5A4B]">기본 구조로 되돌리되, 각 단계의 첫 번째 유효 데이터는 최대한 보존합니다.</p>
+          <Button type="button" onClick={onRepair} className={`gap-2 rounded-full ${WORKSPACE_CONTROL.accentButton}`}>
             <RefreshCcw className="h-4 w-4" />
             기본 구조로 복구
           </Button>
@@ -520,50 +522,72 @@ export function NodeEditorShell({
   const issueMessages = graphValidation.issues.map((issue) => issue.message);
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className={`flex h-screen ${WORKSPACE_SURFACE.page}`}>
       {effectiveViewMode === "expert" ? <NodePalette mode={mode} disabled={guidedReadOnlyStructure} /> : null}
 
       <div className="relative flex-1">
         <div className="absolute left-4 top-6 z-20">
-          {editingName ? (
-            <input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              onBlur={handleNameBlur}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.currentTarget.blur();
-                }
-                if (event.key === "Escape") {
-                  setName(projectName);
-                  setEditingName(false);
-                }
-              }}
-              autoFocus
-              className="w-[min(320px,40vw)] rounded-xl border border-indigo-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={() => setEditingName(true)}
-              className="max-w-[min(320px,40vw)] truncate rounded-xl bg-white/90 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-white"
-              title="프로젝트 이름 변경"
-            >
-              {name}
-            </button>
-          )}
+          <div className="flex flex-col items-start gap-2">
+            {editingName ? (
+              <input
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                onBlur={handleNameBlur}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.currentTarget.blur();
+                  }
+                  if (event.key === "Escape") {
+                    setName(projectName);
+                    setEditingName(false);
+                  }
+                }}
+                autoFocus
+                className={`w-[min(320px,40vw)] rounded-2xl px-3 py-2 text-sm font-semibold ${WORKSPACE_CONTROL.input}`}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setEditingName(true)}
+                className={`max-w-[min(320px,40vw)] truncate rounded-2xl px-3 py-2 text-sm font-semibold transition hover:bg-white ${WORKSPACE_SURFACE.panelStrong} ${WORKSPACE_TEXT.body}`}
+                title="프로젝트 이름 변경"
+              >
+                {name}
+              </button>
+            )}
+
+            <div className="flex items-center gap-2">
+              <Link
+                href="/"
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition hover:bg-white ${WORKSPACE_SURFACE.panelStrong} ${WORKSPACE_TEXT.body}`}
+                title="홈으로 이동"
+              >
+                <Home className="h-4 w-4" />
+                홈
+              </Link>
+
+              <Link
+                href={`/projects/${projectId}/compose`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition hover:bg-white ${WORKSPACE_SURFACE.panelStrong} ${WORKSPACE_TEXT.body}`}
+                title="상세페이지 편집기로 이동"
+              >
+                <LayoutPanelTop className="h-4 w-4" />
+                상세페이지
+              </Link>
+            </div>
+          </div>
         </div>
 
         {allowSimpleMode ? (
           <div className="absolute right-4 top-6 z-20">
-            <div className="flex items-center rounded-full border border-gray-200 bg-white/95 p-1 shadow-sm backdrop-blur">
+            <div className={`flex items-center rounded-full p-1 ${WORKSPACE_SURFACE.floating}`}>
               <button
                 type="button"
                 onClick={() => handleViewModeChange("simple")}
                 className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                   effectiveViewMode === "simple"
-                    ? "bg-indigo-600 text-white"
-                    : "text-gray-500 hover:bg-gray-100"
+                    ? WORKSPACE_CONTROL.accentButton
+                    : `${WORKSPACE_TEXT.body} hover:bg-[#F8F4EF]`
                 }`}
               >
                 간단 모드
@@ -573,20 +597,24 @@ export function NodeEditorShell({
                 onClick={() => handleViewModeChange("expert")}
                 className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                   effectiveViewMode === "expert"
-                    ? "bg-indigo-600 text-white"
-                    : "text-gray-500 hover:bg-gray-100"
+                    ? WORKSPACE_CONTROL.accentButton
+                    : `${WORKSPACE_TEXT.body} hover:bg-[#F8F4EF]`
                 }`}
               >
-                전문가 모드
+                구조 보기
               </button>
             </div>
           </div>
         ) : null}
 
         <FloatingToolbar
-          projectId={projectId}
           mode={mode}
           ratio={globalRatio}
+          helperText={
+            guidedReadOnlyStructure && !invalidGuidedGraph
+              ? "내부 구조 보기 모드입니다.\n이 모드는 단계당 1개만 사용됩니다."
+              : null
+          }
           onRatioChange={setGlobalRatio}
           onRunAll={handleRunAll}
           onStop={handleStop}
@@ -602,12 +630,6 @@ export function NodeEditorShell({
           lastSaved={lastSaved}
           actionsDisabled={invalidGuidedGraph}
         />
-
-        {guidedReadOnlyStructure && !invalidGuidedGraph ? (
-          <div className="absolute left-1/2 top-24 z-10 -translate-x-1/2 rounded-full bg-gray-900 px-4 py-2 text-xs font-medium text-white shadow-md">
-            내부 구조 보기 모드입니다. 이 모드는 단계당 1개만 사용됩니다.
-          </div>
-        ) : null}
 
         <NodeCanvas
           ref={canvasRef}
@@ -640,8 +662,8 @@ export function NodeEditorShell({
                 onSelectStep={handleNodeSelect}
               />
             ) : (
-              <div className="flex h-full items-center justify-center rounded-[32px] border border-gray-200 bg-white shadow-[0_16px_60px_rgba(15,23,42,0.08)]">
-                <div className="flex items-center gap-3 text-sm text-gray-500">
+              <div className={`flex h-full items-center justify-center rounded-[32px] ${WORKSPACE_SURFACE.panelStrong}`}>
+                <div className={`flex items-center gap-3 text-sm ${WORKSPACE_TEXT.body}`}>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   작업 단계를 불러오는 중입니다.
                 </div>

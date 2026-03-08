@@ -31,6 +31,7 @@ import {
   NODE_TYPE_LABELS,
   type FlowNodeType,
 } from "@/lib/constants";
+import { WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 interface ContextMenuState {
   nodeId: string;
@@ -469,27 +470,27 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function
         nodesConnectable={canEditEdges}
         elementsSelectable
         fitView
-        className="bg-gray-50"
+        className="bg-[#EFE9E1]"
       >
-        <Background gap={20} size={1} color="#e5e7eb" />
-        <Controls className="rounded-xl bg-white shadow-sm" />
+        <Background gap={20} size={1} color="#d8d0c6" />
+        <Controls className="rounded-2xl border border-[#E5DDD3] bg-[#FBF8F4] shadow-[0_12px_28px_rgba(55,40,30,0.08)]" />
         <MiniMap
           nodeStrokeWidth={3}
-          nodeColor="#6366f1"
+          nodeColor="#D97C67"
           maskColor="rgba(0,0,0,0.08)"
-          className="rounded-xl border border-gray-100 bg-white/80 shadow-sm"
+          className="rounded-2xl border border-[#E5DDD3] bg-[#FBF8F4]/90 shadow-[0_12px_28px_rgba(55,40,30,0.08)]"
         />
       </ReactFlow>
 
       {contextMenu && !readOnlyStructure ? (
         <div
-          className="absolute z-50 min-w-[140px] rounded-xl bg-white py-1 shadow-lg ring-1 ring-gray-200"
+          className="absolute z-50 min-w-[140px] rounded-2xl bg-white py-1 shadow-lg ring-1 ring-[#E5DDD3]"
           style={{ left: contextMenu.x, top: contextMenu.y }}
         >
           <button
             type="button"
             onClick={handleDuplicate}
-            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50"
+            className={`flex w-full items-center gap-2 px-3 py-2 text-xs ${WORKSPACE_TEXT.body} hover:bg-[#F8F4EF]`}
           >
             <Copy className="h-3.5 w-3.5" />
             Duplicate
@@ -497,12 +498,12 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function
           <button
             type="button"
             onClick={handleResetStatus}
-            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50"
+            className={`flex w-full items-center gap-2 px-3 py-2 text-xs ${WORKSPACE_TEXT.body} hover:bg-[#F8F4EF]`}
           >
             <RotateCcw className="h-3.5 w-3.5" />
             Reset status
           </button>
-          <div className="my-1 h-px bg-gray-100" />
+          <div className="my-1 h-px bg-[#EEE6DC]" />
           <button
             type="button"
             onClick={handleDeleteNode}
@@ -516,10 +517,10 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function
 
       {nodes.length === 0 ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3 rounded-2xl bg-white/80 px-8 py-6 shadow-sm backdrop-blur">
-            <MousePointerClick className="h-8 w-8 text-indigo-400" />
-            <p className="text-sm font-medium text-gray-600">The canvas is empty.</p>
-            <p className="text-xs text-gray-400">Drag a pipeline step from the palette to begin.</p>
+          <div className={`flex flex-col items-center gap-3 rounded-[28px] px-8 py-6 ${WORKSPACE_SURFACE.panelStrong}`}>
+            <MousePointerClick className={`h-8 w-8 ${WORKSPACE_TEXT.accent}`} />
+            <p className={`text-sm font-medium ${WORKSPACE_TEXT.body}`}>작업 캔버스가 비어 있습니다.</p>
+            <p className={`text-xs ${WORKSPACE_TEXT.muted}`}>왼쪽 패널에서 단계를 추가해 시작하세요.</p>
           </div>
         </div>
       ) : null}

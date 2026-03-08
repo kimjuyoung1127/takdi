@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-08 (KST, shortform mode + preview artifacts pass)
+Last Updated: 2026-03-08 (KST, project management drawers + terminology pass)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -46,6 +46,10 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | SHORTFORM-001 | Guided shortform video mode | Done | codex | `shortform-video` mode, shared home/launcher definitions, fixed simple-mode pipeline |
 | OUT-003 | Shortform preview artifacts | Done | codex | `thumbnail` + `marketing-script` APIs, preview actions, result artifact view |
 | UX-012 | Unified direct upload hub | Done | codex | Home and global launcher now open the same staged upload flow before project creation |
+| CORE-004 | Project delete API | Done | codex | `DELETE /api/projects/:id`, workspace validation, relational cleanup, best-effort upload folder removal |
+| UX-013 | Drawer-based project/template management | Done | codex | Home recent projects and saved templates now share the same collapsible drawer pattern |
+| UX-014 | Bulk delete on `/projects` | Done | codex | Projects and templates each support independent selection mode, confirmation, and sequential delete progress |
+| COPY-001 | User-facing terminology cleanup | Done | codex | Korean UI labels now prefer `상세페이지` over `compose` while internal mode keys stay unchanged |
 | PIPE-001 | Dynamic pipeline executor | Done | claude | Kahn 토폴로지 정렬 + 콜백 기반 실행 엔진 |
 | TEST-001 | Pipeline executor tests | Done | claude | 35 vitest tests, 7 groups, all mocked (0원) |
 | RATIO-001 | Global ratio setting | Done | claude | 플로팅 툴바 비율 토글, PipelineContext, 노드별 비율 UI 제거 |

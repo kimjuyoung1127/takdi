@@ -9,6 +9,24 @@ export interface HomeFeedData {
   templates: SavedTemplateListItem[];
 }
 
+export interface WorkspaceActivityItem {
+  id: string;
+  label: string;
+  detail: string;
+  createdAt: string | Date;
+  costEstimate: number | null;
+  projectId: string | null;
+  projectMode: string | null;
+}
+
+export interface HeaderSurfaceData {
+  workspaceId: string;
+  workspaceName: string;
+  projects: RecentProjectListItem[];
+  templates: SavedTemplateListItem[];
+  recentActivity: WorkspaceActivityItem[];
+}
+
 export interface SettingsSummaryData {
   workspaceId: string;
   workspaceName: string;
@@ -18,13 +36,7 @@ export interface SettingsSummaryData {
   monthlyEventCount: number;
   exportCount: number;
   totalEstimatedCost: number;
-  recentActivity: Array<{
-    id: string;
-    label: string;
-    detail: string;
-    createdAt: Date;
-    costEstimate: number | null;
-  }>;
+  recentActivity: WorkspaceActivityItem[];
   uploadsPath: string;
   databaseUrl: string;
   nextVersion: string;
@@ -122,6 +134,97 @@ export async function getProjectsPageData(): Promise<HomeFeedData> {
   return { projects, templates };
 }
 
+export async function getHeaderSurfaceData(): Promise<HeaderSurfaceData> {
+  const workspaceId = getWorkspaceId();
+
+  const [workspace, projects, templates, usageEvents] = await Promise.all([
+    prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { id: true, name: true },
+    }),
+    prisma.project.findMany({
+      where: { workspaceId },
+      orderBy: { updatedAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        mode: true,
+        updatedAt: true,
+      },
+    }),
+    prisma.composeTemplate.findMany({
+      where: { workspaceId },
+      orderBy: { updatedAt: "desc" },
+      take: 8,
+      select: {
+        id: true,
+        name: true,
+        previewTitle: true,
+        blockCount: true,
+        sourceProjectId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    }),
+    prisma.usageLedger.findMany({
+      where: { workspaceId },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      select: {
+        id: true,
+        eventType: true,
+        detail: true,
+        costEstimate: true,
+        createdAt: true,
+      },
+    }),
+  ]);
+
+  const projectIds = [
+    ...new Set(
+      usageEvents.map((event) => parseProjectId(event.detail)).filter((value): value is string => Boolean(value)),
+    ),
+  ];
+  const linkedProjects = projectIds.length > 0
+    ? await prisma.project.findMany({
+        where: { id: { in: projectIds } },
+        select: { id: true, name: true, mode: true },
+      })
+    : [];
+  const projectById = new Map(linkedProjects.map((project) => [project.id, project]));
+
+  return {
+    workspaceId,
+    workspaceName: workspace?.name ?? "Default workspace",
+    projects: projects.map((project) => ({
+      ...project,
+      updatedAt: project.updatedAt.toISOString(),
+    })),
+    templates: templates.map((template) => ({
+      ...template,
+      createdAt: template.createdAt.toISOString(),
+      updatedAt: template.updatedAt.toISOString(),
+    })),
+    recentActivity: usageEvents.map((event) => {
+      const projectId = parseProjectId(event.detail);
+      const linkedProject = projectId ? projectById.get(projectId) : null;
+      const projectName = linkedProject?.name ?? null;
+      const detail = projectName ? `${projectName} 프로젝트` : "프로젝트 정보 없음";
+      return {
+        id: event.id,
+        label: EVENT_LABELS[event.eventType] ?? event.eventType,
+        detail,
+        createdAt: event.createdAt.toISOString(),
+        costEstimate: event.costEstimate,
+        projectId,
+        projectMode: linkedProject?.mode ?? null,
+      };
+    }),
+  };
+}
+
 export async function getSettingsSummary(): Promise<SettingsSummaryData> {
   const workspaceId = getWorkspaceId();
   const workspace = await prisma.workspace.findUnique({
@@ -166,10 +269,10 @@ export async function getSettingsSummary(): Promise<SettingsSummaryData> {
   const linkedProjects = projectIds.length > 0
     ? await prisma.project.findMany({
         where: { id: { in: projectIds } },
-        select: { id: true, name: true },
+        select: { id: true, name: true, mode: true },
       })
     : [];
-  const projectNameById = new Map(linkedProjects.map((project) => [project.id, project.name]));
+  const projectById = new Map(linkedProjects.map((project) => [project.id, project]));
 
   return {
     workspaceId,
@@ -182,7 +285,8 @@ export async function getSettingsSummary(): Promise<SettingsSummaryData> {
     totalEstimatedCost: costResult._sum.costEstimate ?? 0,
     recentActivity: usageEvents.map((event) => {
       const projectId = parseProjectId(event.detail);
-      const projectName = projectId ? projectNameById.get(projectId) : null;
+      const linkedProject = projectId ? projectById.get(projectId) : null;
+      const projectName = linkedProject?.name ?? null;
       const detail = projectName ? `${projectName} 프로젝트` : "프로젝트 정보 없음";
       return {
         id: event.id,
@@ -190,6 +294,8 @@ export async function getSettingsSummary(): Promise<SettingsSummaryData> {
         detail,
         createdAt: event.createdAt,
         costEstimate: event.costEstimate,
+        projectId,
+        projectMode: linkedProject?.mode ?? null,
       };
     }),
     uploadsPath: `${process.cwd()}\\uploads`,

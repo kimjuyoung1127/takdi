@@ -5,6 +5,7 @@ import { Loader2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { pollSceneCompose, startSceneCompose } from "@/lib/api-client";
 import { SCENE_CATEGORIES, SCENE_TEMPLATES, type SceneTemplate } from "@/lib/scene-templates";
+import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 interface Props {
   projectId: string;
@@ -76,7 +77,7 @@ export function SceneComposeAction({ projectId, imageUrl, onImageChange }: Props
           const assets = (result as { assets?: Array<{ filePath: string }> }).assets;
           if (assets?.[0]?.filePath) {
             onImageChange(assets[0].filePath);
-            toast.success("Scene compose complete.");
+            toast.success("장면 합성이 완료되었습니다.");
             setOpen(false);
             setPrompt("");
           }
@@ -84,12 +85,12 @@ export function SceneComposeAction({ projectId, imageUrl, onImageChange }: Props
         }
 
         if (result.job.status === "failed") {
-          throw new Error(result.job.error || "Scene compose failed");
+          throw new Error(result.job.error || "장면 합성에 실패했습니다.");
         }
       }
     } catch (error) {
       if (!abortRef.current) {
-        toast.error(error instanceof Error ? error.message : "Scene compose failed");
+        toast.error(error instanceof Error ? error.message : "장면 합성에 실패했습니다.");
       }
     } finally {
       if (!abortRef.current) {
@@ -109,21 +110,21 @@ export function SceneComposeAction({ projectId, imageUrl, onImageChange }: Props
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-1.5 rounded border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-medium text-purple-600 hover:bg-purple-100"
+        className={`flex w-full items-center justify-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-medium ${WORKSPACE_CONTROL.accentTint} hover:bg-[#F6DFD8]`}
       >
         <Wand2 className="h-3.5 w-3.5" />
-        AI scene compose
+        배경 합성
       </button>
     );
   }
 
   return (
-    <div className="space-y-2 rounded border border-purple-200 bg-purple-50/50 p-2">
+    <div className={`space-y-2 rounded-2xl p-3 ${WORKSPACE_SURFACE.softInset}`}>
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-purple-600">AI scene compose</span>
+        <span className={`text-xs font-medium ${WORKSPACE_TEXT.accent}`}>배경 합성</span>
         {!running ? (
-          <button type="button" onClick={() => setOpen(false)} className="text-[10px] text-gray-400 hover:text-gray-600">
-            Close
+          <button type="button" onClick={() => setOpen(false)} className={`text-[10px] ${WORKSPACE_TEXT.muted} hover:text-[#4D433D]`}>
+            닫기
           </button>
         ) : null}
       </div>
@@ -134,10 +135,10 @@ export function SceneComposeAction({ projectId, imageUrl, onImageChange }: Props
             key={category.id}
             type="button"
             onClick={() => setSelectedCategory(category.id)}
-            className={`rounded px-2 py-0.5 text-[10px] font-medium transition-colors ${
+            className={`rounded-full px-2.5 py-1 text-[10px] font-medium transition-colors ${
               selectedCategory === category.id
-                ? "bg-purple-500 text-white"
-                : "bg-white text-gray-500 hover:text-purple-600"
+                ? WORKSPACE_CONTROL.accentButton
+                : `${WORKSPACE_CONTROL.subtleButton} shadow-none`
             }`}
           >
             {category.label}
@@ -152,10 +153,10 @@ export function SceneComposeAction({ projectId, imageUrl, onImageChange }: Props
             type="button"
             onClick={() => handleSelectTemplate(template)}
             disabled={running}
-            className={`rounded border px-2 py-1 text-left text-[11px] transition-colors ${
+            className={`rounded-2xl border px-2 py-1.5 text-left text-[11px] transition-colors ${
               prompt === template.prompt
-                ? "border-purple-400 bg-purple-100 text-purple-700"
-                : "border-gray-200 bg-white text-gray-600 hover:border-purple-300"
+                ? WORKSPACE_CONTROL.accentTint
+                : `${WORKSPACE_CONTROL.subtleButton} shadow-none`
             }`}
           >
             {template.label}
@@ -165,7 +166,7 @@ export function SceneComposeAction({ projectId, imageUrl, onImageChange }: Props
 
       <input
         type="text"
-        placeholder="Describe the target background"
+        placeholder="원하는 배경 분위기나 공간을 입력하세요"
         value={prompt}
         onChange={(event) => setPrompt(event.target.value)}
         onKeyDown={(event) => {
@@ -174,24 +175,24 @@ export function SceneComposeAction({ projectId, imageUrl, onImageChange }: Props
           }
         }}
         disabled={running}
-        className="w-full rounded border border-purple-200 bg-white px-2 py-1.5 text-xs placeholder:text-gray-400"
+        className={`w-full rounded-2xl px-3 py-2 text-xs ${WORKSPACE_CONTROL.input}`}
       />
 
       <button
         type="button"
         onClick={handleCompose}
         disabled={running || !prompt.trim()}
-        className="flex w-full items-center justify-center gap-1.5 rounded bg-purple-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-600 disabled:opacity-50"
+        className={`flex w-full items-center justify-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-medium ${WORKSPACE_CONTROL.accentButton} disabled:opacity-50`}
       >
         {running ? (
           <>
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Running...
+            합성 중...
           </>
         ) : (
           <>
             <Wand2 className="h-3.5 w-3.5" />
-            Start compose
+            배경 합성 시작
           </>
         )}
       </button>

@@ -6,6 +6,7 @@ import { Upload, ImageIcon, X, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import { uploadAsset } from "@/lib/api-client";
 import { AssetGrid } from "./shared/asset-grid";
+import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 type Tab = "upload" | "assets";
 
@@ -58,7 +59,7 @@ export function ImagePicker({ projectId, currentUrl, onImageChange }: ImagePicke
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 rounded bg-gray-50 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100"
+        className={`flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs ${WORKSPACE_CONTROL.subtleButton} shadow-none`}
       >
         <ImageIcon className="h-3.5 w-3.5" />
         {currentUrl ? "이미지 교체" : "이미지 추가"}
@@ -67,20 +68,20 @@ export function ImagePicker({ projectId, currentUrl, onImageChange }: ImagePicke
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+    <div className={`rounded-[24px] p-3 ${WORKSPACE_SURFACE.panelStrong}`}>
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-medium text-gray-600">이미지 선택</span>
-        <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">
+        <span className={`text-xs font-medium ${WORKSPACE_TEXT.body}`}>이미지 선택</span>
+        <button onClick={() => setOpen(false)} className={`${WORKSPACE_TEXT.muted} hover:text-[#4D433D]`}>
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
 
       {/* Tab switcher */}
-      <div className="mb-2 flex gap-1 rounded bg-gray-100 p-0.5">
+      <div className="mb-2 flex gap-1 rounded-2xl border border-[#E5DDD3] bg-[#F8F4EF] p-1">
         <button
           onClick={() => setTab("upload")}
-          className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-            tab === "upload" ? "bg-white text-gray-700 shadow-sm" : "text-gray-500 hover:text-gray-700"
+            className={`flex-1 rounded-2xl px-2 py-1.5 text-xs font-medium transition-colors ${
+            tab === "upload" ? WORKSPACE_CONTROL.accentTint : WORKSPACE_TEXT.body
           }`}
         >
           <Upload className="mr-1 inline h-3 w-3" />
@@ -88,8 +89,8 @@ export function ImagePicker({ projectId, currentUrl, onImageChange }: ImagePicke
         </button>
         <button
           onClick={() => setTab("assets")}
-          className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-            tab === "assets" ? "bg-white text-gray-700 shadow-sm" : "text-gray-500 hover:text-gray-700"
+            className={`flex-1 rounded-2xl px-2 py-1.5 text-xs font-medium transition-colors ${
+            tab === "assets" ? WORKSPACE_CONTROL.accentTint : WORKSPACE_TEXT.body
           }`}
         >
           <FolderOpen className="mr-1 inline h-3 w-3" />
@@ -113,7 +114,7 @@ export function ImagePicker({ projectId, currentUrl, onImageChange }: ImagePicke
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="mb-2 flex w-full items-center justify-center gap-1.5 rounded border border-dashed border-gray-300 px-3 py-2 text-xs text-gray-500 hover:border-indigo-300 hover:text-indigo-500"
+            className="mb-2 flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-[#D5CCC3] px-3 py-2 text-xs text-[#6F655D] hover:border-[#D97C67] hover:text-[#D97C67]"
           >
             <Upload className="h-3.5 w-3.5" />
             {uploading ? "업로드 중..." : "파일 업로드"}
@@ -127,11 +128,11 @@ export function ImagePicker({ projectId, currentUrl, onImageChange }: ImagePicke
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") handleUrlSubmit(); }}
-              className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs"
+              className={`flex-1 rounded-2xl px-3 py-1.5 text-xs ${WORKSPACE_CONTROL.input}`}
             />
             <button
               onClick={handleUrlSubmit}
-              className="rounded bg-indigo-500 px-2 py-1 text-xs text-white hover:bg-indigo-600"
+              className={`rounded-2xl px-3 py-1.5 text-xs font-medium ${WORKSPACE_CONTROL.accentButton}`}
             >
               적용
             </button>
