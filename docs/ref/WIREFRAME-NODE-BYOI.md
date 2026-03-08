@@ -1,7 +1,7 @@
-# Takdi Wireframe Spec (Node Editor + BYOI)
+# Takdi Wireframe Spec (Editor Surface + BYOI)
 
-Version: 1.0.0
-Last Updated: 2026-03-05 (KST)
+Version: 1.1.0
+Last Updated: 2026-03-08 (KST)
 Owner: Product/Platform
 
 ## IA Summary
@@ -21,22 +21,62 @@ Owner: Product/Platform
   - gif-source
   - freeform
 
-### 2) Node Editor (Main)
-- Left panel: node palette
-- Center: node canvas and edges
-- Right panel tabs:
-  - Node Settings
-  - Assets
-  - History
-  - Cost
-- Bottom panel: run logs and job states
-- Top global actions:
+### 2) Editor (`/projects/:id/editor`)
+- Shared top global actions:
   - Run All
-  - Run Selected
   - Stop
   - Save
   - Preview
   - Export
+  - Open Compose
+- Shared top controls:
+  - project name edit button on the left
+  - `간단 모드 / 전문가 모드` toggle on the right for `model-shot`, `cutout`, `brand-image`
+
+#### 2-A) Simple Mode (default for fixed pipeline modes)
+- Applies to:
+  - `model-shot`
+  - `cutout`
+  - `brand-image`
+- Left panel:
+  - 없음
+- Center:
+  - step cards only
+  - no node drag, edges, minimap, context menu
+- Right panel:
+  - single current-step panel
+  - only user-facing fields and related files
+- Hidden in simple mode:
+  - node id
+  - raw node type
+  - history tab
+  - cost tab
+  - bottom live log panel
+- `model-shot` step order:
+  - 원본 이미지 업로드
+  - 촬영 지시 입력
+  - 모델 합성
+  - 내보내기
+- `model-shot` upload panel:
+  - upload CTA
+  - current thumbnail + filename
+  - static help text for recommended count, composition guide, supported formats
+  - no BGM upload
+  - no free-form “간단 설명” input
+
+#### 2-B) Expert Mode
+- Left panel:
+  - node palette
+- Center:
+  - node canvas and edges
+- Right panel tabs:
+  - 작업 내용
+  - 파일
+- Advanced metadata:
+  - node id shown only inside `고급 정보`
+  - raw node type shown only as secondary/internal text
+- Bottom panel:
+  - 없음
 
 ### 3) Result
 - Artifact groups:
@@ -54,11 +94,19 @@ Owner: Product/Platform
   - cost estimate
   - render duration
 
+### 4) Settings
+- Runtime/storage summary remains read-only
+- Admin-style operations summary moved here from the editor:
+  - monthly event count
+  - export count
+  - estimated total cost
+  - recent activity list
+
 ## Integrated Flow
 ```mermaid
 flowchart TD
   A["Project Create"] --> B["Mode Select"]
-  A --> M0["BGM Select or Upload"]
+  A --> M0["BGM Select or Upload (video modes only)"]
 
   B --> B1["Model Generate"]
   B --> B2["Cutout Generate"]
@@ -101,6 +149,12 @@ flowchart TD
   X --> U["UsageLedger Record"] --> Z["Done"]
 ```
 
+## Surface Rules
+- `model-shot`, `cutout`, `brand-image` open in simple mode first.
+- `freeform` and `gif-source` open in expert mode only.
+- Editor view mode selection persists in localStorage per mode.
+- In expert mode, the top-right mode toggle must stay clear of the centered action toolbar.
+
 ## Node Gate Rules
 - `Intermediate Confirm` must be completed before `Cut Edit`.
 - `BGM Analyze` should be valid before `Render` (warning or block policy).
@@ -133,5 +187,5 @@ flowchart TD
   - BGM analyze and Remotion preview/render
 2. Expansion
   - BYOI lock policy hardening
-  - cost panel and provider routing controls
+  - provider routing controls
   - advanced node templates

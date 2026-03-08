@@ -31,6 +31,7 @@ interface FloatingToolbarProps {
   runningState?: RunningState;
   pipelineStep?: PipelineStep;
   lastSaved?: string | null;
+  actionsDisabled?: boolean;
 }
 
 const STEP_LABELS: Record<PipelineStep, string> = {
@@ -63,7 +64,7 @@ function Tooltip({ text, children }: { text: string; children: React.ReactNode }
   );
 }
 
-export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAll, onStop, onSave, onPreview, onExport, runningState, pipelineStep = "idle", lastSaved }: FloatingToolbarProps) {
+export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAll, onStop, onSave, onPreview, onExport, runningState, pipelineStep = "idle", lastSaved, actionsDisabled = false }: FloatingToolbarProps) {
   const { isRunning, isSaving, isExporting } = runningState ?? {};
   const stepLabel = STEP_LABELS[pipelineStep];
   const isImageOnly = IMAGE_ONLY_MODES.has(mode ?? "");
@@ -87,7 +88,7 @@ export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAl
             size="sm"
             className="flex items-center gap-1.5 rounded-full px-3 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"
             onClick={onRunAll}
-            disabled={isRunning}
+            disabled={isRunning || actionsDisabled}
           >
             {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
             전체 실행
@@ -115,7 +116,7 @@ export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAl
             size="sm"
             className="flex items-center gap-1.5 rounded-full px-3 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"
             onClick={onSave}
-            disabled={isSaving}
+            disabled={isSaving || actionsDisabled}
           >
             {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             저장
@@ -129,6 +130,7 @@ export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAl
               size="sm"
               className="flex items-center gap-1.5 rounded-full px-3 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               onClick={onPreview}
+              disabled={actionsDisabled}
             >
               <Eye className="h-4 w-4" />
               미리보기
@@ -142,7 +144,7 @@ export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAl
             size="sm"
             className="flex items-center gap-1.5 rounded-full px-3 text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900"
             onClick={onExport}
-            disabled={isExporting}
+            disabled={isExporting || actionsDisabled}
           >
             {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
             내보내기
@@ -171,6 +173,7 @@ export function FloatingToolbar({ projectId, mode, ratio, onRatioChange, onRunAl
           <button
             key={r}
             onClick={() => onRatioChange?.(r)}
+            disabled={actionsDisabled}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               ratio === r
                 ? "bg-indigo-600 text-white"

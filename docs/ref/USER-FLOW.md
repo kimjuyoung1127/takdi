@@ -12,7 +12,7 @@ Related spec:
 3. Confirm selected image and handoff to cut edit.
 4. Analyze BGM and preview composition.
 5. Render with Remotion and export artifacts.
-6. Record usage and estimated cost.
+6. Record usage and estimated cost for the settings/operations summary.
 
 ## Flow Diagram
 ```mermaid
@@ -83,3 +83,8 @@ flowchart TD
 ## Single-User Operation Rule
 - UI exposes one-user flow only.
 - Internal records remain workspace-scoped.
+
+## Editor Surface Note
+- `model-shot`, `cutout`, and `brand-image` default to a simple step-based editor for non-technical operators.
+- `freeform` remains graph-first.
+- Cost and run history are reviewed from `/settings`, not the main editor surface.

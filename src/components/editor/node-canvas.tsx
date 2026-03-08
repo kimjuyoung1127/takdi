@@ -24,6 +24,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { Copy, MousePointerClick, RotateCcw, Trash2 } from "lucide-react";
 import { TakdiNode } from "./takdi-node";
+import { cn } from "@/lib/utils";
 import {
   DEFAULT_MODE_CONFIG,
   MODE_NODE_CONFIG,
@@ -55,6 +56,7 @@ export interface NodeData {
 export interface NodeCanvasHandle {
   updateNodeData: (nodeId: string, patch: Partial<NodeData>) => void;
   updateNodesByType: (nodeType: string, patch: Partial<NodeData>) => void;
+  replaceGraph: (snapshot: CanvasSnapshot) => void;
   deleteSelectedNodes: () => void;
   getNodeCount: () => number;
   setEdgeGlow: (edgeId: string, state: "active" | "done" | "") => void;
@@ -63,6 +65,13 @@ export interface NodeCanvasHandle {
 
 interface NodeCanvasProps {
   mode: string;
+  initialSnapshot?: CanvasSnapshot;
+  className?: string;
+  readOnlyStructure?: boolean;
+  canInsertNodes?: boolean;
+  canDuplicateNodes?: boolean;
+  canEditEdges?: boolean;
+  onRestrictionViolation?: (message: string) => void;
   onStateChange?: (nodes: Node[], edges: Edge[]) => void;
   onNodeSelect?: (nodeId: string | null, nodeData?: NodeData) => void;
 }
@@ -132,11 +141,22 @@ function hashSnapshot(nodes: Node[], edges: Edge[]) {
 }
 
 export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function NodeCanvas(
-  { mode, onStateChange, onNodeSelect },
+  {
+    mode,
+    initialSnapshot,
+    className,
+    readOnlyStructure = false,
+    canInsertNodes = true,
+    canDuplicateNodes = true,
+    canEditEdges = true,
+    onRestrictionViolation,
+    onStateChange,
+    onNodeSelect,
+  },
   ref,
 ) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const initial = useRef(buildInitialNodes(mode));
+  const initial = useRef(initialSnapshot ?? buildInitialNodes(mode));
   const [nodes, setNodes, onNodesChange] = useNodesState(initial.current.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initial.current.edges);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
@@ -170,6 +190,12 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function
               : node,
           ),
         );
+      },
+      replaceGraph(snapshot: CanvasSnapshot) {
+        suppressHistoryRef.current = true;
+        setNodes(cloneNodes(snapshot.nodes));
+        setEdges(cloneEdges(snapshot.edges));
+        onNodeSelect?.(null);
       },
       deleteSelectedNodes() {
         setNodes((currentNodes) => {
@@ -302,8 +328,14 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function
   }, [edges, nodes, onStateChange]);
 
   const onConnect = useCallback(
-    (params: Connection) => setEdges((currentEdges) => addEdge(params, currentEdges)),
-    [setEdges],
+    (params: Connection) => {
+      if (!canEditEdges) {
+        onRestrictionViolation?.("가이드형 모드에서는 단계 연결을 수정할 수 없습니다.");
+        return;
+      }
+      setEdges((currentEdges) => addEdge(params, currentEdges));
+    },
+    [canEditEdges, onRestrictionViolation, setEdges],
   );
 
   const onDragOver = useCallback((event: React.DragEvent) => {
@@ -314,6 +346,10 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
+      if (!canInsertNodes) {
+        onRestrictionViolation?.("가이드형 모드에서는 단계를 추가할 수 없습니다.");
+        return;
+      }
       const type = event.dataTransfer.getData("application/reactflow-type") as FlowNodeType;
       const label = event.dataTransfer.getData("application/reactflow-label");
       if (!type) {
@@ -335,7 +371,7 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function
 
       setNodes((currentNodes) => [...currentNodes, newNode]);
     },
-    [setNodes],
+    [canInsertNodes, onRestrictionViolation, setNodes],
   );
 
   const onNodeClick = useCallback(
@@ -351,6 +387,9 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function
   }, [onNodeSelect]);
 
   const onNodeContextMenu = useCallback((event: ReactMouseEvent, node: Node) => {
+    if (readOnlyStructure) {
+      return;
+    }
     event.preventDefault();
     const bounds = reactFlowWrapper.current?.getBoundingClientRect();
     setContextMenu({
@@ -358,10 +397,15 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function
       x: event.clientX - (bounds?.left ?? 0),
       y: event.clientY - (bounds?.top ?? 0),
     });
-  }, []);
+  }, [readOnlyStructure]);
 
   const handleDuplicate = useCallback(() => {
     if (!contextMenu) {
+      return;
+    }
+    if (!canDuplicateNodes) {
+      onRestrictionViolation?.("가이드형 모드에서는 단계를 복제할 수 없습니다.");
+      setContextMenu(null);
       return;
     }
 
@@ -379,7 +423,7 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function
 
     setNodes((currentNodes) => [...currentNodes, duplicatedNode]);
     setContextMenu(null);
-  }, [contextMenu, setNodes]);
+  }, [canDuplicateNodes, contextMenu, onRestrictionViolation, setNodes]);
 
   const handleDeleteNode = useCallback(() => {
     if (!contextMenu) {
@@ -407,7 +451,7 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function
   }, [contextMenu, setNodes]);
 
   return (
-    <div ref={reactFlowWrapper} className="relative h-full w-full">
+    <div ref={reactFlowWrapper} className={cn("relative h-full w-full", className)}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -420,7 +464,10 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function
         onPaneClick={onPaneClick}
         onNodeContextMenu={onNodeContextMenu}
         nodeTypes={nodeTypes}
-        deleteKeyCode={["Delete", "Backspace"]}
+        deleteKeyCode={readOnlyStructure ? null : ["Delete", "Backspace"]}
+        nodesDraggable={!readOnlyStructure}
+        nodesConnectable={canEditEdges}
+        elementsSelectable
         fitView
         className="bg-gray-50"
       >
@@ -434,7 +481,7 @@ export const NodeCanvas = forwardRef<NodeCanvasHandle, NodeCanvasProps>(function
         />
       </ReactFlow>
 
-      {contextMenu ? (
+      {contextMenu && !readOnlyStructure ? (
         <div
           className="absolute z-50 min-w-[140px] rounded-xl bg-white py-1 shadow-lg ring-1 ring-gray-200"
           style={{ left: contextMenu.x, top: contextMenu.y }}

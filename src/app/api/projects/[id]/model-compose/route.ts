@@ -240,14 +240,20 @@ async function processModelCompose(
           "model-compose",
         );
 
-        await prisma.generationJob.update({
-          where: { id: jobId },
-          data: {
-            status: "done",
-            output: JSON.stringify({ assets: [saved] }),
-            doneAt: new Date(),
-          },
-        });
+        await prisma.$transaction([
+          prisma.project.update({
+            where: { id: projectId },
+            data: { status: "generated" },
+          }),
+          prisma.generationJob.update({
+            where: { id: jobId },
+            data: {
+              status: "done",
+              output: JSON.stringify({ assets: [saved] }),
+              doneAt: new Date(),
+            },
+          }),
+        ]);
         return;
       }
 

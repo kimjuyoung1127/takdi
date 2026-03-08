@@ -1,15 +1,14 @@
-/** 에디터 우측 속성 패널 — 선택된 노드의 설정/에셋/히스토리/비용 탭 */
 "use client";
 
-import { useState, useCallback } from "react";
-import { Settings, ImageIcon, Clock, DollarSign, Music, LayoutGrid } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useCallback, useState } from "react";
+import { ImageIcon, LayoutGrid, Music, Sparkles } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppImage } from "@/components/ui/app-image";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { AssetUpload } from "./asset-upload";
-import { STATUS_LABELS } from "@/components/ui/status-badge";
-import { fetchUsage, type UsageSummary } from "@/lib/api-client";
-import { PRODUCT_CATEGORIES } from "@/lib/constants";
-import type { LogEntry } from "@/hooks/use-logger";
+import type { EditorViewMode } from "@/lib/editor-surface";
+import { getStepPresentation, getUserFacingNodeStatus } from "@/lib/editor-surface";
+import { PRODUCT_CATEGORIES, NODE_TYPE_LABELS } from "@/lib/constants";
 import type { NodeData } from "./node-canvas";
 
 interface UploadedAsset {
@@ -19,324 +18,307 @@ interface UploadedAsset {
 }
 
 interface PropertiesPanelProps {
+  mode: string;
+  viewMode: EditorViewMode;
   selectedNodeId?: string | null;
   selectedNodeData?: NodeData | null;
   onNodeDataChange?: (nodeId: string, patch: Partial<NodeData>) => void;
   projectId?: string;
   projectName?: string;
   nodeCount?: number;
-  logs?: LogEntry[];
+  projectBriefText: string;
+  onProjectBriefTextChange: (value: string) => void;
+  allowBgm?: boolean;
 }
 
-export function PropertiesPanel({ selectedNodeId, selectedNodeData, onNodeDataChange, projectId, projectName, nodeCount, logs = [] }: PropertiesPanelProps) {
-  const [assets, setAssets] = useState<UploadedAsset[]>([]);
-  const [usage, setUsage] = useState<UsageSummary | null>(null);
-  const [usageLoading, setUsageLoading] = useState(false);
-
-  const handleUploadComplete = useCallback((asset: UploadedAsset) => {
-    setAssets((prev) => [...prev, asset]);
-  }, []);
-
-  // Load usage when cost tab is likely viewed
-  const loadUsage = useCallback(async () => {
-    if (usageLoading) return;
-    setUsageLoading(true);
-    try {
-      const data = await fetchUsage();
-      setUsage(data);
-    } catch {
-      // silently fail — usage is non-critical
-    } finally {
-      setUsageLoading(false);
-    }
-  }, [usageLoading]);
-
-  if (!selectedNodeId) {
-    return (
-      <aside className="flex w-80 flex-col border-l border-gray-100 bg-white">
-        <div className="flex flex-col items-center justify-center gap-4 px-5 py-8">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-400">
-            <LayoutGrid className="h-6 w-6" />
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-semibold text-gray-900">{projectName ?? "프로젝트"}</p>
-            <p className="mt-1 text-xs text-gray-400">
-              작업 단계 {nodeCount ?? 0}개
-            </p>
-          </div>
-        </div>
-
-        <div className="mx-5 border-t border-gray-100 pt-4">
-          <p className="mb-3 text-xs font-medium text-gray-500">단축키</p>
-          <div className="space-y-2 text-xs text-gray-400">
-            <div className="flex justify-between">
-              <span>전체 실행</span>
-              <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Ctrl+Enter</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>저장</span>
-              <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Ctrl+S</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>중지</span>
-              <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Esc</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>단계 삭제</span>
-              <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Delete</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>실행 취소</span>
-              <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Ctrl+Z</kbd>
-            </div>
-            <div className="flex justify-between">
-              <span>다시 실행</span>
-              <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">Ctrl+Shift+Z</kbd>
-            </div>
-          </div>
-        </div>
-
-        <div className="mx-5 mt-4 border-t border-gray-100 pt-4">
-          <p className="text-xs text-gray-300">
-            작업 단계를 클릭하면 설정을 변경할 수 있습니다
-          </p>
-        </div>
-      </aside>
-    );
-  }
+function FilePreview({
+  label,
+  filePath,
+}: {
+  label: string;
+  filePath: string;
+}) {
+  const fileName = filePath.split("/").pop() ?? filePath.split("\\").pop() ?? filePath;
 
   return (
-    <aside className="flex w-80 flex-col border-l border-gray-100 bg-white">
-      <div className="border-b border-gray-100 px-5 py-4">
-        <h2 className="text-sm font-semibold text-gray-900">설정</h2>
-        <p className="text-xs text-gray-400">{selectedNodeData?.label ?? selectedNodeId}</p>
+    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
+      <p className="text-xs font-medium text-gray-500">{label}</p>
+      <div className="mt-3 flex items-center gap-3">
+        <AppImage
+          src={filePath}
+          alt={fileName}
+          width={72}
+          height={72}
+          className="h-20 w-20 rounded-2xl border border-white object-cover shadow-sm"
+        />
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-gray-900">{fileName}</p>
+          <p className="mt-1 truncate text-xs text-gray-400">{filePath}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmptyPanel({ projectName, nodeCount }: { projectName?: string; nodeCount?: number }) {
+  return (
+    <aside className="flex w-96 flex-col border-l border-gray-100 bg-white">
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-10">
+        <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-indigo-50 text-indigo-500">
+          <LayoutGrid className="h-7 w-7" />
+        </div>
+        <div className="text-center">
+          <p className="text-base font-semibold text-gray-900">{projectName ?? "프로젝트"}</p>
+          <p className="mt-2 text-sm text-gray-500">작업 단계 {nodeCount ?? 0}개</p>
+          <p className="mt-4 text-sm leading-6 text-gray-400">
+            단계 카드를 선택하면 필요한 입력과 현재 상태를 확인할 수 있습니다.
+          </p>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+export function PropertiesPanel({
+  mode,
+  viewMode,
+  selectedNodeId,
+  selectedNodeData,
+  onNodeDataChange,
+  projectId,
+  projectName,
+  nodeCount,
+  projectBriefText,
+  onProjectBriefTextChange,
+  allowBgm = true,
+}: PropertiesPanelProps) {
+  const [assets, setAssets] = useState<UploadedAsset[]>([]);
+
+  const handleUploadComplete = useCallback((asset: UploadedAsset) => {
+    setAssets((prev) => [asset, ...prev]);
+
+    if (asset.type === "image" && selectedNodeId && selectedNodeData?.nodeType === "upload-image") {
+      onNodeDataChange?.(selectedNodeId, {
+        uploadedAssetId: asset.id,
+        uploadedFilePath: asset.filePath,
+        status: "generated",
+        previewImages: [asset.filePath],
+      });
+    }
+  }, [onNodeDataChange, selectedNodeData?.nodeType, selectedNodeId]);
+
+  if (!selectedNodeId || !selectedNodeData) {
+    return <EmptyPanel projectName={projectName} nodeCount={nodeCount} />;
+  }
+
+  const stepPresentation = getStepPresentation(mode, selectedNodeData.nodeType);
+  const statusInfo = getUserFacingNodeStatus(selectedNodeData);
+  const title = stepPresentation?.title ?? selectedNodeData.label ?? NODE_TYPE_LABELS[selectedNodeData.nodeType as keyof typeof NODE_TYPE_LABELS] ?? "작업 단계";
+  const description = stepPresentation?.description ?? "현재 단계에 필요한 정보를 확인합니다.";
+  const previewImages = Array.isArray(selectedNodeData.previewImages)
+    ? selectedNodeData.previewImages.filter((value): value is string => typeof value === "string")
+    : [];
+  const uploadedFilePath = typeof selectedNodeData.uploadedFilePath === "string" ? selectedNodeData.uploadedFilePath : null;
+
+  const settingsBody = (
+    <div className="space-y-5">
+      <div className="rounded-3xl bg-gray-50 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">{title}</p>
+            <p className="mt-2 text-sm leading-6 text-gray-500">{description}</p>
+          </div>
+          <StatusBadge
+            status={selectedNodeData.status ?? "draft"}
+            label={statusInfo.label}
+            tone={statusInfo.tone}
+          />
+        </div>
       </div>
 
-      <Tabs defaultValue="settings" className="flex-1">
-        <TabsList className="mx-4 mt-3">
-          <TabsTrigger value="settings" className="gap-1 text-xs">
-            <Settings className="h-3.5 w-3.5" />
-            설정
-          </TabsTrigger>
-          <TabsTrigger value="assets" className="gap-1 text-xs">
-            <ImageIcon className="h-3.5 w-3.5" />
-            파일
-          </TabsTrigger>
-          <TabsTrigger value="history" className="gap-1 text-xs">
-            <Clock className="h-3.5 w-3.5" />
-            기록
-          </TabsTrigger>
-          <TabsTrigger
-            value="cost"
-            className="gap-1 text-xs"
-            onClick={loadUsage}
-          >
-            <DollarSign className="h-3.5 w-3.5" />
-            비용
-          </TabsTrigger>
-        </TabsList>
+      {selectedNodeData.nodeType === "prompt" ? (
+        <div className="space-y-4">
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
+              촬영 지시
+            </label>
+            <textarea
+              value={projectBriefText}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                onProjectBriefTextChange(nextValue);
+                onNodeDataChange?.(selectedNodeId, { briefText: nextValue });
+              }}
+              rows={8}
+              className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm leading-6 text-gray-900 placeholder:text-gray-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              placeholder="예: 밝은 스튜디오 조명, 20대 여성 모델, 미니멀 배경, 제품이 잘 보이도록 상반신 중심 구도"
+            />
+          </div>
 
-        {/* Settings Tab */}
-        <TabsContent value="settings" className="p-4">
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs font-medium text-gray-500">노드 ID</label>
-              <p className="mt-0.5 text-xs text-gray-300">{selectedNodeId}</p>
-            </div>
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
+              카테고리
+            </label>
+            <select
+              value={(selectedNodeData.category as string) ?? ""}
+              onChange={(event) => onNodeDataChange?.(selectedNodeId, { category: event.target.value || undefined })}
+              className="h-11 w-full rounded-2xl border border-gray-200 px-3 text-sm text-gray-900 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            >
+              <option value="">자동</option>
+              {PRODUCT_CATEGORIES.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+            <p className="mt-2 text-xs leading-5 text-gray-400">
+              제품 카테고리를 지정하면 문안과 이미지 방향이 조금 더 안정적으로 맞춰집니다.
+            </p>
+          </div>
+        </div>
+      ) : null}
 
-            <div>
-              <label className="text-xs font-medium text-gray-500">유형</label>
-              <p className="mt-0.5 text-sm text-gray-900">{selectedNodeData?.nodeType ?? "-"}</p>
-            </div>
+      {selectedNodeData.nodeType === "upload-image" && projectId ? (
+        <div className="space-y-4">
+          <AssetUpload
+            projectId={projectId}
+            allowBgm={false}
+            onUploadComplete={handleUploadComplete}
+          />
 
+          {uploadedFilePath ? <FilePreview label="현재 업로드" filePath={uploadedFilePath} /> : null}
+
+          <div className="rounded-2xl border border-dashed border-gray-200 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">업로드 가이드</p>
+            <ul className="mt-3 space-y-2 text-sm leading-6 text-gray-500">
+              {(stepPresentation?.helpItems ?? []).map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ) : null}
+
+      {previewImages.length > 0 ? (
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">관련 파일</p>
+          <div className="grid grid-cols-2 gap-3">
+            {previewImages.map((imagePath) => (
+              <AppImage
+                key={imagePath}
+                src={imagePath}
+                alt={title}
+                width={140}
+                height={140}
+                className="h-32 w-full rounded-2xl border border-gray-200 object-cover"
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {viewMode === "expert" ? (
+        <details className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+          <summary className="cursor-pointer text-sm font-medium text-gray-700">고급 정보</summary>
+          <div className="mt-4 space-y-3 text-sm">
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-500">이름</label>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">단계 이름</p>
               <input
-                value={selectedNodeData?.label ?? ""}
-                onChange={(e) =>
-                  selectedNodeId && onNodeDataChange?.(selectedNodeId, { label: e.target.value })
-                }
-                className="h-8 w-full rounded-md border border-gray-200 px-3 text-sm text-gray-900 focus:border-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                value={selectedNodeData.label ?? ""}
+                onChange={(event) => onNodeDataChange?.(selectedNodeId, { label: event.target.value })}
+                className="mt-2 h-10 w-full rounded-xl border border-gray-200 px-3 text-sm text-gray-900 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
               />
             </div>
-
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-500">간단 설명</label>
-              <textarea
-                value={(selectedNodeData?.briefText as string) ?? ""}
-                onChange={(e) =>
-                  selectedNodeId && onNodeDataChange?.(selectedNodeId, { briefText: e.target.value })
-                }
-                rows={3}
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-300"
-                placeholder="이 단계에서 할 작업을 간단히 설명하세요"
-              />
+            <div className="grid gap-3 md:grid-cols-2">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">표시 유형</p>
+                <p className="mt-2 text-sm text-gray-700">{title}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">내부 타입</p>
+                <p className="mt-2 font-mono text-sm text-gray-500">{selectedNodeData.nodeType}</p>
+              </div>
             </div>
-
-            {selectedNodeData?.nodeType === "prompt" && (
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500">상품 카테고리</label>
-                <select
-                  value={(selectedNodeData?.category as string) ?? ""}
-                  onChange={(e) =>
-                    selectedNodeId && onNodeDataChange?.(selectedNodeId, { category: e.target.value || undefined })
-                  }
-                  className="h-8 w-full rounded-md border border-gray-200 px-2 text-sm text-gray-900 focus:border-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-300"
-                >
-                  <option value="">자동 (카테고리 미지정)</option>
-                  {PRODUCT_CATEGORIES.map((cat) => (
-                    <option key={cat.value} value={cat.value}>{cat.label}</option>
-                  ))}
-                </select>
-                <p className="mt-1 text-[10px] text-gray-400">카테고리에 맞는 전문 카피가 생성됩니다</p>
-              </div>
-            )}
-
-            {selectedNodeData?.nodeType === "upload-image" && projectId && (
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500">상품 이미지</label>
-                {selectedNodeData?.uploadedAssetId ? (
-                  <div className="space-y-2">
-                    {typeof selectedNodeData?.uploadedFilePath === "string" && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <AppImage
-                        src={selectedNodeData.uploadedFilePath}
-                        alt="업로드된 이미지"
-                        width={96}
-                        height={96}
-                        className="h-24 w-24 rounded-lg border border-gray-200 object-cover"
-                      />
-                    )}
-                    <p className="text-[10px] text-gray-400">에셋 ID: {String(selectedNodeData.uploadedAssetId).slice(0, 8)}...</p>
-                  </div>
-                ) : (
-                  <AssetUpload
-                    projectId={projectId}
-                    onUploadComplete={(asset) => {
-                      if (selectedNodeId) {
-                        onNodeDataChange?.(selectedNodeId, {
-                          uploadedAssetId: asset.id,
-                          uploadedFilePath: asset.filePath,
-                          status: "generated",
-                          previewImages: [asset.filePath],
-                        });
-                      }
-                    }}
-                  />
-                )}
-              </div>
-            )}
-
             <div>
-              <label className="text-xs font-medium text-gray-500">상태</label>
-              <p className="mt-0.5 text-sm text-gray-900">
-                {STATUS_LABELS[selectedNodeData?.status ?? "draft"] ?? selectedNodeData?.status ?? "초안"}
-              </p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Node ID</p>
+              <p className="mt-2 font-mono text-sm text-gray-500">{selectedNodeId}</p>
             </div>
           </div>
-        </TabsContent>
+        </details>
+      ) : null}
+    </div>
+  );
 
-        {/* Assets Tab */}
-        <TabsContent value="assets" className="p-4">
-          {projectId ? (
-            <div className="space-y-4">
-              <AssetUpload
-                projectId={projectId}
-                onUploadComplete={handleUploadComplete}
-              />
+  return (
+    <aside className="flex w-96 flex-col border-l border-gray-100 bg-white">
+      <div className="border-b border-gray-100 px-6 py-5">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
+          {viewMode === "simple" ? <Sparkles className="h-3.5 w-3.5" /> : <LayoutGrid className="h-3.5 w-3.5" />}
+          {viewMode === "simple" ? "현재 단계" : "단계 설정"}
+        </div>
+        <h2 className="mt-3 text-lg font-semibold text-gray-950">{title}</h2>
+        <p className="mt-1 text-sm text-gray-500">{projectName ?? "프로젝트"}</p>
+      </div>
 
-              {assets.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-gray-500">
-                    업로드됨 ({assets.length})
-                  </p>
-                  {assets.map((a) => (
-                    <div
-                      key={a.id}
-                      className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600"
-                    >
-                      {a.type === "image" ? (
-                        <ImageIcon className="h-3.5 w-3.5 text-gray-400" />
-                      ) : (
-                        <Music className="h-3.5 w-3.5 text-gray-400" />
-                      )}
-                      <span className="truncate">{a.filePath.split("/").pop()}</span>
+      <div className="flex-1 overflow-y-auto px-6 py-5">
+        {viewMode === "simple" ? (
+          settingsBody
+        ) : (
+          <Tabs defaultValue="settings" className="flex-1">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="settings" className="gap-2 text-xs">
+                <LayoutGrid className="h-3.5 w-3.5" />
+                작업 내용
+              </TabsTrigger>
+              <TabsTrigger value="assets" className="gap-2 text-xs">
+                <ImageIcon className="h-3.5 w-3.5" />
+                파일
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="settings" className="mt-5">
+              {settingsBody}
+            </TabsContent>
+
+            <TabsContent value="assets" className="mt-5 space-y-4">
+              {projectId ? (
+                <>
+                  <AssetUpload
+                    projectId={projectId}
+                    allowBgm={allowBgm}
+                    onUploadComplete={handleUploadComplete}
+                  />
+
+                  {assets.length > 0 ? (
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">최근 업로드</p>
+                      {assets.map((asset) => (
+                        <div
+                          key={asset.id}
+                          className="flex items-center gap-3 rounded-2xl border border-gray-200 px-3 py-3 text-sm text-gray-600"
+                        >
+                          {asset.type === "image" ? (
+                            <ImageIcon className="h-4 w-4 text-gray-400" />
+                          ) : (
+                            <Music className="h-4 w-4 text-gray-400" />
+                          )}
+                          <span className="truncate">{asset.filePath.split("/").pop() ?? asset.filePath}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  ) : (
+                    <p className="text-sm leading-6 text-gray-400">
+                      업로드한 파일이 있으면 이곳에서 바로 확인할 수 있습니다.
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm leading-6 text-gray-400">프로젝트를 불러온 뒤 파일을 업로드할 수 있습니다.</p>
               )}
-            </div>
-          ) : (
-            <p className="text-xs text-gray-400">프로젝트를 먼저 로드해 주세요</p>
-          )}
-        </TabsContent>
-
-        {/* History Tab */}
-        <TabsContent value="history" className="p-4">
-          {logs.length === 0 ? (
-            <p className="text-xs text-gray-400">아직 실행 기록이 없습니다</p>
-          ) : (
-            <div className="max-h-96 space-y-1 overflow-y-auto font-mono text-xs">
-              {logs.map((entry) => (
-                <div key={entry.id} className="flex gap-2">
-                  <span className="shrink-0 text-gray-300">{entry.timestamp}</span>
-                  <span
-                    className={
-                      entry.level === "error"
-                        ? "text-rose-500"
-                        : entry.level === "warn"
-                          ? "text-amber-500"
-                          : "text-gray-500"
-                    }
-                  >
-                    {entry.message}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        {/* Cost Tab */}
-        <TabsContent value="cost" className="p-4">
-          {usageLoading ? (
-            <p className="text-xs text-gray-400">불러오는 중...</p>
-          ) : usage ? (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-lg bg-gray-50 p-3">
-                  <p className="text-[10px] font-medium text-gray-400">총 작업 수</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {usage.summary.totalEvents}
-                  </p>
-                </div>
-                <div className="rounded-lg bg-gray-50 p-3">
-                  <p className="text-[10px] font-medium text-gray-400">생성 횟수</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {usage.summary.generationCount}
-                  </p>
-                </div>
-                <div className="rounded-lg bg-gray-50 p-3">
-                  <p className="text-[10px] font-medium text-gray-400">내보내기 횟수</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {usage.summary.exportCount}
-                  </p>
-                </div>
-                <div className="rounded-lg bg-gray-50 p-3">
-                  <p className="text-[10px] font-medium text-gray-400">예상 비용</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    ${usage.summary.totalEstimatedCost.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <p className="text-xs text-gray-400">
-              비용 탭을 클릭하면 사용량을 확인할 수 있습니다
-            </p>
-          )}
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+          </Tabs>
+        )}
+      </div>
     </aside>
   );
 }

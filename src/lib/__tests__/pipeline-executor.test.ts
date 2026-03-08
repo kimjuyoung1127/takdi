@@ -37,6 +37,7 @@ import {
   executePipeline,
   type PipelineCallbacks,
 } from "../pipeline-executor";
+import { createSimulationExecutors, validateEditorGraph } from "../editor-graph";
 import {
   startGenerate,
   startGenerateImages,

@@ -15,11 +15,43 @@ export interface SettingsSummaryData {
   projectCount: number;
   templateCount: number;
   assetCount: number;
+  monthlyEventCount: number;
+  exportCount: number;
+  totalEstimatedCost: number;
+  recentActivity: Array<{
+    id: string;
+    label: string;
+    detail: string;
+    createdAt: Date;
+    costEstimate: number | null;
+  }>;
   uploadsPath: string;
   databaseUrl: string;
   nextVersion: string;
   prismaVersion: string;
   remotionPreviewEnabled: boolean;
+}
+
+const EVENT_LABELS: Record<string, string> = {
+  generation_start: "문안 생성 시작",
+  image_generation_start: "이미지 생성 시작",
+  model_compose_start: "모델 합성 시작",
+  remove_bg_start: "배경 제거 시작",
+  export_start: "내보내기 시작",
+  export_complete: "내보내기 완료",
+};
+
+function parseProjectId(detail: string | null) {
+  if (!detail) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(detail) as { projectId?: string };
+    return parsed.projectId ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function getHomeFeed(limit = 24): Promise<HomeFeedData> {
@@ -97,11 +129,47 @@ export async function getSettingsSummary(): Promise<SettingsSummaryData> {
     select: { id: true, name: true },
   });
 
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+
   const [projectCount, templateCount, assetCount] = await Promise.all([
     prisma.project.count({ where: { workspaceId } }),
     prisma.composeTemplate.count({ where: { workspaceId } }),
     prisma.asset.count({ where: { project: { workspaceId } } }),
   ]);
+
+  const [monthlyEventCount, exportCount, costResult, usageEvents] = await Promise.all([
+    prisma.usageLedger.count({
+      where: {
+        workspaceId,
+        createdAt: { gte: monthStart },
+      },
+    }),
+    prisma.usageLedger.count({ where: { workspaceId, eventType: "export_complete" } }),
+    prisma.usageLedger.aggregate({ where: { workspaceId }, _sum: { costEstimate: true } }),
+    prisma.usageLedger.findMany({
+      where: { workspaceId },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      select: {
+        id: true,
+        eventType: true,
+        detail: true,
+        costEstimate: true,
+        createdAt: true,
+      },
+    }),
+  ]);
+
+  const projectIds = [...new Set(usageEvents.map((event) => parseProjectId(event.detail)).filter((value): value is string => Boolean(value)))];
+  const linkedProjects = projectIds.length > 0
+    ? await prisma.project.findMany({
+        where: { id: { in: projectIds } },
+        select: { id: true, name: true },
+      })
+    : [];
+  const projectNameById = new Map(linkedProjects.map((project) => [project.id, project.name]));
 
   return {
     workspaceId,
@@ -109,6 +177,21 @@ export async function getSettingsSummary(): Promise<SettingsSummaryData> {
     projectCount,
     templateCount,
     assetCount,
+    monthlyEventCount,
+    exportCount,
+    totalEstimatedCost: costResult._sum.costEstimate ?? 0,
+    recentActivity: usageEvents.map((event) => {
+      const projectId = parseProjectId(event.detail);
+      const projectName = projectId ? projectNameById.get(projectId) : null;
+      const detail = projectName ? `${projectName} 프로젝트` : "프로젝트 정보 없음";
+      return {
+        id: event.id,
+        label: EVENT_LABELS[event.eventType] ?? event.eventType,
+        detail,
+        createdAt: event.createdAt,
+        costEstimate: event.costEstimate,
+      };
+    }),
     uploadsPath: `${process.cwd()}\\uploads`,
     databaseUrl: process.env.DATABASE_URL ?? "file:./prisma/dev.db",
     nextVersion: packageJson.dependencies.next,

@@ -30,8 +30,10 @@ export interface NodeExecutor {
   label: string;
 }
 
+export type NodeExecutorMap = Record<string, NodeExecutor | null>;
+
 /** 노드 타입 → 실행 함수 매핑 (null = skip) */
-export const NODE_EXECUTORS: Record<string, NodeExecutor | null> = {
+export const NODE_EXECUTORS: NodeExecutorMap = {
   prompt: {
     start: (pid, ctx) => startGenerate(pid, { category: ctx?.category }),
     poll: pollGenerate,
@@ -161,6 +163,7 @@ export async function executePipeline(
   edges: Edge[],
   callbacks: PipelineCallbacks,
   context?: PipelineContext,
+  executors: NodeExecutorMap = NODE_EXECUTORS,
 ): Promise<void> {
   const order = topologicalSort(nodes, edges);
   const pipelineStart = performance.now();
@@ -173,7 +176,7 @@ export async function executePipeline(
     if (!node) continue;
 
     const nodeType = (node.data as { nodeType: string }).nodeType;
-    const executor = NODE_EXECUTORS[nodeType] ?? null;
+    const executor = executors[nodeType] ?? null;
 
     // 이 노드로 들어오는 엣지 activate
     const inEdges = edges.filter((e) => e.target === nodeId);

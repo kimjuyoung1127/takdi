@@ -8,11 +8,12 @@ import { uploadAsset, uploadBgm } from "@/lib/api-client";
 
 interface AssetUploadProps {
   projectId: string;
+  allowBgm?: boolean;
   onUploadComplete?: (asset: { id: string; filePath: string; type: "image" | "bgm" }) => void;
   onError?: (message: string) => void;
 }
 
-export function AssetUpload({ projectId, onUploadComplete, onError }: AssetUploadProps) {
+export function AssetUpload({ projectId, allowBgm = true, onUploadComplete, onError }: AssetUploadProps) {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const bgmInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState<"image" | "bgm" | null>(null);
@@ -78,28 +79,31 @@ export function AssetUpload({ projectId, onUploadComplete, onError }: AssetUploa
         이미지 업로드
       </Button>
 
-      {/* BGM upload */}
-      <input
-        ref={bgmInputRef}
-        type="file"
-        accept="audio/*"
-        className="hidden"
-        onChange={handleBgmUpload}
-      />
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-full justify-start gap-2 text-xs"
-        onClick={() => bgmInputRef.current?.click()}
-        disabled={uploading !== null}
-      >
-        {uploading === "bgm" ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-        ) : (
-          <Music className="h-3.5 w-3.5" />
-        )}
-        배경음악 업로드
-      </Button>
+      {allowBgm ? (
+        <>
+          <input
+            ref={bgmInputRef}
+            type="file"
+            accept="audio/*"
+            className="hidden"
+            onChange={handleBgmUpload}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start gap-2 text-xs"
+            onClick={() => bgmInputRef.current?.click()}
+            disabled={uploading !== null}
+          >
+            {uploading === "bgm" ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Music className="h-3.5 w-3.5" />
+            )}
+            배경음악 업로드
+          </Button>
+        </>
+      ) : null}
     </div>
   );
 }

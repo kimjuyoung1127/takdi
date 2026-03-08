@@ -17,6 +17,7 @@ import {
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AppImage } from "@/components/ui/app-image";
 import { InlineLightbox } from "./inline-lightbox";
+import { getUserFacingNodeStatus } from "@/lib/editor-surface";
 
 const ICONS: Record<string, React.ElementType> = {
   prompt: Sparkles,
@@ -43,6 +44,7 @@ interface TakdiNodeData {
 function TakdiNodeComponent({ data, selected }: NodeProps & { data: TakdiNodeData }) {
   const Icon = ICONS[data.nodeType] ?? Sparkles;
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const statusInfo = getUserFacingNodeStatus(data);
 
   return (
     <>
@@ -62,7 +64,7 @@ function TakdiNodeComponent({ data, selected }: NodeProps & { data: TakdiNodeDat
 
         {data.status && (
           <div className="mt-2">
-            <StatusBadge status={data.status} />
+            <StatusBadge status={data.status} label={statusInfo.label} tone={statusInfo.tone} />
           </div>
         )}
 

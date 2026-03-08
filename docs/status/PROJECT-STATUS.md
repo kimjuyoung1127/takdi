@@ -1,8 +1,19 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-08 (KST, Korean-first UI + internal i18n pass completed)
+Last Updated: 2026-03-08 (KST, editor surface redesign + settings ops summary)
 
 ## Latest Update
+- Editor surface redesign completed for operator-first workflow.
+- Verified with final `npm run typecheck` and `npm run build` on 2026-03-08.
+- Key shipped changes in this pass:
+  - added simple/expert editor surface rules in `src/lib/editor-surface.ts`
+  - fixed-pipeline modes (`model-shot`, `cutout`, `brand-image`) now default to simple mode
+  - added step-card workspace for simple mode and removed technical metadata from the operator-facing panel
+  - hid `node id`, raw `nodeType`, History, Cost, and bottom live logs from simple mode
+  - moved cost/activity visibility to `/settings` with monthly events, export count, estimated cost, and recent activity cards
+  - persisted editor view mode in localStorage per mode
+  - repositioned the simple/expert toggle to the top-right to avoid overlap with the centered action toolbar
+
 - Korean-first UI recovery and internal i18n foundation completed and documented in `docs/plans/korean-ui-i18n/`.
 - Verified with final `npm run typecheck` and `npm run build` on 2026-03-08.
 - Current production build snapshot:
@@ -70,7 +81,7 @@ Last Updated: 2026-03-08 (KST, Korean-first UI + internal i18n pass completed)
   - Editor: 3-panel layout (palette + canvas + properties), floating toolbar, bottom logger.
   - Preview: Tailwind migration from inline styles.
   - 8 folder CLAUDE.md files, code-conventions skill.
-- UI-API integration completed (UI-002): api-client layer, editor wiring (Run/Save/Preview/Export), properties panel (Assets/History/Cost), file restructure.
+- UI-API integration completed (UI-002): api-client layer, editor wiring (Run/Save/Preview/Export), properties panel refactor, file restructure.
 - UX improvements completed (UX-001~005):
   - UX-001: 전체 한글화 + 키보드 단축키 (Ctrl+S/Enter/Esc) + Delete 키 노드 삭제
   - UX-002: 빈 캔버스 온보딩 오버레이
@@ -148,6 +159,14 @@ Last Updated: 2026-03-08 (KST, Korean-first UI + internal i18n pass completed)
   - PipelineContext에 `uploadedAssetId` 추가 (upload-image 노드 → remove-bg/model-compose 전달)
   - 기존 모드 (brand-image, gif-source, freeform) 영향 없음
   - vitest 테스트 (CUTOUT-FIX 기준 39개, 이후 89개로 확장)
+- Editor surface redesign completed (EDITOR-SURFACE-001):
+  - `model-shot`, `cutout`, `brand-image` now default to `간단 모드`
+  - `freeform` remains `전문가 모드` first
+  - simple mode replaces the node graph with step cards and a single current-step panel
+  - simple mode hides node id, raw type, History, Cost, and bottom live logs
+  - expert mode keeps React Flow editing and moves technical metadata into `고급 정보`
+  - `/settings` now owns monthly activity, export count, estimated cost, and recent activity summaries
+  - top-right mode toggle placement avoids overlap with the centered action toolbar
 - Competitive analysis completed (COMPETITIVE-ANALYSIS):
   - 4개 참조 자료 + 1개 직접 경쟁사(PicCordial) 분석
   - 핵심 갭 2건 발견: GAP-1 모드 간 에셋 단절, GAP-2 이미지 보정/업스케일 미구현

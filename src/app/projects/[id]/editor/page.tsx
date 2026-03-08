@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
+import type { Edge, Node } from "@xyflow/react";
 import { prisma } from "@/lib/prisma";
 import Loading from "./loading";
 
@@ -35,12 +36,32 @@ export default async function EditorPage({
 
   const project = await prisma.project.findUnique({
     where: { id },
-    select: { id: true, name: true, status: true, mode: true },
+    select: { id: true, name: true, mode: true, briefText: true, content: true },
   });
 
   if (!project) {
     notFound();
   }
 
-  return <NodeEditorShell projectId={project.id} projectName={project.name} mode={project.mode ?? "freeform"} />;
+  let initialGraph: { nodes: Node[]; edges: Edge[] } | null = null;
+  if (project.content) {
+    try {
+      const parsed = JSON.parse(project.content) as { nodes?: Node[]; edges?: Edge[] };
+      if (Array.isArray(parsed.nodes) && Array.isArray(parsed.edges)) {
+        initialGraph = { nodes: parsed.nodes, edges: parsed.edges };
+      }
+    } catch {
+      // Ignore malformed saved graph and fall back to the mode defaults.
+    }
+  }
+
+  return (
+    <NodeEditorShell
+      projectId={project.id}
+      projectName={project.name}
+      mode={project.mode ?? "freeform"}
+      initialBriefText={project.briefText ?? ""}
+      initialGraph={initialGraph}
+    />
+  );
 }

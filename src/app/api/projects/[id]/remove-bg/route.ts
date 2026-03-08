@@ -141,14 +141,20 @@ async function processRemoveBg(jobId: string, projectId: string, assetFilePath: 
     const img = await downloadImageAsBase64(result.imageUrls[0]);
     const saved = await saveGeneratedImage(projectId, img.imageBytes, "image/png", "removebg");
 
-    await prisma.generationJob.update({
-      where: { id: jobId },
-      data: {
-        status: "done",
-        output: JSON.stringify({ assets: [saved] }),
-        doneAt: new Date(),
-      },
-    });
+    await prisma.$transaction([
+      prisma.project.update({
+        where: { id: projectId },
+        data: { status: "generated" },
+      }),
+      prisma.generationJob.update({
+        where: { id: jobId },
+        data: {
+          status: "done",
+          output: JSON.stringify({ assets: [saved] }),
+          doneAt: new Date(),
+        },
+      }),
+    ]);
   } catch (error) {
     await prisma.generationJob.update({
       where: { id: jobId },
