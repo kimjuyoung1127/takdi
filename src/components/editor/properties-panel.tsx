@@ -127,19 +127,16 @@ export function PropertiesPanel({
     }
   }, [mode, onNodeDataChange, onShortformStateChange, refreshAssets, selectedNodeData?.nodeType, selectedNodeId]);
 
-  if (!selectedNodeId || !selectedNodeData) {
-    return <EmptyPanel projectName={projectName} nodeCount={nodeCount} />;
-  }
-
-  const stepPresentation = getStepPresentation(mode, selectedNodeData.nodeType);
-  const statusInfo = getUserFacingNodeStatus(selectedNodeData);
+  const selectedNodeType = selectedNodeData?.nodeType;
+  const stepPresentation = selectedNodeType ? getStepPresentation(mode, selectedNodeType) : null;
+  const statusInfo = getUserFacingNodeStatus(selectedNodeData ?? { label: "", nodeType: "prompt", status: "draft" });
   const title =
     stepPresentation?.title ??
-    selectedNodeData.label ??
-    NODE_TYPE_LABELS[selectedNodeData.nodeType as keyof typeof NODE_TYPE_LABELS] ??
+    selectedNodeData?.label ??
+    (selectedNodeType ? NODE_TYPE_LABELS[selectedNodeType as keyof typeof NODE_TYPE_LABELS] : undefined) ??
     "작업 단계";
   const description = stepPresentation?.description ?? "현재 단계의 입력과 상태를 확인합니다.";
-  const previewImages = Array.isArray(selectedNodeData.previewImages)
+  const previewImages = Array.isArray(selectedNodeData?.previewImages)
     ? selectedNodeData.previewImages.filter((value): value is string => typeof value === "string")
     : [];
   const imageAssets = assets.filter((asset) => asset.mimeType?.startsWith("image/"));
@@ -158,20 +155,24 @@ export function PropertiesPanel({
       onShortformStateChange?.((current) => {
         if (!current) return current;
         const next = updater(current);
-        if (selectedNodeId && selectedNodeData.nodeType === "generate-images") {
+        if (selectedNodeId && selectedNodeType === "generate-images") {
           onNodeDataChange?.(selectedNodeId, {
             previewImages: next.sceneAssignments.map((item) => item.filePath),
             status: next.sceneAssignments.length > 0 ? "generated" : "draft",
           });
         }
-        if (selectedNodeId && selectedNodeData.nodeType === "cuts") {
+        if (selectedNodeId && selectedNodeType === "cuts") {
           onNodeDataChange?.(selectedNodeId, { status: next.cuts.some((cut) => cut.enabled) ? "generated" : "draft" });
         }
         return next;
       });
     },
-    [onNodeDataChange, onShortformStateChange, selectedNodeData.nodeType, selectedNodeId],
+    [onNodeDataChange, onShortformStateChange, selectedNodeId, selectedNodeType],
   );
+
+  if (!selectedNodeId || !selectedNodeData) {
+    return <EmptyPanel projectName={projectName} nodeCount={nodeCount} />;
+  }
 
   const settingsBody = (
     <div className="space-y-5">
