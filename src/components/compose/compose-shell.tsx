@@ -1,7 +1,8 @@
-/** Compose 에디터 쉘 — 3패널 레이아웃 + DndContext + 자동 저장 + Ctrl+S/Z */
+/** Compose editor shell with DnD, autosave, templates, and guarded navigation. */
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -14,8 +15,16 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import type { Block, BlockDocument } from "@/types/blocks";
-import { saveBlocks } from "@/lib/api-client";
+import {
+  formatAppliedAutomaticFixes,
+  formatComposeDocumentSaveFailed,
+  formatDesignIssuesNeedAttention,
+  formatFavoriteTemplateSaveFailed,
+  formatTemplateApplied,
+} from "@/i18n/format";
+import { useT } from "@/i18n/use-t";
+import type { Block, BlockDocument, ThemePalette } from "@/types/blocks";
+import { saveBlocks, saveComposeTemplate } from "@/lib/api-client";
 import { PLATFORM_WIDTHS, BLOCK_TYPE_LABELS } from "@/lib/constants";
 import { BlockPalette } from "./block-palette";
 import { BlockCanvas } from "./block-canvas";
@@ -24,6 +33,8 @@ import { ComposeToolbar } from "./compose-toolbar";
 import { ComposeProvider } from "./compose-context";
 import { ExportDialog } from "./export-dialog";
 import { BriefBuilder } from "./brief-builder";
+import { LeaveComposeDialog } from "./leave-compose-dialog";
+import { SaveTemplateDialog } from "./save-template-dialog";
 import { validateBlocks, autoFixAllBlocks } from "@/lib/design-guardrails";
 import { BLOCK_TEMPLATES } from "./block-palette";
 
@@ -35,16 +46,29 @@ interface ComposeShellProps {
   initialDoc: BlockDocument;
 }
 
+function formatSavedTime() {
+  return new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function hashDoc(doc: BlockDocument) {
+  return JSON.stringify(doc);
+}
+
 export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShellProps) {
+  const router = useRouter();
+  const { messages } = useT();
   const [blocks, setBlocks] = useState<Block[]>(initialDoc.blocks);
   const [platform, setPlatform] = useState(initialDoc.platform.name || "coupang");
-  const [theme, setTheme] = useState(initialDoc.theme);
+  const [theme, setTheme] = useState<ThemePalette | undefined>(initialDoc.theme);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [templateSaving, setTemplateSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [insertIndex, setInsertIndex] = useState<number | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [briefOpen, setBriefOpen] = useState(false);
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
   const [mobilePreview, setMobilePreview] = useState(false);
   const [draggingLabel, setDraggingLabel] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -64,44 +88,84 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
   const redoStack = useRef<Block[][]>([]);
   const lastUndoHashRef = useRef(JSON.stringify(initialDoc.blocks));
   const lastUndoAtRef = useRef(0);
+  const savedDocHashRef = useRef(hashDoc(initialDoc));
 
-  const selectedBlock = blocks.find((b) => b.id === selectedBlockId) ?? null;
+  const selectedBlock = blocks.find((block) => block.id === selectedBlockId) ?? null;
 
-  // Build document from state
   const buildDoc = useCallback((): BlockDocument => ({
     format: "blocks",
     blocks: blocksRef.current,
-    platform: { width: PLATFORM_WIDTHS[platformRef.current] ?? 780, name: platformRef.current },
+    platform: {
+      width: PLATFORM_WIDTHS[platformRef.current] ?? 780,
+      name: platformRef.current,
+    },
     theme: themeRef.current,
     version: 1,
   }), []);
 
-  // Save
-  const handleSave = useCallback(async () => {
-    if (saving) return;
+  const currentDocHash = hashDoc({
+    format: "blocks",
+    blocks,
+    platform: {
+      width: PLATFORM_WIDTHS[platform] ?? 780,
+      name: platform,
+    },
+    theme,
+    version: 1,
+  });
+  const isDirty = currentDocHash !== savedDocHashRef.current;
+
+  const persistDoc = useCallback(async (opts?: { toastOnSuccess?: boolean }) => {
+    if (saving) {
+      return false;
+    }
+
     setSaving(true);
     try {
-      await saveBlocks(projectId, buildDoc());
-      setLastSaved(new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }));
-      toast.success("저장 완료");
-    } catch (err) {
-      toast.error(`저장 실패: ${err instanceof Error ? err.message : "알 수 없는 오류"}`);
+      const doc = buildDoc();
+      await saveBlocks(projectId, doc);
+      savedDocHashRef.current = hashDoc(doc);
+      setLastSaved(formatSavedTime());
+      if (opts?.toastOnSuccess !== false) {
+        toast.success(messages.composeShared.composeDocumentSaved);
+      }
+      return true;
+    } catch (error) {
+      toast.error(formatComposeDocumentSaveFailed(
+        messages,
+        error instanceof Error ? error.message : "알 수 없는 오류",
+      ));
+      return false;
     } finally {
       setSaving(false);
     }
-  }, [projectId, saving, buildDoc]);
+  }, [buildDoc, messages.composeShared, projectId, saving]);
 
-  // Undo support
   const pushUndo = useCallback((prev: Block[]) => {
     const nextHash = JSON.stringify(prev);
     const now = Date.now();
-    if (nextHash === lastUndoHashRef.current) return;
-    if (now - lastUndoAtRef.current < UNDO_COALESCE_MS) return;
+    if (nextHash === lastUndoHashRef.current) {
+      return;
+    }
+    if (now - lastUndoAtRef.current < UNDO_COALESCE_MS) {
+      return;
+    }
     undoStack.current = [...undoStack.current.slice(-49), prev];
     redoStack.current = [];
     lastUndoHashRef.current = nextHash;
     lastUndoAtRef.current = now;
   }, []);
+
+  const resetHistory = useCallback((nextBlocks: Block[]) => {
+    undoStack.current = [];
+    redoStack.current = [];
+    lastUndoHashRef.current = JSON.stringify(nextBlocks);
+    lastUndoAtRef.current = Date.now();
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    await persistDoc();
+  }, [persistDoc]);
 
   const handleUndo = useCallback(() => {
     const prev = undoStack.current.pop();
@@ -121,7 +185,6 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
     }
   }, []);
 
-  // Block operations
   const handleBlocksChange = useCallback((newBlocks: Block[]) => {
     pushUndo(blocksRef.current);
     setBlocks(newBlocks);
@@ -130,7 +193,7 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
   const handleUpdateBlock = useCallback((id: string, patch: Partial<Block>) => {
     pushUndo(blocksRef.current);
     setBlocks((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, ...patch } as Block : b)),
+      prev.map((block) => (block.id === id ? { ...block, ...patch } as Block : block)),
     );
   }, [pushUndo]);
 
@@ -153,82 +216,140 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
     setInsertIndex(index);
   }, []);
 
-  // Platform change
   const handlePlatformChange = useCallback((name: string) => {
     setPlatform(name);
   }, []);
 
-  // Preview
-  const handlePreview = useCallback(() => {
-    // Save first, then open preview
-    saveBlocks(projectId, buildDoc()).then(() => {
+  const handlePreview = useCallback(async () => {
+    const didSave = await persistDoc({ toastOnSuccess: false });
+    if (didSave) {
       window.open(`/projects/${projectId}/result`, "_blank");
-    }).catch(() => {
-      toast.error("저장 실패 — 미리보기를 열 수 없습니다");
-    });
-  }, [projectId, buildDoc]);
+    }
+  }, [persistDoc, projectId]);
 
-  // Design check
   const handleDesignCheck = useCallback(() => {
     const violations = validateBlocks(blocks);
     if (violations.length === 0) {
-      toast.success("디자인 검증 통과! 문제가 발견되지 않았습니다");
+      toast.success(messages.composeShared.designCheckPassed);
     } else {
-      toast.warning(`${violations.length}개 디자인 개선 사항이 있습니다. 블록 우측 경고 아이콘을 확인하세요`);
+      toast.warning(formatDesignIssuesNeedAttention(messages, violations.length));
     }
-  }, [blocks]);
+  }, [blocks, messages]);
 
-  // Auto-fix all
   const handleAutoFixAll = useCallback(() => {
-    const createCta = () => BLOCK_TEMPLATES.find((t) => t.type === "cta")!.create();
-    const { blocks: fixed, fixCount } = autoFixAllBlocks(blocks, createCta);
+    const createCta = () => BLOCK_TEMPLATES.find((item) => item.type === "cta")!.create();
+    const { blocks: fixedBlocks, fixCount } = autoFixAllBlocks(blocks, createCta);
     if (fixCount === 0) {
-      toast.success("수정할 항목이 없습니다");
-    } else {
-      pushUndo(blocksRef.current);
-      setBlocks(fixed);
-      toast.success(`${fixCount}개 항목을 자동 수정했습니다`);
+      toast.success(messages.composeShared.noFixesNeeded);
+      return;
     }
-  }, [blocks, pushUndo]);
 
-  // Export
+    pushUndo(blocksRef.current);
+    setBlocks(fixedBlocks);
+    toast.success(formatAppliedAutomaticFixes(messages, fixCount));
+  }, [blocks, messages, pushUndo]);
+
   const handleExport = useCallback(() => {
     setExportOpen(true);
   }, []);
 
-  // Template apply (no API call — instant block placement)
-  const handleApplyTemplate = useCallback((newBlocks: Block[], newTheme?: import("@/types/blocks").ThemePalette) => {
-    pushUndo(blocksRef.current);
-    setBlocks(newBlocks);
-    if (newTheme) {
-      setTheme(newTheme);
-    }
-    toast.success(`${newBlocks.length}개 블록 템플릿 배치 완료`);
-  }, [pushUndo]);
+  const handleOpenSaveTemplate = useCallback(() => {
+    setSaveTemplateOpen(true);
+  }, []);
 
-  // DnD handlers
+  const handleSaveTemplate = useCallback(async (name: string) => {
+    if (templateSaving) {
+      return;
+    }
+
+    setTemplateSaving(true);
+    try {
+      await saveComposeTemplate({
+        name,
+        snapshot: buildDoc(),
+        sourceProjectId: projectId,
+      });
+      setSaveTemplateOpen(false);
+      toast.success(messages.composeShared.favoriteTemplateSaved);
+    } catch (error) {
+      toast.error(formatFavoriteTemplateSaveFailed(
+        messages,
+        error instanceof Error ? error.message : "알 수 없는 오류",
+      ));
+    } finally {
+      setTemplateSaving(false);
+    }
+  }, [buildDoc, messages, projectId, templateSaving]);
+
+  const handleApplyTemplate = useCallback((doc: BlockDocument, sourceLabel?: string) => {
+    const shouldReplace = !isDirty || window.confirm(messages.composeShared.replaceCurrentComposeConfirm);
+    if (!shouldReplace) {
+      return false;
+    }
+
+    resetHistory(doc.blocks);
+    setBlocks(doc.blocks);
+    setPlatform(doc.platform.name || "coupang");
+    setTheme(doc.theme);
+    setSelectedBlockId(null);
+    setInsertIndex(null);
+    setLastSaved(null);
+    toast.success(formatTemplateApplied(messages, sourceLabel));
+    return true;
+  }, [isDirty, messages, resetHistory]);
+
+  const handleGoHome = useCallback(() => {
+    if (saving) {
+      toast.message(messages.composeShared.saveInProgress);
+      return;
+    }
+
+    if (!isDirty) {
+      router.push("/");
+      return;
+    }
+
+    setLeaveOpen(true);
+  }, [isDirty, messages.composeShared, router, saving]);
+
+  const handleDiscardAndLeave = useCallback(() => {
+    setLeaveOpen(false);
+    router.push("/");
+  }, [router]);
+
+  const handleSaveAndLeave = useCallback(async () => {
+    const didSave = await persistDoc({ toastOnSuccess: false });
+    if (!didSave) {
+      return;
+    }
+
+    setLeaveOpen(false);
+    router.push("/");
+  }, [persistDoc, router]);
+
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const data = event.active.data.current;
     if (data?.type === "palette-item") {
       const blockType = data.blockType as string;
       setDraggingLabel(BLOCK_TYPE_LABELS[blockType as keyof typeof BLOCK_TYPE_LABELS] ?? blockType);
-    } else {
-      // Existing block being reordered
-      const block = blocksRef.current.find((b) => b.id === event.active.id);
-      if (block) {
-        setDraggingLabel(BLOCK_TYPE_LABELS[block.type] ?? block.type);
-      }
+      return;
+    }
+
+    const block = blocksRef.current.find((item) => item.id === event.active.id);
+    if (block) {
+      setDraggingLabel(BLOCK_TYPE_LABELS[block.type] ?? block.type);
     }
   }, []);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     setDraggingLabel(null);
     const { active, over } = event;
-    if (!over) return;
+    if (!over) {
+      return;
+    }
 
     const activeData = active.data.current;
 
-    // Palette item dropped onto canvas
     if (activeData?.type === "palette-item") {
       const create = activeData.create as () => Block;
       const overData = over.data.current;
@@ -243,8 +364,7 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
           return next;
         });
       } else {
-        // Dropped onto a block — insert after it
-        const overIndex = blocksRef.current.findIndex((b) => b.id === over.id);
+        const overIndex = blocksRef.current.findIndex((block) => block.id === over.id);
         if (overIndex >= 0) {
           setBlocks((prev) => {
             const next = [...prev];
@@ -255,86 +375,109 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
           setBlocks((prev) => [...prev, newBlock]);
         }
       }
+
       setSelectedBlockId(newBlock.id);
       setInsertIndex(null);
       return;
     }
 
-    // Existing block reorder
-    if (over && active.id !== over.id) {
-      const overData = over.data.current;
-      if (overData?.type === "drop-zone") {
-        // Dropped on a drop zone
-        const dropIndex = overData.index as number;
-        const oldIndex = blocksRef.current.findIndex((b) => b.id === active.id);
-        if (oldIndex >= 0) {
-          pushUndo(blocksRef.current);
-          setBlocks((prev) => {
-            const next = [...prev];
-            const [removed] = next.splice(oldIndex, 1);
-            const insertAt = dropIndex > oldIndex ? dropIndex - 1 : dropIndex;
-            next.splice(insertAt, 0, removed);
-            return next;
-          });
-        }
-      } else {
-        const oldIndex = blocksRef.current.findIndex((b) => b.id === active.id);
-        const newIndex = blocksRef.current.findIndex((b) => b.id === over.id);
-        if (oldIndex >= 0 && newIndex >= 0) {
-          pushUndo(blocksRef.current);
-          setBlocks((prev) => arrayMove(prev, oldIndex, newIndex));
-        }
+    if (active.id === over.id) {
+      return;
+    }
+
+    const overData = over.data.current;
+    if (overData?.type === "drop-zone") {
+      const dropIndex = overData.index as number;
+      const oldIndex = blocksRef.current.findIndex((block) => block.id === active.id);
+      if (oldIndex >= 0) {
+        pushUndo(blocksRef.current);
+        setBlocks((prev) => {
+          const next = [...prev];
+          const [removed] = next.splice(oldIndex, 1);
+          const insertAt = dropIndex > oldIndex ? dropIndex - 1 : dropIndex;
+          next.splice(insertAt, 0, removed);
+          return next;
+        });
       }
+      return;
+    }
+
+    const oldIndex = blocksRef.current.findIndex((block) => block.id === active.id);
+    const newIndex = blocksRef.current.findIndex((block) => block.id === over.id);
+    if (oldIndex >= 0 && newIndex >= 0) {
+      pushUndo(blocksRef.current);
+      setBlocks((prev) => arrayMove(prev, oldIndex, newIndex));
     }
   }, [pushUndo]);
 
-  // Auto-save 30s
   useEffect(() => {
-    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    if (!isDirty) {
+      if (autoSaveTimer.current) {
+        clearTimeout(autoSaveTimer.current);
+      }
+      return;
+    }
+
+    if (autoSaveTimer.current) {
+      clearTimeout(autoSaveTimer.current);
+    }
+
     autoSaveTimer.current = setTimeout(async () => {
       try {
-        await saveBlocks(projectId, buildDoc());
-        setLastSaved(new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }));
+        const doc = buildDoc();
+        await saveBlocks(projectId, doc);
+        savedDocHashRef.current = hashDoc(doc);
+        setLastSaved(formatSavedTime());
       } catch {
-        toast.error("자동 저장에 실패했습니다", { id: "autosave-fail" });
+        toast.error(messages.composeShared.autosaveFailed, { id: "autosave-fail" });
       }
     }, 30_000);
+
     return () => {
-      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+      if (autoSaveTimer.current) {
+        clearTimeout(autoSaveTimer.current);
+      }
     };
-  }, [blocks, projectId, buildDoc]);
+  }, [buildDoc, currentDocHash, isDirty, messages.composeShared, projectId]);
 
-  // Keyboard shortcuts
   useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      const el = e.target as HTMLElement;
-      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable) return;
+    function onKeyDown(event: KeyboardEvent) {
+      const element = event.target as HTMLElement;
+      if (
+        element.tagName === "INPUT" ||
+        element.tagName === "TEXTAREA" ||
+        element.tagName === "SELECT" ||
+        element.isContentEditable
+      ) {
+        return;
+      }
 
-      if (e.ctrlKey && e.key === "s") {
-        e.preventDefault();
-        handleSave();
-      } else if (e.ctrlKey && e.shiftKey && e.key === "Z") {
-        e.preventDefault();
+      if (event.ctrlKey && event.key === "s") {
+        event.preventDefault();
+        void handleSave();
+      } else if (event.ctrlKey && event.shiftKey && event.key === "Z") {
+        event.preventDefault();
         handleRedo();
-      } else if (e.ctrlKey && e.key === "z") {
-        e.preventDefault();
+      } else if (event.ctrlKey && event.key === "z") {
+        event.preventDefault();
         handleUndo();
-      } else if (e.key === "Escape") {
+      } else if (event.key === "Escape") {
         if (insertIndex !== null) {
-          e.preventDefault();
+          event.preventDefault();
           setInsertIndex(null);
         }
-      } else if (e.key === "Delete" || e.key === "Backspace") {
+      } else if (event.key === "Delete" || event.key === "Backspace") {
         if (selectedBlockId) {
-          e.preventDefault();
-          handleBlocksChange(blocks.filter((b) => b.id !== selectedBlockId));
+          event.preventDefault();
+          handleBlocksChange(blocks.filter((block) => block.id !== selectedBlockId));
           setSelectedBlockId(null);
         }
       }
     }
+
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [handleSave, handleUndo, handleRedo, selectedBlockId, blocks, handleBlocksChange, insertIndex]);
+  }, [blocks, handleBlocksChange, handleRedo, handleSave, handleUndo, insertIndex, selectedBlockId]);
 
   return (
     <ComposeProvider projectId={projectId} theme={theme}>
@@ -350,15 +493,19 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
             projectName={projectName}
             platformName={platform}
             onPlatformChange={handlePlatformChange}
+            onGoHome={handleGoHome}
             onSave={handleSave}
             onPreview={handlePreview}
             onExport={handleExport}
+            onSaveTemplate={handleOpenSaveTemplate}
             onAiGenerate={() => setBriefOpen(true)}
             onDesignCheck={handleDesignCheck}
             onAutoFixAll={handleAutoFixAll}
             mobilePreview={mobilePreview}
-            onMobilePreviewToggle={() => setMobilePreview((p) => !p)}
+            onMobilePreviewToggle={() => setMobilePreview((prev) => !prev)}
             isSaving={saving}
+            isDirty={isDirty}
+            isTemplateSaving={templateSaving}
             lastSaved={lastSaved}
             theme={theme}
             onThemeChange={setTheme}
@@ -408,8 +555,23 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
       />
       <BriefBuilder
         open={briefOpen}
+        currentPlatformName={platform}
         onClose={() => setBriefOpen(false)}
         onApplyTemplate={handleApplyTemplate}
+      />
+      <SaveTemplateDialog
+        open={saveTemplateOpen}
+        defaultName={`${projectName} ${messages.composeShared.templateSuffix}`}
+        saving={templateSaving}
+        onClose={() => setSaveTemplateOpen(false)}
+        onSubmit={(name) => void handleSaveTemplate(name)}
+      />
+      <LeaveComposeDialog
+        open={leaveOpen}
+        saving={saving}
+        onClose={() => setLeaveOpen(false)}
+        onDiscard={handleDiscardAndLeave}
+        onSaveAndLeave={() => void handleSaveAndLeave()}
       />
     </ComposeProvider>
   );

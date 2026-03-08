@@ -82,6 +82,59 @@ export function saveBlocks(projectId: string, doc: import("@/types/blocks").Bloc
   });
 }
 
+// --- Compose Templates ---
+
+export interface ComposeTemplateSummary {
+  id: string;
+  name: string;
+  previewTitle: string | null;
+  blockCount: number;
+  sourceProjectId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ComposeTemplateDetail extends ComposeTemplateSummary {
+  snapshot: import("@/types/blocks").BlockDocument;
+}
+
+export interface InstantiatedTemplateProject {
+  id: string;
+  name: string;
+  mode: string | null;
+  status: string;
+  updatedAt: string;
+}
+
+export function listComposeTemplates() {
+  return get<{ templates: ComposeTemplateSummary[] }>("/api/compose-templates");
+}
+
+export function getComposeTemplate(templateId: string) {
+  return get<{ template: ComposeTemplateDetail }>(`/api/compose-templates/${templateId}`);
+}
+
+export function saveComposeTemplate(data: {
+  name: string;
+  snapshot: import("@/types/blocks").BlockDocument;
+  sourceProjectId?: string;
+}) {
+  return post<{ template: ComposeTemplateSummary }>("/api/compose-templates", data);
+}
+
+export function deleteComposeTemplate(templateId: string) {
+  return request<{ ok: boolean }>(`/api/compose-templates/${templateId}`, {
+    method: "DELETE",
+  });
+}
+
+export function instantiateComposeTemplate(templateId: string, data?: { name?: string }) {
+  return post<{ project: InstantiatedTemplateProject }>(
+    `/api/compose-templates/${templateId}/instantiate`,
+    data ?? {},
+  );
+}
+
 // --- Generate (text) ---
 
 export interface AsyncJobResponse {

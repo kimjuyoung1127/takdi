@@ -1,8 +1,26 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-07 (KST, Remotion on-demand preview pass completed)
+Last Updated: 2026-03-08 (KST, Korean-first UI + internal i18n pass completed)
 
 ## Latest Update
+- Korean-first UI recovery and internal i18n foundation completed and documented in `docs/plans/korean-ui-i18n/`.
+- Verified with final `npm run typecheck` and `npm run build` on 2026-03-08.
+- Current production build snapshot:
+  - `/`: `203 kB`
+  - `/projects`: `202 kB`
+  - `/settings`: `188 kB`
+  - `/projects/[id]/compose`: `191 kB`
+  - `/projects/[id]/preview`: `195 kB`
+  - `/projects/[id]/result`: `124 kB`
+  - shared first load JS: `102 kB`
+- Key shipped changes in this pass:
+  - added `src/i18n/` typed dictionary, provider, hook, and message-aware formatter helpers
+  - connected `RootLayout` to a Korean default message catalog without locale routing
+  - restored Korean copy across home, projects, settings, recent-project filters, saved templates, and sidebar/header
+  - restored Korean copy across compose shared toolbar, save-template dialog, leave dialog, brief-builder, and toasts
+  - removed non-serializable function-valued message entries to keep Next.js Client Component boundaries build-safe
+- Previous Remotion on-demand preview pass remains documented in `docs/status/REMOTION-ON-DEMAND-CHECKLIST.md`.
+
 - Remotion on-demand preview pass completed and documented in `docs/status/REMOTION-ON-DEMAND-CHECKLIST.md`.
 - Verified with final `npm run build` on 2026-03-07 after clearing a stale `.next` cache.
 - Current production build snapshot:
@@ -300,13 +318,13 @@ Last Updated: 2026-03-07 (KST, Remotion on-demand preview pass completed)
 - status-model drift: 0
 - api-contract drift: 0 (doc baseline)
 
-## Architecture Sync (dawn pipeline — 2026-03-06)
-- Last checked: 2026-03-06 04:00 KST
-- Overall: MEDIUM confidence alignment — no contradictions detected
+## Architecture Sync (dawn pipeline — 2026-03-08)
+- Last checked: 2026-03-08 04:00 KST
+- Overall: MEDIUM confidence alignment — 2 enumeration gaps, 3 documentation gaps, no contradictions detected
 - HIGH: 0 | MEDIUM: 2 | LOW: 3
-- MEDIUM-1: ARCHITECTURE.md does not enumerate all 17 API routes by name (count correct, specificity low)
-- MEDIUM-2: 5 production services missing from ARCHITECTURE.md (removebg-service, kie-generator, section-to-blocks, byoi-validator, bgm-analyzer)
-- LOW-1: Block type system (13 types) not referenced in ARCHITECTURE.md
-- LOW-2: FlowNodeType (9 nodes) vs BlockType (13 blocks) distinction undocumented
-- LOW-3: ExportArtifact export types not enumerated
-- Manual required: Update ARCHITECTURE.md Section 2 to list missing services and enumerate all 17 routes
+- MEDIUM-1: API routes count off by ±1 (ARCHITECTURE.md says 17, actual 18 route.ts files); no itemization in doc
+- MEDIUM-2: 5 active/stub services missing from architecture narrative (kie-generator, removebg-service, section-to-blocks, byoi-validator, bgm-analyzer)
+- LOW-1: Block type system (18 BlockTypes) not referenced in ARCHITECTURE.md
+- LOW-2: FlowNodeType (9 nodes) vs BlockType (18 blocks) architectural distinction undocumented
+- LOW-3: ExportArtifact types not enumerated (HTML / single / split / card-news) — no validation on DB side
+- Manual required: Update ARCHITECTURE.md to enumerate routes and services; add BlockType system reference; define ExportArtifactType enum in code

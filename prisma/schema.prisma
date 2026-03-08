@@ -29,6 +29,7 @@ model Workspace {
   name        String
   memberships Membership[]
   projects    Project[]
+  composeTemplates ComposeTemplate[]
   usageLedger UsageLedger[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -118,6 +119,19 @@ model UsageLedger {
   costEstimate Float?
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
   createdAt   DateTime  @default(now())
+}
+
+model ComposeTemplate {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  name           String
+  snapshot       String
+  previewTitle   String?
+  blockCount     Int       @default(0)
+  sourceProjectId String?
+  workspace      Workspace @relation(fields: [workspaceId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 // ─── PlanCatalog ───

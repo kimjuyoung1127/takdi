@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
+import { formatCreateProjectName } from "@/i18n/format";
+import { useT } from "@/i18n/use-t";
 import { cn } from "@/lib/utils";
 import { createProject } from "@/lib/api-client";
 
@@ -46,6 +48,7 @@ export function ModeCard({
   const Icon = ICON_MAP[mode] ?? Sparkles;
   const router = useRouter();
   const pathname = usePathname();
+  const { messages } = useT();
   const [loading, setLoading] = useState(false);
   const pendingTargetRef = useRef<string | null>(null);
   const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -86,7 +89,11 @@ export function ModeCard({
     console.time(createProjectLabel);
 
     try {
-      const project = await createProject({ name: `${label} project`, mode, briefText: "" });
+      const project = await createProject({
+        name: formatCreateProjectName(messages, label),
+        mode,
+        briefText: "",
+      });
       console.timeEnd(createProjectLabel);
 
       const target = editorMode === "compose"
@@ -122,7 +129,7 @@ export function ModeCard({
         fallbackTimerRef.current = null;
       }
       pendingTargetRef.current = null;
-      toast.error("Failed to create project");
+      toast.error(messages.modeCard.createProjectFailed);
       setLoading(false);
     }
   }

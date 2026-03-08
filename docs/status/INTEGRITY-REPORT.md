@@ -1,6 +1,6 @@
 # Code-Doc Integrity Report
 
-Last Run: 2026-03-06 04:00 KST (takdi-dawn-pipeline)
+Last Run: 2026-03-08 04:00 KST (takdi-dawn-pipeline)
 Result: pass (1 metadata drift, 5 architecture drift items, no content drift)
 
 ## Validation Summary
@@ -18,15 +18,15 @@ Result: pass (1 metadata drift, 5 architecture drift items, no content drift)
 | FEATURE-MATRIX ↔ SKILL-DOC-MATRIX | 0 | 1 | SKILL-DOC-MATRIX label "UX-005 complete" behind "GAP-1" |
 | PROJECT-STATUS ↔ SKILL-DOC-MATRIX | 0 | 1 | Same — counted once |
 
-## Architecture Drift (dawn pipeline — 2026-03-06)
+## Architecture Drift (dawn pipeline — 2026-03-08)
 
-| # | Item | Severity | Detail |
-|---|---|---|---|
-| 1 | API routes not enumerated in ARCHITECTURE.md | MEDIUM | "17 endpoints" stated but not itemized |
-| 2 | 5 services missing from ARCHITECTURE.md | MEDIUM | removebg-service, kie-generator, section-to-blocks, byoi-validator, bgm-analyzer |
-| 3 | Block type system undocumented | LOW | 13 BlockTypes defined in constants.ts; not referenced in ARCHITECTURE.md |
-| 4 | FlowNodeType vs BlockType distinction undocumented | LOW | 9 FlowNodeTypes, 13 BlockTypes — architectural nuance missing |
-| 5 | ExportArtifact types not enumerated | LOW | `type: String` in schema, no enum in constants.ts or ARCHITECTURE.md |
+| # | Item | Severity | Detail | File(s) |
+|---|---|---|---|---|
+| 1 | API routes not enumerated | MEDIUM | "17 endpoints" stated; actual 18 route.ts files; no itemized list | ARCHITECTURE.md, src/app/api/** |
+| 2 | 5 services missing from narrative | MEDIUM | kie-generator, removebg-service, section-to-blocks, byoi-validator, bgm-analyzer exist but undocumented | ARCHITECTURE.md, src/services/** |
+| 3 | Block type system undocumented | LOW | 18 BlockTypes fully implemented (constants.ts, blocks.ts, renderers) but not referenced in ARCHITECTURE.md | ARCHITECTURE.md, src/types/blocks.ts |
+| 4 | FlowNodeType vs BlockType distinction missing | LOW | 9 FlowNodeTypes (pipeline) vs 18 BlockTypes (content) — architectural nuance unmentioned | ARCHITECTURE.md, src/lib/constants.ts |
+| 5 | ExportArtifact types not enumerated | LOW | type: String with no validation; 4 client/server types (html, single, split, card-news) not formally defined | ARCHITECTURE.md, schema.prisma, src/lib/block-export.ts |
 
 ## Drift
 - status-model drift: 0

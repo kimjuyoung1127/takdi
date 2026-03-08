@@ -1,10 +1,27 @@
 # Claude Handoff
 
-Last Updated: 2026-03-07 (KST, Remotion on-demand preview pass completed)
+Last Updated: 2026-03-08 (KST, Korean-first UI + internal i18n pass completed)
 Branch: `main`
 Baseline commit: `3a1185e`
 
 ## Current Snapshot
+- Korean-first UI recovery and internal i18n foundation are complete and documented in `docs/plans/korean-ui-i18n/`.
+- Final verification passed with `npm run typecheck` and `npm run build` on 2026-03-08.
+- Final route snapshot after this pass:
+  - `/`: `203 kB`
+  - `/projects`: `202 kB`
+  - `/settings`: `188 kB`
+  - `/projects/[id]/compose`: `191 kB`
+  - `/projects/[id]/preview`: `195 kB`
+  - `/projects/[id]/result`: `124 kB`
+  - shared first load JS: `102 kB`
+- Key shipped changes in this pass:
+  - added `src/i18n/` typed schema, Korean catalog, provider, hook, and formatter helpers
+  - `src/app/layout.tsx` now wraps the app with a Korean default `I18nProvider`
+  - home, projects, settings, recent project filters, saved templates, header/sidebar, and compose shared dialogs/toolbars use Korean message keys
+  - message catalogs are now plain serializable objects and dynamic text composition moved into formatter helpers to avoid Next.js serialization errors
+- Previous Remotion on-demand preview pass remains documented in `docs/status/REMOTION-ON-DEMAND-CHECKLIST.md`.
+
 - Remotion on-demand preview pass is complete and documented in `docs/status/REMOTION-ON-DEMAND-CHECKLIST.md`.
 - Final build verified with `npm run build` on 2026-03-07 after clearing a stale `.next` cache.
 - Final route snapshot after this pass:

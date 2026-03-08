@@ -2,6 +2,8 @@
 import type { Metadata } from "next";
 import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { I18nProvider } from "@/i18n/provider";
+import { koMessages } from "@/i18n/messages/ko";
 import "./globals.css";
 
 const notoSansKr = Noto_Sans_KR({
@@ -31,8 +33,10 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${notoSansKr.variable} ${notoSerifKr.variable}`}>
       <body className="min-h-screen bg-gray-50 antialiased">
-        {children}
-        <Toaster position="top-center" richColors />
+        <I18nProvider messages={koMessages}>
+          {children}
+          <Toaster position="top-center" richColors />
+        </I18nProvider>
       </body>
     </html>
   );
