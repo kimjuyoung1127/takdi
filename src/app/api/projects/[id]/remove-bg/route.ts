@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getWorkspaceId, ensureWorkspaceScope } from "@/lib/workspace-guard";
 import { jsonOk, jsonError, jsonNotFound } from "@/lib/api-response";
-import { removeBackground } from "@/services/removebg-service";
+import { getProvider } from "@/services/providers/registry";
 import { downloadImageAsBase64 } from "@/services/kie-generator";
 import { saveGeneratedImage } from "@/lib/save-generated-image";
 
@@ -36,12 +36,13 @@ export async function POST(
       return jsonError("Asset not found or not in this project", 404);
     }
 
+    const providerName = getProvider().name;
     const job = await prisma.$transaction(async (tx) => {
       const newJob = await tx.generationJob.create({
         data: {
           projectId: id,
           status: "queued",
-          provider: "kie-remove-background",
+          provider: `${providerName}-remove-background`,
           input: JSON.stringify({ assetId }),
         },
       });
@@ -133,11 +134,13 @@ async function processRemoveBg(jobId: string, projectId: string, assetFilePath: 
       data: { status: "running", startedAt: new Date() },
     });
 
+    const provider = getProvider();
+
     // Build public URL for the uploaded asset
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const imageUrl = `${baseUrl}/${assetFilePath.replace(/\\/g, "/")}`;
 
-    const result = await removeBackground(imageUrl);
+    const result = await provider.removeBackground({ imageUrl });
     const img = await downloadImageAsBase64(result.imageUrls[0]);
     const saved = await saveGeneratedImage(projectId, img.imageBytes, "image/png", "removebg");
 

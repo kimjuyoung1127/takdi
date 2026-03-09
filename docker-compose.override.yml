@@ -1,0 +1,18 @@
+# Override for Mac Mini + NAS deployment
+# Uncomment the NAS volume mount lines for your environment
+
+services:
+  comfyui:
+    volumes:
+      - comfyui-models:/comfyui/models
+      - ./data/comfyui-output:/comfyui/output
+      # Uncomment below for NAS model storage:
+      # - /Volumes/NAS/takdi/models:/comfyui/models
+
+  backup:
+    volumes:
+      - ./data:/data:ro
+      - ./uploads:/uploads:ro
+      - backup-storage:/backups
+      # Uncomment below for NAS backup storage:
+      # - /Volumes/NAS/takdi/backups:/backups

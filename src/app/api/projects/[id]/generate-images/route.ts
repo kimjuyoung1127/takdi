@@ -2,7 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { getWorkspaceId, ensureWorkspaceScope } from "@/lib/workspace-guard";
 import { jsonOk, jsonError, jsonNotFound } from "@/lib/api-response";
 import type { GenerationResultSection } from "@/types";
-import { generateImageWithKie, downloadImageAsBase64 } from "@/services/kie-generator";
+import { getProvider, getProviderLabel } from "@/services/providers/registry";
+import { downloadImageAsBase64 } from "@/services/kie-generator";
 import { saveGeneratedImage } from "@/lib/save-generated-image";
 
 /**
@@ -66,7 +67,7 @@ export async function POST(
         data: {
           projectId: id,
           status: "queued",
-          provider: "kie-nano-banana-2",
+          provider: getProviderLabel(),
           input: JSON.stringify({
             slots: targetSections.map((s) => s.imageSlot),
             aspectRatio: body.aspectRatio ?? "1:1",
@@ -93,9 +94,7 @@ export async function POST(
 
     // Fire-and-forget: start background processing
     processImageGeneration(job.id, id, targetSections, {
-      apiKey: body.apiKey,
       aspectRatio: body.aspectRatio,
-      styleParams: body.styleParams,
       referenceAssetIds: Array.isArray(body.referenceAssetIds) ? body.referenceAssetIds.slice(0, 3) : [],
     }).catch((err) => {
       console.error("Background image generation error:", err);
@@ -203,18 +202,18 @@ async function processImageGeneration(
   projectId: string,
   sections: GenerationResultSection[],
   options: {
-    apiKey?: string;
     aspectRatio?: string;
-    styleParams?: Record<string, string>;
     referenceAssetIds?: string[];
   }
 ) {
   try {
-    // job → running
+    // job -> running
     await prisma.generationJob.update({
       where: { id: jobId },
       data: { status: "running", startedAt: new Date() },
     });
+
+    const provider = getProvider();
 
     const referenceInputs = options.referenceAssetIds?.length
       ? await resolveReferenceInputs(projectId, options.referenceAssetIds)
@@ -223,13 +222,13 @@ async function processImageGeneration(
     const assets: { assetId: string; filePath: string; imageSlot: string }[] = [];
     for (const section of sections) {
       const prompt = `${section.headline}. ${section.body}`;
-      const kieResult = await generateImageWithKie(prompt, {
-        apiKey: options.apiKey,
+      const result = await provider.textToImage({
+        prompt,
         aspectRatio: options.aspectRatio,
         imageInput: referenceInputs,
       });
       // Download the first result URL and save as base64
-      const img = await downloadImageAsBase64(kieResult.imageUrls[0]);
+      const img = await downloadImageAsBase64(result.imageUrls[0]);
       const saved = await saveGeneratedImage(
         projectId,
         img.imageBytes,
@@ -239,7 +238,7 @@ async function processImageGeneration(
       assets.push({ ...saved, imageSlot: section.imageSlot });
     }
 
-    // job → done
+    // job -> done
     await prisma.generationJob.update({
       where: { id: jobId },
       data: {
@@ -249,7 +248,7 @@ async function processImageGeneration(
       },
     });
   } catch (error) {
-    // job → failed
+    // job -> failed
     await prisma.generationJob.update({
       where: { id: jobId },
       data: { status: "failed", error: String(error), doneAt: new Date() },

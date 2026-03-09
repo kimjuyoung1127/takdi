@@ -1,0 +1,67 @@
+# Takdi Docker Compose — self-hosted deployment
+# Usage: docker compose up -d
+# Dashboard: http://localhost:3000
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+    environment:
+      - DATABASE_URL=file:/app/data/takdi.db
+      - IMAGE_PROVIDER=${IMAGE_PROVIDER:-comfyui}
+      - COMFYUI_URL=http://comfyui:8188
+      - COMFYUI_MODEL=${COMFYUI_MODEL:-flux1-dev-fp8.safetensors}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - KIE_API_KEY=${KIE_API_KEY:-}
+      - DEFAULT_WORKSPACE_NAME=${DEFAULT_WORKSPACE_NAME:-default}
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - DEPLOYMENT_MODE=${DEPLOYMENT_MODE:-self-hosted}
+    restart: always
+    depends_on:
+      comfyui:
+        condition: service_started
+
+  comfyui:
+    build: ./docker/comfyui
+    ports:
+      - "8188:8188"
+    volumes:
+      - comfyui-models:/comfyui/models
+      - ./data/comfyui-output:/comfyui/output
+    restart: always
+
+  backup:
+    image: alpine:3.19
+    volumes:
+      - ./data:/data:ro
+      - ./uploads:/uploads:ro
+      - backup-storage:/backups
+    entrypoint: /bin/sh
+    command: >
+      -c "
+      echo '0 3 * * * /bin/sh -c \"
+        DATE=\$$(date +%%Y%%m%%d_%%H%%M%%S)
+        mkdir -p /backups/db /backups/uploads
+        cp /data/takdi.db /backups/db/takdi-\$$DATE.db
+        cd /uploads && tar czf /backups/uploads/uploads-\$$DATE.tar.gz .
+        # Keep last 30 days
+        find /backups -type f -mtime +30 -delete
+        echo Backup done: \$$DATE
+      \"' > /etc/crontabs/root
+      && crond -f"
+    restart: always
+
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 300 --cleanup
+    restart: always
+
+volumes:
+  comfyui-models:
+  backup-storage:

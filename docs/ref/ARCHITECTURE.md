@@ -1,6 +1,6 @@
 # Takdi Architecture
 
-Last Updated: 2026-03-09 (KST, Mac Mini deployment bootstrap)
+Last Updated: 2026-03-09 (KST, Provider abstraction + ComfyUI local + Docker deployment)
 
 ## Core Principle
 - UX is single-user simple.
@@ -12,7 +12,10 @@ Last Updated: 2026-03-09 (KST, Mac Mini deployment bootstrap)
 - Data Layer: Prisma 6 + SQLite
 - Runtime Storage: local/NAS-backed uploads directory configurable via `UPLOADS_DIR`
 - Text Generation: Gemini 2.5 Flash (`@google/genai`, structured output) + brief-parser fallback
-- Image Generation: Imagen 4.0 (`@google/genai`, async job + polling)
+- Image Generation: Provider abstraction layer (`IMAGE_PROVIDER` env var)
+  - Kie.ai (Nano Banana 2, API) — default for SaaS
+  - ComfyUI (FLUX.1, local) — default for self-hosted
+  - Provider interface: `src/services/providers/types.ts`
 - Render Layer: Remotion 4 compositions + @remotion/player browser preview
 - Async Pattern: POST → 202 + jobId, background processing, GET polling (generate, generate-images, render, export)
 - Image Export: html2canvas-pro (client-side DOM→PNG/JPG capture, Tailwind v4 compatible)
@@ -53,6 +56,21 @@ Last Updated: 2026-03-09 (KST, Mac Mini deployment bootstrap)
 - Mac Mini 자체 운영: SQLite on local disk
 - Railway 공개 전환: PostgreSQL
 - Prisma 추상화로 provider + `DATABASE_URL` 전환 가능, but local file storage and render worker separation are still required for public SaaS
+
+## Provider Abstraction
+- `ImageGenerationProvider` interface: `textToImage()`, `removeBackground()`, `healthCheck()`
+- `IMAGE_PROVIDER` env var selects active provider: `"kie"` | `"comfyui"`
+- Provider registry: `src/services/providers/registry.ts`
+- All image generation API routes use `getProvider()` — no direct service imports
+- HTTP contracts unchanged: 202 + jobId polling pattern preserved
+- `DEPLOYMENT_MODE` env var: `"self-hosted"` (Mac Mini) | `"saas"` (cloud)
+
+## Docker Deployment (Self-Hosted)
+- `docker-compose.yml`: app (Next.js:3000) + comfyui (Python:8188) + backup (cron) + watchtower
+- Watchtower: auto-updates from GHCR on every `git push` to main
+- GitHub Actions: `.github/workflows/docker-publish.yml` builds and pushes Docker image
+- NAS integration: optional volume mounts for models and backups
+- Client scripts: `scripts/start.command`, `scripts/stop.command` (Finder double-click)
 
 ## Guardrails
 - Hard limit to one workspace in MVP runtime.

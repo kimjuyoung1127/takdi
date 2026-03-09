@@ -1,15 +1,11 @@
-/** POST /api/projects/:id/model-compose — 모델 합성 (Nano Banana 2 + 참조 이미지) */
+/** POST /api/projects/:id/model-compose — 모델 합성 (Provider + 참조 이미지) */
 
 import { prisma } from "@/lib/prisma";
 import { getWorkspaceId, ensureWorkspaceScope } from "@/lib/workspace-guard";
 import { jsonOk, jsonError, jsonNotFound } from "@/lib/api-response";
+import { getProvider, getProviderLabel } from "@/services/providers/registry";
 import { downloadImageAsBase64 } from "@/services/kie-generator";
 import { saveGeneratedImage } from "@/lib/save-generated-image";
-
-const KIE_API_BASE = "https://api.kie.ai/api/v1/jobs";
-const MODEL = "nano-banana-2";
-const POLL_INTERVAL = 3000;
-const MAX_POLLS = 100;
 
 export async function POST(
   request: Request,
@@ -59,7 +55,7 @@ export async function POST(
         data: {
           projectId: id,
           status: "queued",
-          provider: "kie-nano-banana-2-model-compose",
+          provider: `${getProviderLabel()}-model-compose`,
           input: JSON.stringify({ assetId, aspectRatio, promptText }),
         },
       });
@@ -160,111 +156,35 @@ async function processModelCompose(
       data: { status: "running", startedAt: new Date() },
     });
 
-    const apiKey = process.env.KIE_API_KEY;
-    if (!apiKey) throw new Error("KIE_API_KEY not configured");
-
-    const headers = {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    };
-
-    // Create task with Nano Banana 2 + image_input
-    const createRes = await fetch(`${KIE_API_BASE}/createTask`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        model: MODEL,
-        input: {
-          prompt: promptText,
-          aspect_ratio: aspectRatio,
-          resolution: "1K",
-          output_format: "jpg",
-          google_search: false,
-          image_input: [imageUrl],
-        },
-      }),
+    const provider = getProvider();
+    const result = await provider.textToImage({
+      prompt: promptText,
+      aspectRatio,
+      imageInput: [imageUrl],
     });
 
-    if (!createRes.ok) {
-      throw new Error(`Kie.ai createTask failed: ${createRes.status}`);
-    }
+    const img = await downloadImageAsBase64(result.imageUrls[0]);
+    const saved = await saveGeneratedImage(
+      projectId,
+      img.imageBytes,
+      img.mimeType,
+      "model-compose",
+    );
 
-    const createData = (await createRes.json()) as {
-      code: number;
-      msg: string;
-      data?: { taskId: string };
-    };
-
-    if (createData.code !== 200 || !createData.data?.taskId) {
-      throw new Error(`Kie.ai createTask error: ${createData.msg}`);
-    }
-
-    const { taskId } = createData.data;
-
-    // Poll until done
-    for (let i = 0; i < MAX_POLLS; i++) {
-      await new Promise((r) => setTimeout(r, POLL_INTERVAL));
-
-      const pollRes = await fetch(
-        `${KIE_API_BASE}/recordInfo?taskId=${taskId}`,
-        { headers },
-      );
-
-      if (!pollRes.ok) continue;
-
-      const pollData = (await pollRes.json()) as {
-        code: number;
-        data?: {
-          state: string;
-          resultJson?: string;
-          failMsg?: string | null;
-        };
-      };
-
-      const state = pollData.data?.state;
-
-      if (state === "success") {
-        const resultJson = pollData.data?.resultJson;
-        if (!resultJson) throw new Error("Kie.ai: empty resultJson");
-
-        const parsed = JSON.parse(resultJson) as { resultUrls?: string[] };
-        if (!parsed.resultUrls?.length) {
-          throw new Error("Kie.ai: no result URLs");
-        }
-
-        const img = await downloadImageAsBase64(parsed.resultUrls[0]);
-        const saved = await saveGeneratedImage(
-          projectId,
-          img.imageBytes,
-          img.mimeType,
-          "model-compose",
-        );
-
-        await prisma.$transaction([
-          prisma.project.update({
-            where: { id: projectId },
-            data: { status: "generated" },
-          }),
-          prisma.generationJob.update({
-            where: { id: jobId },
-            data: {
-              status: "done",
-              output: JSON.stringify({ assets: [saved] }),
-              doneAt: new Date(),
-            },
-          }),
-        ]);
-        return;
-      }
-
-      if (state === "fail") {
-        throw new Error(
-          `Kie.ai model-compose failed: ${pollData.data?.failMsg ?? "unknown"}`,
-        );
-      }
-    }
-
-    throw new Error("Kie.ai model-compose timed out");
+    await prisma.$transaction([
+      prisma.project.update({
+        where: { id: projectId },
+        data: { status: "generated" },
+      }),
+      prisma.generationJob.update({
+        where: { id: jobId },
+        data: {
+          status: "done",
+          output: JSON.stringify({ assets: [saved] }),
+          doneAt: new Date(),
+        },
+      }),
+    ]);
   } catch (error) {
     await prisma.generationJob.update({
       where: { id: jobId },

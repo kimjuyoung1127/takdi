@@ -1,8 +1,26 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-09 (KST, compose result preview parity fix)
+Last Updated: 2026-03-09 (KST, Provider abstraction + ComfyUI local + Docker deployment)
 
 ## Latest Update
+- Provider abstraction + ComfyUI local + Docker deployment pass completed.
+- Verified with final `npm run typecheck`, `npm run test` (98 tests), and build check.
+- Key shipped changes in this pass:
+  - **Provider abstraction layer** (LOCAL-GEN-001): `ImageGenerationProvider` interface with `textToImage()`, `removeBackground()`, `healthCheck()` methods
+  - **Kie.ai provider wrapper**: wraps existing `kie-generator.ts` + `removebg-service.ts` behind the interface
+  - **ComfyUI local provider** (LOCAL-GEN-002): REST API integration with workflow JSON templates for FLUX.1 Dev/Schnell
+  - **Provider registry**: `IMAGE_PROVIDER` env var selects `"kie"` (default) or `"comfyui"` provider
+  - **4 API routes refactored**: `generate-images`, `remove-bg`, `model-compose`, `scene-compose` now use `getProvider()` instead of direct Kie.ai calls
+  - **Inline Kie.ai duplication removed**: `model-compose` and `scene-compose` routes no longer duplicate the polling logic
+  - **HTTP contracts preserved**: 202 + jobId polling pattern unchanged, frontend needs zero changes
+  - **Docker deployment** (LOCAL-GEN-003): `Dockerfile` (Next.js standalone) + `docker-compose.yml` (app + comfyui + backup + watchtower)
+  - **Mac Mini scripts** (LOCAL-GEN-004): `setup-mac.sh`, `download-models.sh`, `start.command`, `stop.command`, `backup.sh`
+  - **GitHub Actions CI/CD** (LOCAL-GEN-006): `docker-publish.yml` builds and pushes to GHCR on main push
+  - **6 deployment guides** (LOCAL-GEN-005): MAC-MINI-SETUP, COMFYUI-GUIDE, PROVIDER-CONFIG, NAS-BACKUP, RUNBOOK, SETUP-CHECKLIST
+  - **DEPLOYMENT_MODE env var**: `"self-hosted"` | `"saas"` for future SaaS evolution
+  - ComfyUI workflow templates: `text-to-image.json`, `remove-background.json`, `img2img-compose.json`
+  - `next.config.mjs` updated with conditional `standalone` output for Docker builds
+
 - Compose result/preview parity fix completed for block-mode projects.
 - Verified with final `npm run test` and `npm run build` on 2026-03-09.
 - Key shipped changes in this pass:
@@ -10,7 +28,6 @@ Last Updated: 2026-03-09 (KST, compose result preview parity fix)
   - added shared block dispatch + themed surface wrapper so compose/result/export render through the same visual path
   - wired `ResultView` to pass `doc.theme` through `ComposeProvider` and `BlockPreview`
   - added regression tests covering themed preview wrappers, hidden block filtering, and key block content parity
-  - note: `npm run typecheck` remains blocked by an existing `.next/types` resolution issue in this workspace even after `next typegen`
 
 - Deployment bootstrap completed for the recommended Mac Mini first strategy.
 - Verified with final `npm run test`, `npm run build`, `npm run typecheck`, and `npm run runtime:paths` on 2026-03-09.
@@ -370,9 +387,14 @@ Last Updated: 2026-03-09 (KST, compose result preview parity fix)
 - Billing integration deferred.
 
 ## Deployment Plan
-- **Current Primary**: Mac Mini + NAS (자체 운영, SQLite 로컬 디스크 + env-configured uploads path)
+- **Self-hosted (Primary)**: Mac Mini M4 + NAS + Docker Compose (ComfyUI 로컬 이미지 생성)
+  - Docker: app (Next.js) + comfyui (FLUX.1) + backup (cron) + watchtower (auto-update)
+  - `DEPLOYMENT_MODE=self-hosted`, `IMAGE_PROVIDER=comfyui`
+  - Watchtower: GitHub push → GHCR → 자동 pull + 재시작 (5분 간격)
+  - pm2/Caddy templates available for non-Docker fallback
 - **External Pilot**: Tailscale/Cloudflare Tunnel/ngrok로 Mac Mini 공개 게이트웨이
-- **Future Public SaaS**: Railway (PostgreSQL + object storage + separate render worker after validation)
+- **Future Public SaaS**: Railway (PostgreSQL + object storage + separate render worker)
+  - `DEPLOYMENT_MODE=saas`, `IMAGE_PROVIDER=kie`
 - 로컬 개발: SQLite 유지
 - 공개 SaaS 전환 전제: provider 교체만으로는 부족하며 storage/worker 분리가 필요
 

@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-09 (KST, deployment bootstrap)
+Last Updated: 2026-03-09 (KST, Provider abstraction + ComfyUI local + Docker deployment)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -87,5 +87,11 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | INSERT-001 | Insert position indicator | Done | claude | "+" 클릭 시 인디고색 삽입 표시줄, ESC 취소, 팔레트 클릭 시 해당 위치 삽입 |
 | UPLOAD-001 | Explicit upload button | Done | claude | ImageUploadZone 빈 상태에 명시적 "이미지 업로드" 버튼 + 드래그앤드롭 안내 |
 | OVERLAY-001 | Hero overlay drag + align presets | Done | claude | 오버레이 드래그 위치 편집, 9방향 빠른 정렬, 속성패널 오버레이 편집기 (추가/삭제/위치/크기/색상/굵기/정렬/글꼴) |
+| LOCAL-GEN-001 | Provider abstraction layer | Done | claude | ImageGenerationProvider interface + KieProvider + registry + 4 API routes refactored |
+| LOCAL-GEN-002 | ComfyUI local provider | Done | claude | ComfyUI REST API provider + 3 workflow templates (txt2img, rmbg, img2img) |
+| LOCAL-GEN-003 | Docker deployment | Done | claude | Dockerfile + docker-compose.yml + Watchtower auto-update + backup container |
+| LOCAL-GEN-004 | Mac Mini deployment scripts | Done | claude | setup-mac.sh + download-models.sh + start/stop.command + backup.sh |
+| LOCAL-GEN-005 | Deployment documentation (6 guides) | Done | claude | MAC-MINI-SETUP + COMFYUI-GUIDE + PROVIDER-CONFIG + NAS-BACKUP + RUNBOOK + SETUP-CHECKLIST |
+| LOCAL-GEN-006 | GitHub Actions CI/CD | Done | claude | docker-publish.yml: build + push to GHCR on main push |
 | BILL-001 | Billing integration | Deferred | unassigned | after gate pass |
 | TEAM-001 | Team roles and invites | Deferred | unassigned | after gate pass |

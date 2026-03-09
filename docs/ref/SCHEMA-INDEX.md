@@ -1,6 +1,6 @@
 # Takdi Schema and API Index
 
-Last Updated: 2026-03-08 (KST, shortform mode + preview artifacts pass)
+Last Updated: 2026-03-09 (KST, Provider abstraction + ComfyUI local)
 
 ## API Contract (Core)
 - `POST /api/projects`
@@ -84,6 +84,13 @@ Last Updated: 2026-03-08 (KST, shortform mode + preview artifacts pass)
 - One user and one workspace are enforced.
 - `Membership.plan` is fixed to `solo_free`.
 - Billing tables are intentionally absent in MVP.
+
+## Provider System
+- `IMAGE_PROVIDER` env var: `"kie"` (default) | `"comfyui"`
+- `DEPLOYMENT_MODE` env var: `"self-hosted"` | `"saas"`
+- `ImageGenerationProvider` interface: `textToImage()`, `removeBackground()`, `healthCheck()`
+- Provider registry: `getProvider()` from `src/services/providers/registry.ts`
+- `GenerationJob.provider` values: `"kie-nano-banana-2"` | `"comfyui-flux"` | `"kie-remove-background"` | `"comfyui-remove-background"` | `"*-model-compose"` | `"*-scene-compose"`
 
 ## Future Additions (Post-Gate)
 - `BillingSubscription`

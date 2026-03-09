@@ -13,5 +13,8 @@ Canonical references for Takdi.
 - `COMPETITIVE-ANALYSIS.md`
 - `DEPLOYMENT.md`
 
+## Related
+- `docs/deployment/`: Self-hosted deployment guides (Mac Mini + NAS)
+
 ## Rule
 - New long-lived specs must be added here.

@@ -1,0 +1,11 @@
+# External model paths — maps NAS-mounted models into ComfyUI
+# Models are stored on NAS to save local SSD space
+# Docker volume mounts these at /comfyui/models
+
+nas_models:
+  base_path: /comfyui/models
+  checkpoints: checkpoints/
+  clip: clip/
+  vae: vae/
+  loras: loras/
+  upscale_models: upscale_models/
