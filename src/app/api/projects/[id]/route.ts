@@ -1,8 +1,8 @@
 import { rm } from "fs/promises";
-import path from "path";
 import { prisma } from "@/lib/prisma";
 import { ensureWorkspaceScope } from "@/lib/workspace-guard";
 import { jsonError, jsonNotFound, jsonOk } from "@/lib/api-response";
+import { getProjectUploadsDir } from "@/lib/runtime-paths";
 
 export async function GET(
   _request: Request,
@@ -109,7 +109,7 @@ export async function DELETE(
       });
     });
 
-    const uploadDir = path.join(process.cwd(), "uploads", id);
+    const uploadDir = getProjectUploadsDir(id);
     try {
       await rm(uploadDir, { recursive: true, force: true });
     } catch (error) {

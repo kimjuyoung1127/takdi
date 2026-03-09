@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "runtime:paths": "node scripts/print-runtime-paths.mjs",
+    "backup:uploads": "node scripts/backup-uploads.mjs",
     "lint": "next lint",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",

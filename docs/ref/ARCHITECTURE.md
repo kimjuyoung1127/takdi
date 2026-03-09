@@ -1,6 +1,6 @@
 # Takdi Architecture
 
-Last Updated: 2026-03-06 (KST, EXPORT-001 Block Image Export)
+Last Updated: 2026-03-09 (KST, Mac Mini deployment bootstrap)
 
 ## Core Principle
 - UX is single-user simple.
@@ -10,6 +10,7 @@ Last Updated: 2026-03-06 (KST, EXPORT-001 Block Image Export)
 - Frontend: Next.js 15 App Router + React 19
 - API Layer: Next.js route handlers (17 endpoints, async fire-and-forget + polling)
 - Data Layer: Prisma 6 + SQLite
+- Runtime Storage: local/NAS-backed uploads directory configurable via `UPLOADS_DIR`
 - Text Generation: Gemini 2.5 Flash (`@google/genai`, structured output) + brief-parser fallback
 - Image Generation: Imagen 4.0 (`@google/genai`, async job + polling)
 - Render Layer: Remotion 4 compositions + @remotion/player browser preview
@@ -33,24 +34,25 @@ Last Updated: 2026-03-06 (KST, EXPORT-001 Block Image Export)
 
 ## Deployment Target
 
-### Primary: Vercel (예정)
-- **App**: Vercel Serverless (Next.js 네이티브 지원)
-- **DB**: Supabase PostgreSQL 또는 Vercel Postgres (Neon)
-  - Vercel은 서버리스라 SQLite 쓰기 불가 → PostgreSQL 필수
-  - 전환: `schema.prisma` provider + `DATABASE_URL`만 변경 (코드 변경 없음)
-- **에셋 저장**: Vercel Blob 또는 Supabase Storage
-- **환경변수**: Vercel Dashboard에서 `DATABASE_URL`, `GEMINI_API_KEY` 설정
+### Primary: Mac Mini + NAS (current)
+- **App**: Mac Mini running `next build` + `next start`
+- **Access**: Tailscale first, external demo exposure through Cloudflare Tunnel or ngrok when needed
+- **DB**: SQLite on Mac Mini local disk only
+- **Media**: `UPLOADS_DIR` on local disk or NAS-backed uploads path
+- **Process**: pm2 (`ecosystem.config.cjs`)
+- **Proxy**: Caddy (`Caddyfile.example`)
 
-### Secondary: Mac Mini + NAS (자체 운영)
-- **Runtime**: Mac Mini (앱 서버 + Next.js)
-- **Storage**: NAS (에셋 파일 + DB 백업)
-- **DB**: SQLite 유지 가능 (`file:/mnt/nas/takdi/prod.db`) — 1인 운영 시 충분
+### Secondary: Railway (post-validation)
+- **App**: Railway app service for the public SaaS phase
+- **DB**: PostgreSQL (Railway Postgres, Neon, or Supabase)
+- **Storage**: object storage instead of local `uploads`
+- **Render**: dedicated worker/job runtime instead of route-handler `spawn`
 
 ### DB 전략
 - 로컬 개발: SQLite (`file:./dev.db`)
-- Vercel 배포: PostgreSQL (Supabase/Neon 무료 티어)
-- Mac Mini 자체 운영: SQLite 또는 PostgreSQL 선택
-- Prisma 추상화로 코드 변경 없이 provider + DATABASE_URL만 교체
+- Mac Mini 자체 운영: SQLite on local disk
+- Railway 공개 전환: PostgreSQL
+- Prisma 추상화로 provider + `DATABASE_URL` 전환 가능, but local file storage and render worker separation are still required for public SaaS
 
 ## Guardrails
 - Hard limit to one workspace in MVP runtime.

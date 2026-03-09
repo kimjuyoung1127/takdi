@@ -9,6 +9,7 @@ Shared utilities and runtime helpers.
 - `project-media.ts`: project sections, image paths, and artifact lookup helpers
 - `save-generated-image.ts`: generated image persistence
 - `save-artifact-file.ts`: text artifact persistence
+- `runtime-paths.ts`: deployment-aware uploads and runtime path helpers
 - `prisma.ts`: Prisma client
 - `workspace-guard.ts`: workspace scope enforcement
 

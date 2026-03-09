@@ -2,19 +2,16 @@
 "use client";
 
 import { forwardRef } from "react";
-import type { Block } from "@/types/blocks";
-import { ReadOnlyBlockRenderer } from "./read-only-block-renderers";
+import type { Block, ThemePalette } from "@/types/blocks";
+import { BlockDispatch } from "./block-dispatch";
 
 interface CardNewsLayoutProps {
   blocks: Block[];
-}
-
-function CardBlockDispatch({ block }: { block: Block }) {
-  return <ReadOnlyBlockRenderer block={block} />;
+  theme?: ThemePalette;
 }
 
 export const CardNewsLayout = forwardRef<HTMLDivElement, CardNewsLayoutProps>(
-  function CardNewsLayout({ blocks }, ref) {
+  function CardNewsLayout({ blocks, theme }, ref) {
     const visibleBlocks = blocks.filter((b) => b.visible);
 
     return (
@@ -24,10 +21,21 @@ export const CardNewsLayout = forwardRef<HTMLDivElement, CardNewsLayoutProps>(
             key={block.id}
             data-card-slide={block.id}
             className="flex items-center justify-center overflow-hidden bg-white"
-            style={{ width: 1080, height: 1080 }}
+            style={{
+              width: 1080,
+              height: 1080,
+              backgroundColor: theme?.background ?? "#ffffff",
+              color: theme?.text ?? "#111827",
+            }}
           >
-            <div className="w-full p-12">
-              <CardBlockDispatch block={block} />
+            <div className="w-full p-12 pointer-events-none">
+              <BlockDispatch
+                block={block}
+                selected={false}
+                onSelect={() => {}}
+                onUpdate={() => {}}
+                readOnly
+              />
             </div>
           </div>
         ))}

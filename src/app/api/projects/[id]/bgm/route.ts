@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { ensureWorkspaceScope } from "@/lib/workspace-guard";
 import { jsonOk, jsonError, jsonNotFound } from "@/lib/api-response";
 import { analyzeBgm } from "@/services/bgm-analyzer";
+import { sanitizeUploadName, toPublicUploadPath } from "@/lib/asset-images";
+import { getProjectUploadsDir } from "@/lib/runtime-paths";
 
 export async function POST(
   request: Request,
@@ -35,9 +37,10 @@ export async function POST(
     }
 
     // Save file
-    const bgmDir = join(process.cwd(), "uploads", id, "bgm");
+    const bgmDir = getProjectUploadsDir(id, "bgm");
     await mkdir(bgmDir, { recursive: true });
-    const fileName = `${Date.now()}-${file.name}`;
+    const extension = file.name.includes(".") ? file.name.slice(file.name.lastIndexOf(".")) : ".bin";
+    const fileName = `${Date.now()}-${sanitizeUploadName(file.name)}${extension}`;
     const filePath = join(bgmDir, fileName);
     await writeFile(filePath, buffer);
 
@@ -46,7 +49,7 @@ export async function POST(
       data: {
         projectId: id,
         sourceType: "uploaded",
-        filePath: `/uploads/${id}/bgm/${fileName}`,
+        filePath: toPublicUploadPath(id, "bgm", fileName),
         mimeType,
       },
     });

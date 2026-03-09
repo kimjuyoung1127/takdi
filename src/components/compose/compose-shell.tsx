@@ -224,9 +224,16 @@ export function ComposeShell({ projectId, projectName, initialDoc }: ComposeShel
   const handlePreview = useCallback(async () => {
     const didSave = await persistDoc({ toastOnSuccess: false });
     if (didSave) {
-      window.open(`/projects/${projectId}/result`, "_blank");
+      const previewParams = new URLSearchParams();
+      if (mobilePreview) {
+        previewParams.set("mobile", "1");
+      }
+      const previewPath = previewParams.size > 0
+        ? `/projects/${projectId}/result?${previewParams.toString()}`
+        : `/projects/${projectId}/result`;
+      window.open(previewPath, "_blank");
     }
-  }, [persistDoc, projectId]);
+  }, [mobilePreview, persistDoc, projectId]);
 
   const handleDesignCheck = useCallback(() => {
     const violations = validateBlocks(blocks);

@@ -41,10 +41,14 @@ export async function generateMetadata({
 
 export default async function ResultPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ mobile?: string | string[] }>;
 }) {
   const { id } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const mobilePreview = resolvedSearchParams?.mobile === "1";
 
   const project = await prisma.project.findUnique({
     where: { id },
@@ -76,7 +80,14 @@ export default async function ResultPage({
       );
     }
 
-    return <ResultView projectId={project.id} projectName={project.name} doc={doc} />;
+    return (
+      <ResultView
+        projectId={project.id}
+        projectName={project.name}
+        doc={doc}
+        mobilePreview={mobilePreview}
+      />
+    );
   }
 
   const artifacts = await listProjectArtifacts(project.id, ["video", "gif", "thumbnail", "marketing-script"]);

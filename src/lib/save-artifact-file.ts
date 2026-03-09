@@ -2,13 +2,14 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { sanitizeUploadName, toPublicUploadPath } from "@/lib/asset-images";
+import { getProjectUploadsDir } from "@/lib/runtime-paths";
 
 export async function saveTextArtifactFile(
   projectId: string,
   prefix: string,
   content: string,
 ) {
-  const uploadsDir = path.join(process.cwd(), "uploads", projectId);
+  const uploadsDir = getProjectUploadsDir(projectId);
   await mkdir(uploadsDir, { recursive: true });
 
   const fileName = `${Date.now()}-${sanitizeUploadName(prefix)}.txt`;

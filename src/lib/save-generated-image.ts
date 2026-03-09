@@ -7,6 +7,7 @@ import {
   shouldNormalizeImage,
   toPublicUploadPath,
 } from "@/lib/asset-images";
+import { getProjectUploadsDir } from "@/lib/runtime-paths";
 
 export async function saveGeneratedImage(
   projectId: string,
@@ -14,7 +15,7 @@ export async function saveGeneratedImage(
   mimeType: string,
   slotLabel: string,
 ): Promise<{ assetId: string; filePath: string }> {
-  const uploadsDir = path.join(process.cwd(), "uploads", projectId);
+  const uploadsDir = getProjectUploadsDir(projectId);
   await mkdir(uploadsDir, { recursive: true });
 
   const buffer = Buffer.from(imageBytes, "base64");

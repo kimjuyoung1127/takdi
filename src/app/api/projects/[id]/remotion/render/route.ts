@@ -11,6 +11,7 @@ import {
   parseEditorGraph,
   serializeProjectContent,
 } from "@/lib/shortform-state";
+import { getProjectUploadsDir } from "@/lib/runtime-paths";
 import type { CompositionId, RemotionInputProps } from "@/types";
 
 const TEMPLATE_TO_COMPOSITION: Record<string, CompositionId> = {
@@ -100,7 +101,7 @@ async function processRender(
       data: { status: "running", startedAt: new Date() },
     });
 
-    const renderDir = path.join(process.cwd(), "uploads", project.id, "renders");
+    const renderDir = getProjectUploadsDir(project.id, "renders");
     await mkdir(renderDir, { recursive: true });
 
     const artifactIds: string[] = [];

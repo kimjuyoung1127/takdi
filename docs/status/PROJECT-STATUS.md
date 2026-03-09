@@ -1,8 +1,29 @@
 # Takdi Project Status
 
-Last Updated: 2026-03-09 (KST, shortform 0-cost smoke validation + next roadmap)
+Last Updated: 2026-03-09 (KST, compose result preview parity fix)
 
 ## Latest Update
+- Compose result/preview parity fix completed for block-mode projects.
+- Verified with final `npm run test` and `npm run build` on 2026-03-09.
+- Key shipped changes in this pass:
+  - removed the separate compose read-only renderer path that caused preview/result drift
+  - added shared block dispatch + themed surface wrapper so compose/result/export render through the same visual path
+  - wired `ResultView` to pass `doc.theme` through `ComposeProvider` and `BlockPreview`
+  - added regression tests covering themed preview wrappers, hidden block filtering, and key block content parity
+  - note: `npm run typecheck` remains blocked by an existing `.next/types` resolution issue in this workspace even after `next typegen`
+
+- Deployment bootstrap completed for the recommended Mac Mini first strategy.
+- Verified with final `npm run test`, `npm run build`, `npm run typecheck`, and `npm run runtime:paths` on 2026-03-09.
+- Key shipped changes in this pass:
+  - added deployment-aware runtime path helper so uploads/artifacts are no longer hard-wired to `process.cwd()/uploads`
+  - added `UPLOADS_DIR`, `UPLOADS_BACKUP_DIR`, and `NEXT_PUBLIC_APP_URL` runtime configuration support to the documented environment set
+  - added `ecosystem.config.cjs` for pm2-managed app restarts on Mac Mini
+  - added `Caddyfile.example` for reverse proxy/TLS bootstrap
+  - added `npm run runtime:paths` for resolved runtime path inspection
+  - added `npm run backup:uploads` to snapshot uploads into a NAS backup root
+  - added canonical deployment guide `docs/ref/DEPLOYMENT.md`
+  - aligned deployment architecture docs to `Mac Mini first -> Railway later`
+
 - Shortform C-plan MVP runtime validation completed.
 - Verified on 2026-03-09 with final `npm run test`, `npm run build`, and `npm run typecheck`.
 - Zero-cost local smoke path verified end-to-end:
@@ -336,7 +357,7 @@ Last Updated: 2026-03-09 (KST, shortform 0-cost smoke validation + next roadmap)
     - 드래그 중 직접 DOM 업데이트 (부드러운 시각 피드백), mouseup 시 단일 상태 커밋
     - 속성패널 오버레이 편집기: 추가/삭제, 9방향 빠른 정렬 프리셋 (3×3 그리드), X/Y 수치 입력, 크기/색상/굵기/정렬/글꼴
     - 반응형 폰트 스케일링: ResizeObserver로 컨테이너 너비 감지, 모바일(375px) 전환 시 자동 축소 (hero, image-full)
-- 89개 vitest 테스트 통과 (기존 39 + 가드레일 10 + 브리프/템플릿 11 + 기타 29)
+- 102개 vitest 테스트 통과 (2026-03-09 기준 최신 suite)
 - Next target: P1 구현 (플랫폼별 HTML 내보내기, 품질 검사 고도화, 대화형 위자드, 공유 링크, 톤별 플레이스홀더).
 
 ## Gate
@@ -349,11 +370,11 @@ Last Updated: 2026-03-09 (KST, shortform 0-cost smoke validation + next roadmap)
 - Billing integration deferred.
 
 ## Deployment Plan
-- **Current**: ngrok 터널링 (MVP 데모용, 로컬 PC 필요)
-- **Primary**: Railway 배포 예정 (persistent volume, SQLite/PostgreSQL)
-- **Secondary**: Mac Mini + NAS (자체 운영, SQLite 가능)
+- **Current Primary**: Mac Mini + NAS (자체 운영, SQLite 로컬 디스크 + env-configured uploads path)
+- **External Pilot**: Tailscale/Cloudflare Tunnel/ngrok로 Mac Mini 공개 게이트웨이
+- **Future Public SaaS**: Railway (PostgreSQL + object storage + separate render worker after validation)
 - 로컬 개발: SQLite 유지
-- Prisma 추상화로 코드 변경 없이 provider + DATABASE_URL만 교체
+- 공개 SaaS 전환 전제: provider 교체만으로는 부족하며 storage/worker 분리가 필요
 
 ## Contract Snapshot
 - `ProjectStatus`: `draft | generating | generated | failed | exported`

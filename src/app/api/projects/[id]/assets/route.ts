@@ -12,6 +12,7 @@ import {
   shouldNormalizeImage,
   toPublicUploadPath,
 } from "@/lib/asset-images";
+import { getProjectUploadsDir } from "@/lib/runtime-paths";
 
 export async function GET(
   _request: Request,
@@ -118,7 +119,7 @@ export async function POST(
       validationResult = { width: validation.width, height: validation.height };
     }
 
-    const uploadsDir = path.join(process.cwd(), "uploads", id);
+    const uploadsDir = getProjectUploadsDir(id);
     await mkdir(uploadsDir, { recursive: true });
 
     const timestamp = Date.now();

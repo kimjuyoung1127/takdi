@@ -1,6 +1,11 @@
 import { access } from "fs/promises";
 import path from "path";
 import sharp from "sharp";
+import {
+  fromPublicUploadPath,
+  getPublicUploadsPrefix,
+  getUploadsFilePath,
+} from "@/lib/runtime-paths";
 
 const MAX_IMAGE_DIMENSION = 2048;
 const PREVIEW_IMAGE_DIMENSION = 640;
@@ -23,12 +28,17 @@ export function sanitizeUploadName(fileName: string) {
 
 export function toPublicUploadPath(...segments: string[]) {
   const safeSegments = segments.map((segment) => segment.replace(/^[\\/]+/, ""));
-  return `/${path.posix.join("uploads", ...safeSegments)}`;
+  return `${getPublicUploadsPrefix()}/${path.posix.join(...safeSegments)}`;
 }
 
 export function toDiskPath(publicPath: string) {
+  const uploadSegments = fromPublicUploadPath(publicPath);
+  if (uploadSegments) {
+    return getUploadsFilePath(...uploadSegments);
+  }
+
   const relativePath = publicPath.replace(/^\/+/, "");
-  return path.join(process.cwd(), ...relativePath.split("/"));
+  return path.resolve(process.cwd(), relativePath);
 }
 
 export async function normalizeImageVariants(buffer: Buffer) {
@@ -82,7 +92,7 @@ export async function readImageSize(publicPath: string) {
 }
 
 export async function findPreviewPath(publicPath: string) {
-  if (!publicPath.startsWith("/uploads/")) {
+  if (!publicPath.startsWith(`${getPublicUploadsPrefix()}/`)) {
     return undefined;
   }
 

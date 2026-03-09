@@ -11,6 +11,7 @@ Canonical references for Takdi.
 - `USER-FLOW.md`
 - `WIREFRAME-NODE-BYOI.md`
 - `COMPETITIVE-ANALYSIS.md`
+- `DEPLOYMENT.md`
 
 ## Rule
 - New long-lived specs must be added here.

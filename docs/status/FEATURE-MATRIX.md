@@ -1,6 +1,6 @@
 # Feature Matrix
 
-Last Updated: 2026-03-09 (KST, shortform smoke validation + roadmap)
+Last Updated: 2026-03-09 (KST, deployment bootstrap)
 Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 
 | ID | Feature | Status | Owner | Notes |
@@ -38,7 +38,9 @@ Status enum: `Not Started | In Progress | Done | Blocked | Deferred`
 | COMPOSE-005 | Image picker | Done | claude | 파일 업로드/URL 입력 이미지 선택기 |
 | COMPOSE-006 | Block editor UX upgrade | Done | claude | 공용 인프라(ComposeContext, shared/), 12종 풀 편집, ImageUploadZone, EditableText, placeholder CSS, 8종 개별 파일 추출 |
 | COMPOSE-007 | Block editor bug fix + UX | Done | claude | 이미지 404, 영상 400, 아이콘 드롭다운, divider 경고, fontSize 지원 |
+| COMPOSE-008 | Result preview render parity | Done | codex | `BlockPreview`/result now reuse the same block renderers and theme wrapper as compose; removed divergent read-only renderer path |
 | DEPLOY-001 | MVP demo (ngrok) | Done | claude | ngrok 터널링으로 클라이언트 데모 배포 |
+| DEPLOY-002 | Mac Mini runtime path + ops bootstrap | Done | codex | `UPLOADS_DIR` 지원, pm2/Caddy templates, runtime path print, uploads backup snapshot script, deployment guide |
 | EXPORT-001 | Block image export (html2canvas-pro) | Done | claude | 클라이언트 사이드 DOM→PNG/JPG 캡처, Compose 다이얼로그 + Result 다운로드 |
 | UX-011 | User-friendly text polish | Done | claude | 기술 용어→한글 친화 (20+ 파일), 공유 라벨 상수, desc 툴팁, 에러 토스트 |
 | PERF-001 | Page loading performance | Done | claude | 5개 loading.tsx 스켈레톤, dynamic import, lazy html2canvas, API 쿼리 최적화 |

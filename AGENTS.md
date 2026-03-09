@@ -1,5 +1,11 @@
 ---
 
+# Agent Operating Instructions
+
+- Always load and follow the root `CLAUDE.md` first for every task in this repository.
+- Treat `CLAUDE.md` as the persistent operating instruction set for planning, execution, documentation updates, and completion format.
+- Use the rest of this file as product/spec context. If this file conflicts with `CLAUDE.md`, follow `CLAUDE.md`.
+
 # 🚀 [내부 업무용 영상 자동화 시스템] 상세 스펙 명세서
 
 ## 1. 시스템 개요 (Overview)

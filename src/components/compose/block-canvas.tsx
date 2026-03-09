@@ -13,27 +13,9 @@ import {
   validateBlocks,
 } from "@/lib/design-guardrails";
 import { useCompose } from "./compose-context";
+import { BlockDispatch } from "./block-dispatch";
+import { BlockSurfaceFrame } from "./block-surface-frame";
 import { GuardrailIndicator } from "./guardrail-indicator";
-import {
-  ComparisonBlockRenderer,
-  CtaBlockRenderer,
-  DividerBlockRenderer,
-  HeroBlockRenderer,
-  ImageFullBlockRenderer,
-  ImageGridBlockRenderer,
-  ImageTextBlockRenderer,
-  ReviewBlockRenderer,
-  SellingPointBlockRenderer,
-  SpecTableBlockRenderer,
-  TextBlockRenderer,
-  UsageStepsBlockRenderer,
-  VideoBlockRenderer,
-  FaqBlockRenderer,
-  NoticeBlockRenderer,
-  BannerStripBlockRenderer,
-  PricePromoBlockRenderer,
-  TrustBadgeBlockRenderer,
-} from "./block-renderers";
 import { WORKSPACE_CONTROL, WORKSPACE_SURFACE, WORKSPACE_TEXT } from "@/lib/workspace-surface";
 
 interface BlockCanvasProps {
@@ -172,61 +154,6 @@ const MemoSortableBlock = memo(SortableBlock, (prev, next) => {
   );
 });
 
-function BlockDispatch({
-  block,
-  selected,
-  onSelect,
-  onUpdate,
-}: {
-  block: Block;
-  selected: boolean;
-  onSelect: () => void;
-  onUpdate: (patch: Partial<Block>) => void;
-}) {
-  const props = { selected, onSelect, onUpdate: onUpdate as never };
-
-  switch (block.type) {
-    case "hero":
-      return <HeroBlockRenderer block={block} {...props} />;
-    case "selling-point":
-      return <SellingPointBlockRenderer block={block} {...props} />;
-    case "text-block":
-      return <TextBlockRenderer block={block} {...props} />;
-    case "image-text":
-      return <ImageTextBlockRenderer block={block} {...props} />;
-    case "image-full":
-      return <ImageFullBlockRenderer block={block} {...props} />;
-    case "image-grid":
-      return <ImageGridBlockRenderer block={block} {...props} />;
-    case "spec-table":
-      return <SpecTableBlockRenderer block={block} {...props} />;
-    case "comparison":
-      return <ComparisonBlockRenderer block={block} {...props} />;
-    case "review":
-      return <ReviewBlockRenderer block={block} {...props} />;
-    case "divider":
-      return <DividerBlockRenderer block={block} {...props} />;
-    case "video":
-      return <VideoBlockRenderer block={block} {...props} />;
-    case "cta":
-      return <CtaBlockRenderer block={block} {...props} />;
-    case "usage-steps":
-      return <UsageStepsBlockRenderer block={block} {...props} />;
-    case "faq":
-      return <FaqBlockRenderer block={block} {...props} />;
-    case "notice":
-      return <NoticeBlockRenderer block={block} {...props} />;
-    case "banner-strip":
-      return <BannerStripBlockRenderer block={block} {...props} />;
-    case "price-promo":
-      return <PricePromoBlockRenderer block={block} {...props} />;
-    case "trust-badge":
-      return <TrustBadgeBlockRenderer block={block} {...props} />;
-    default:
-      return null;
-  }
-}
-
 function InsertButton({ index, active, onClick }: { index: number; active: boolean; onClick: () => void }) {
   const { isOver, setNodeRef } = useDroppable({ id: `drop-zone-${index}`, data: { type: "drop-zone", index } });
 
@@ -324,36 +251,17 @@ export const BlockCanvas = forwardRef<HTMLDivElement, BlockCanvasProps>(function
     [onBlocksChange, onSelectBlock],
   );
 
-  const themeStyle = useMemo<CSSProperties | undefined>(() => {
-    if (!theme) {
-      return undefined;
-    }
-
-    return {
-      "--theme-primary": theme.primary,
-      "--theme-secondary": theme.secondary,
-      "--theme-bg": theme.background,
-      "--theme-text": theme.text,
-      "--theme-accent": theme.accent,
-      backgroundColor: theme.background,
-      color: theme.text,
-    } as CSSProperties;
-  }, [theme]);
-
   return (
     <div className="flex-1 overflow-y-auto bg-[#EFE9E1] p-8" onClick={() => onSelectBlock(null)}>
       {mobilePreview ? (
         <div className={`mx-auto mb-2 text-center text-[10px] font-medium ${WORKSPACE_TEXT.muted}`}>Mobile preview (375px)</div>
       ) : null}
 
-      <div
+      <BlockSurfaceFrame
         ref={ref}
-        className={`mx-auto ${mobilePreview ? "overflow-hidden rounded-[2rem] border-[3px] border-[#D5CCC3] shadow-[0_20px_40px_rgba(55,40,30,0.12)]" : ""}`}
-        style={{
-          width: canvasWidth,
-          maxWidth: "100%",
-          ...themeStyle,
-        }}
+        platformWidth={platformWidth}
+        mobilePreview={mobilePreview}
+        theme={theme}
         onClick={(event) => event.stopPropagation()}
       >
         <SortableContext items={blocks.map((block) => block.id)} strategy={verticalListSortingStrategy}>
@@ -368,6 +276,7 @@ export const BlockCanvas = forwardRef<HTMLDivElement, BlockCanvasProps>(function
                     selected={false}
                     onSelect={() => {}}
                     onUpdate={(patch) => onUpdateBlock(block.id, patch)}
+                    readOnly
                   />
                 </div>
               ) : (
@@ -397,7 +306,7 @@ export const BlockCanvas = forwardRef<HTMLDivElement, BlockCanvasProps>(function
             </div>
           </div>
         ) : null}
-      </div>
+      </BlockSurfaceFrame>
     </div>
   );
 });

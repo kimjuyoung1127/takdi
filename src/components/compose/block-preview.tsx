@@ -2,29 +2,41 @@
 "use client";
 
 import { forwardRef } from "react";
-import type { Block } from "@/types/blocks";
-import { ReadOnlyBlockRenderer } from "./read-only-block-renderers";
+import type { Block, ThemePalette } from "@/types/blocks";
+import { BlockDispatch } from "./block-dispatch";
+import { BlockSurfaceFrame } from "./block-surface-frame";
 
 interface BlockPreviewProps {
   blocks: Block[];
   platformWidth: number;
-}
-
-function ReadOnlyBlock({ block }: { block: Block }) {
-  return <ReadOnlyBlockRenderer block={block} />;
+  theme?: ThemePalette;
+  mobilePreview?: boolean;
+  className?: string;
 }
 
 export const BlockPreview = forwardRef<HTMLDivElement, BlockPreviewProps>(function BlockPreview(
-  { blocks, platformWidth },
+  { blocks, platformWidth, theme, mobilePreview, className },
   ref,
 ) {
   const visibleBlocks = blocks.filter((b) => b.visible);
 
   return (
-    <div ref={ref} className="mx-auto" style={{ width: platformWidth, maxWidth: "100%" }}>
+    <BlockSurfaceFrame
+      ref={ref}
+      platformWidth={platformWidth}
+      mobilePreview={mobilePreview}
+      theme={theme}
+      className={className}
+    >
       {visibleBlocks.map((block) => (
-        <div key={block.id}>
-          <ReadOnlyBlock block={block} />
+        <div key={block.id} data-block-id={block.id} className="pointer-events-none">
+          <BlockDispatch
+            block={block}
+            selected={false}
+            onSelect={() => {}}
+            onUpdate={() => {}}
+            readOnly
+          />
         </div>
       ))}
       {visibleBlocks.length === 0 && (
@@ -32,6 +44,6 @@ export const BlockPreview = forwardRef<HTMLDivElement, BlockPreviewProps>(functi
           <p>표시할 블록이 없습니다</p>
         </div>
       )}
-    </div>
+    </BlockSurfaceFrame>
   );
 });

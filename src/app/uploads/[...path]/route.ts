@@ -1,7 +1,8 @@
 /** 업로드 파일 정적 서빙 route handler */
 import { readFile, stat } from "fs/promises";
-import { join, extname } from "path";
+import { extname } from "path";
 import { NextRequest, NextResponse } from "next/server";
+import { getUploadsFilePath } from "@/lib/runtime-paths";
 
 const MIME_MAP: Record<string, string> = {
   ".jpg": "image/jpeg",
@@ -27,7 +28,7 @@ export async function GET(
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
   }
 
-  const filePath = join(process.cwd(), "uploads", ...segments);
+  const filePath = getUploadsFilePath(...segments);
 
   try {
     await stat(filePath);
